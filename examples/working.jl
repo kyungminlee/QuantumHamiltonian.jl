@@ -1,4 +1,4 @@
-using ExactDiagonalization
+using QuantumHamiltonian
 
 QN = Int
 Scalar = ComplexF64

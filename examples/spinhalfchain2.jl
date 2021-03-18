@@ -1,6 +1,6 @@
 using SparseArrays
 using LinearAlgebra
-using ExactDiagonalization
+using QuantumHamiltonian
 using LatticeTools
 using MinimalPerfectHash
 
@@ -14,7 +14,7 @@ tsym = TranslationSymmetry(lattice)
 psym = project(PointSymmetryDatabase.get(2), [1 0 0;])  # inversion symmetry
 
 ## Setup Hilbert Space
-(hs, σ) = ExactDiagonalization.Toolkit.spin_half_system(n_sites)
+(hs, σ) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
 
 ## Setup Operators
 Sx = sum(σ(i,:x) for i in 1:n_sites)

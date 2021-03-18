@@ -1,6 +1,6 @@
 # Operator
 
-`ExactDiagonalization.jl` uses operators in the "projector" representation.
+`QuantumHamiltonian.jl` uses operators in the "projector" representation.
 
 
 

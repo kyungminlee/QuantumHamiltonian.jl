@@ -1,6 +1,6 @@
 module Toolkit
 
-using ..ExactDiagonalization
+using ..QuantumHamiltonian
 
 include("Toolkit/spin_half.jl")
 include("Toolkit/spin_system.jl")

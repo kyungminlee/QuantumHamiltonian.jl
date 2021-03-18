@@ -1,5 +1,5 @@
 using Test
-using ExactDiagonalization
+using QuantumHamiltonian
 
 @testset "FrozenSortedArray" begin
   @test_throws ArgumentError FrozenSortedArrayIndex(['b', 'a', 'c'])

@@ -1,5 +1,5 @@
 using LinearAlgebra
-using ExactDiagonalization
+using QuantumHamiltonian
 using LatticeTools
 using Arpack
 
@@ -71,7 +71,7 @@ trilat = make_triangular_lattice(shape)
 n_sites = numsite(trilat.lattice.supercell)
 @show n_sites
 
-(hs, σ) = ExactDiagonalization.Toolkit.spin_half_system(n_sites)
+(hs, σ) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
 j1 = sum(σ(i1, j) * σ(i2 , j) for ((i1, i2), R) in trilat.nearest_neighbor_bonds for j in [:x, :y, :z])
 
 H = 0.25 * j1

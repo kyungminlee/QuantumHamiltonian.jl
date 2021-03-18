@@ -4,11 +4,11 @@ using Arpack
 using Plots
 
 using LatticeTools
-using ExactDiagonalization
+using QuantumHamiltonian
 
 println("# S=1/2 Heisenberg Chain")
 n_sites = 8;
-(hs, σ) = ExactDiagonalization.Toolkit.spin_half_system(n_sites)
+(hs, σ) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
 println("Quantum number sectors (2Sz) : ", quantum_number_sectors(hs))
 
 S = Dict(μ => sum(σ(i, μ) for i in 1:n_sites) for μ in [:x, :y, :z])

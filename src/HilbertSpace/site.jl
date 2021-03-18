@@ -17,7 +17,7 @@ State with quantum number type `QN`.
 
 # Examples
 ```jldoctest
-julia> using ExactDiagonalization
+julia> using QuantumHamiltonian
 
 julia> up = State("Up", 1)
 State{Tuple{Int64}}("Up", (1,))
@@ -61,7 +61,7 @@ A site with quantum number type `QN`.
 
 # Examples
 ```jldoctest
-julia> using ExactDiagonalization
+julia> using QuantumHamiltonian
 
 julia> site = Site([State("Up", 1), State("Dn", -1)]);
 ```

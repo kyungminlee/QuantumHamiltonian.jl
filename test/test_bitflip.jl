@@ -1,5 +1,5 @@
 using Test
-using ExactDiagonalization
+using QuantumHamiltonian
 
 @testset "GlobalBitFlip" begin
     b0 = GlobalBitFlip()
@@ -19,7 +19,7 @@ using ExactDiagonalization
     @test !isidentity(b1)
 
     @testset "HilbertSpace" begin
-        hs, pauli = ExactDiagonalization.Toolkit.spin_half_system(4)
+        hs, pauli = QuantumHamiltonian.Toolkit.spin_half_system(4)
         p = SitePermutation([2,3,4,1])
         pb0 = p * b0
         pb1 = p * b1

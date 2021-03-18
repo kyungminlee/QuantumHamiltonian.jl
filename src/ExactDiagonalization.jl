@@ -1,4 +1,4 @@
-module ExactDiagonalization
+module QuantumHamiltonian
 
 using StaticArrays
 using SparseArrays

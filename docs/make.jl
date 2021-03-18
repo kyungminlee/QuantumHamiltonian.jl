@@ -1,10 +1,10 @@
 using Documenter
-using ExactDiagonalization
+using QuantumHamiltonian
 
 makedocs(
-    modules=[ExactDiagonalization],
+    modules=[QuantumHamiltonian],
     doctest=true,
-    sitename="ExactDiagonalization.jl",
+    sitename="QuantumHamiltonian.jl",
     format=Documenter.HTML(prettyurls=!("local" in ARGS)),
     authors="Kyungmin Lee",
     checkdocs=:all,
@@ -25,6 +25,6 @@ makedocs(
   )
 
 deploydocs(;
-    repo="github.com/kyungminlee/ExactDiagonalization.jl.git",
+    repo="github.com/kyungminlee/QuantumHamiltonian.jl.git",
     devbranch="dev",
 )
