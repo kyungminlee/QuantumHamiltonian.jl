@@ -1,7 +1,7 @@
 [deps]
 Arpack = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-QuantumHamiltonian = "cf149b0a-e8f7-4f00-9ab4-03e4f5ec5cff"
+QuantumHamiltonian = "ca2024c7-d5ca-47dc-aafc-db87cbdab76e"
 LatticeTools = "8a267902-5e0e-44c3-8ef8-9b2b5c352816"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
