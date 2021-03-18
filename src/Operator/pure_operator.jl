@@ -158,13 +158,11 @@ end
 
 # === 6/6 Conversion ===
 
-
 function Base.promote_rule(::Type{PureOperator{S1, B1}}, ::Type{PureOperator{S2, B2}}) where {S1, S2, B1, B2}
     S3 = promote_type(S1, S2)
     B3 = promote_type(B1, B2)
     return PureOperator{S3, B3}
 end
-
 
 function Base.convert(::Type{PureOperator{S1, B1}}, obj::PureOperator{S2, B2}) where {S1, S2, B1, B2}
     return PureOperator{S1, B1}(
@@ -173,6 +171,15 @@ function Base.convert(::Type{PureOperator{S1, B1}}, obj::PureOperator{S2, B2}) w
         convert(B1, obj.bitcol),
         convert(S1, obj.amplitude)
     )
+end
+
+function Base.promote_rule(::Type{PureOperator{S1, B1}}, ::UniformScaling{S2}) where {S1, S2, B1}
+    S3 = promote_type(S1, S2)
+    return PureOperator{S3, B1}
+end
+
+function Base.convert(::Type{PureOperator{S1, B1}}, obj::UniformScaling{S2}) where {S1, S2, B1}
+    return PureOperator{S1, B1}(zero(B1), zero(B1), zero(B1), obj.λ)
 end
 
 

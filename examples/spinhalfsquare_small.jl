@@ -1,6 +1,6 @@
 using SparseArrays
 using LinearAlgebra
-using ExactDiagonalization
+using QuantumHamiltonian
 using LatticeTools
 
 @show  Threads.nthreads()
@@ -20,7 +20,7 @@ psymbed = embed(lattice, psym)
 
 
 ## Setup Hilbert Space
-(hs, σ) = ExactDiagonalization.Toolkit.spin_half_system(n_sites)
+(hs, σ) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
 
 ## Setup Operators
 Sx = sum(σ(i,:x) for i in 1:n_sites)

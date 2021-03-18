@@ -14,7 +14,7 @@ Abstract Hilbert space with quantum number type `QN`.
 
 # Examples
 ```jldoctest
-julia> using ExactDiagonalization
+julia> using QuantumHamiltonian
 
 julia> spin_site = Site([State("Up", +1), State("Dn", -1)]);
 
@@ -81,7 +81,7 @@ basespace(hs::HilbertSpace) = hs
 Total number of bits
 
 ```jldoctest
-julia> using ExactDiagonalization
+julia> using QuantumHamiltonian
 
 julia> spin_site = Site([State("Up", +1), State("Dn", -1)])
 Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))])
@@ -159,7 +159,7 @@ Convert binary representation to an array of indices (of states)
 
 # Examples
 ```jldoctest
-julia> using ExactDiagonalization
+julia> using QuantumHamiltonian
 
 julia> spin_site = Site([State("Up", +1), State("Dn", -1)]);
 
@@ -191,7 +191,7 @@ Convert a cartesian index (a of state) to its binary representation
 
 # Examples
 ```jldoctest
-julia> using ExactDiagonalization
+julia> using QuantumHamiltonian
 
 julia> spin_site = Site([State("Up", +1), State("Dn", -1)]);
 

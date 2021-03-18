@@ -1,5 +1,5 @@
 using Test
-using ExactDiagonalization
+using QuantumHamiltonian
 using StaticArrays
 
 @testset "HSR" begin
@@ -59,13 +59,13 @@ using StaticArrays
         basis_list = UInt[0x0]
         basis_lookup = FrozenSortedArrayIndex(UInt[0x1])
         hsr = HilbertSpaceRepresentation(hilbert_space, basis_list, basis_lookup)
-        @test_throws KeyError ExactDiagonalization.checkvalidbasis(hsr)
+        @test_throws KeyError QuantumHamiltonian.checkvalidbasis(hsr)
       end
       let # wrong index
         basis_list = UInt[0x1]
         basis_lookup = FrozenSortedArrayIndex(UInt[0x0, 0x1])
         hsr = HilbertSpaceRepresentation(hilbert_space, basis_list, basis_lookup)
-        @test_throws AssertionError ExactDiagonalization.checkvalidbasis(hsr)
+        @test_throws AssertionError QuantumHamiltonian.checkvalidbasis(hsr)
       end
     end
   end # testset spin half

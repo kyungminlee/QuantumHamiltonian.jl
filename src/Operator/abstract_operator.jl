@@ -37,10 +37,10 @@ bintype(lhs::AbstractOperator{S}) where S = bintype(typeof(lhs))::DataType
 
 
 Base.:(-)(lhs::AbstractOperator, rhs::AbstractOperator) = (lhs) + (-rhs)
-Base.:(-)(lhs::Number, rhs::AbstractOperator) = (lhs) + (-rhs)
-Base.:(-)(lhs::AbstractOperator, rhs::Number) = (lhs) + (-rhs)
+Base.:(-)(lhs, rhs::AbstractOperator) = (lhs) + (-rhs)
+Base.:(-)(lhs::AbstractOperator, rhs) = (lhs) + (-rhs)
 
-Base.:(+)(op::AbstractOperator{S}) where S = op
+Base.:(+)(op::AbstractOperator) = op
 
 
 function LinearAlgebra.issymmetric(arg::AbstractOperator{S}) where S

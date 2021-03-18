@@ -1,12 +1,12 @@
 using Test
-using ExactDiagonalization
+using QuantumHamiltonian
 
 using Suppressor
 using StaticArrays
 using LinearAlgebra
 using SparseArrays
 
-using ExactDiagonalization.Toolkit: pauli_matrix
+using QuantumHamiltonian.Toolkit: pauli_matrix
 
 
 @testset "OpRep" begin

@@ -1,6 +1,6 @@
 using Test
 using LinearAlgebra
-using ExactDiagonalization
+using QuantumHamiltonian
 using StaticArrays
 
 @testset "SparseState" begin

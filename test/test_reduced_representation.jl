@@ -1,5 +1,5 @@
 using Test
-using ExactDiagonalization
+using QuantumHamiltonian
 
 using Suppressor
 using LinearAlgebra
@@ -7,7 +7,7 @@ using SparseArrays
 
 using LatticeTools
 
-using ExactDiagonalization.Toolkit: pauli_matrix
+using QuantumHamiltonian.Toolkit: pauli_matrix
 
 @testset "RedRep4" begin
   tol = Base.rtoldefault(Float64)

@@ -1,5 +1,5 @@
 using Test
-using ExactDiagonalization
+using QuantumHamiltonian
 
 @testset "Toolkit" begin
   @testset "SpinHalf" begin
@@ -10,7 +10,7 @@ using ExactDiagonalization
       spin_site = Site([up, dn])
 
       hs1 = HilbertSpace([spin_site for i in 1:n_sites])
-      (hs2, pauli) = ExactDiagonalization.Toolkit.spin_half_system(n_sites)
+      (hs2, pauli) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
 
       @test hs1 == hs2
       for i_site in 1:n_sites
@@ -24,16 +24,16 @@ using ExactDiagonalization
     end
 
     @testset "binary type" begin
-      (hs1, pauli1) = ExactDiagonalization.Toolkit.spin_half_system(63)
-      @test_throws ArgumentError ExactDiagonalization.Toolkit.spin_half_system(128)
-      (hs2, pauli2) = ExactDiagonalization.Toolkit.spin_half_system(128, UInt128)
+      (hs1, pauli1) = QuantumHamiltonian.Toolkit.spin_half_system(63)
+      @test_throws ArgumentError QuantumHamiltonian.Toolkit.spin_half_system(128)
+      (hs2, pauli2) = QuantumHamiltonian.Toolkit.spin_half_system(128, UInt128)
       @test bintype(pauli1(1, :x)) == UInt64
       @test bintype(pauli2(1, :x)) == UInt128
     end
   end
 
   @testset "SpinSystem" begin
-    using ExactDiagonalization.Toolkit: spin_system
+    using QuantumHamiltonian.Toolkit: spin_system
     @testset "Constructor" begin
       spin_system(33, 1//2)
       @test_throws ArgumentError spin_system(33, 1)
@@ -73,14 +73,14 @@ using ExactDiagonalization
     )
 
     @testset "SingleSite" begin
-      @test_throws ArgumentError ExactDiagonalization.Toolkit.spin_system(1, -3)
-      @test_throws ArgumentError ExactDiagonalization.Toolkit.spin_system(1, 1//3)
+      @test_throws ArgumentError QuantumHamiltonian.Toolkit.spin_system(1, -3)
+      @test_throws ArgumentError QuantumHamiltonian.Toolkit.spin_system(1, 1//3)
       let
-        (hs, spin) = ExactDiagonalization.Toolkit.spin_system(1, 1//2)
+        (hs, spin) = QuantumHamiltonian.Toolkit.spin_system(1, 1//2)
         @test_throws ArgumentError spin(1, :q)
       end
       for S in Any[1//2, 1, 1//1, 3//2, 2//1, 2]
-        (hs, spin) = ExactDiagonalization.Toolkit.spin_system(1, S)
+        (hs, spin) = QuantumHamiltonian.Toolkit.spin_system(1, S)
         hsr = represent(hs)
         for μ in [:x, :y, :z, :+, :-]
           @test isapprox(spin_matrices[Rational(S)][μ], Matrix(represent(hsr, spin(1, μ))))
@@ -99,7 +99,7 @@ using ExactDiagonalization
       component_index = Dict(:x => 1, :y => 2, :z => 3)
       for S in [1//2, 1, 1//1, 3//2, 2//1, 2]
         n = 4
-        (hs, spin) = ExactDiagonalization.Toolkit.spin_system(n, S)
+        (hs, spin) = QuantumHamiltonian.Toolkit.spin_system(n, S)
         @test all(let
                     op1 = simplify(spin(i, μ) * spin(j, ν) - spin(j, ν) * spin(i, μ))
                     if i == j
@@ -116,34 +116,34 @@ using ExactDiagonalization
   end # testset SpinSystem
 
   @testset "product_state" begin
-    (hs, pauli) = ExactDiagonalization.Toolkit.spin_half_system(4)
-    @test_throws ArgumentError ExactDiagonalization.Toolkit.product_state(hs, [[1.0, 0.0], [0.0, 0.0]]) # too few
-    @test_throws ArgumentError ExactDiagonalization.Toolkit.product_state(hs, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0]]) # too many
-    @test_throws ArgumentError ExactDiagonalization.Toolkit.product_state(hs, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0, 0.0], [0.0, 1.0]])
+    (hs, pauli) = QuantumHamiltonian.Toolkit.spin_half_system(4)
+    @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hs, [[1.0, 0.0], [0.0, 0.0]]) # too few
+    @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hs, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0]]) # too many
+    @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hs, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0, 0.0], [0.0, 1.0]])
 
     local_states = [[1.0, 0.0], [1.0 + 10.0im, 2.0], [1.0, 0.0], [0.0, 1.0]]
     @testset "HilbertSpace" begin
-      psi1 = ExactDiagonalization.Toolkit.product_state(hs, local_states)
+      psi1 = QuantumHamiltonian.Toolkit.product_state(hs, local_states)
       psi2 = SparseState{ComplexF64, UInt}(0b1000 => 1.0 + 10.0im, 0b1010 => 2.0)
       @test isapprox(psi1, psi2; atol=1E-8)
     end
 
     @testset "HilbertSpaceRepresentation" begin
       hsr = represent(hs)
-      psi1 = ExactDiagonalization.Toolkit.product_state(hsr, local_states)
+      psi1 = QuantumHamiltonian.Toolkit.product_state(hsr, local_states)
       psi2 = zeros(ComplexF64, 16)
       psi2[9] = 1.0 + 10.0im
       psi2[11] = 2.0
       @test isapprox(psi1, psi2; atol=1E-8)
 
-      @test_throws ArgumentError ExactDiagonalization.Toolkit.product_state(hsr, [[1.0, 0.0], [0.0, 0.0]]) # too few
-      @test_throws ArgumentError ExactDiagonalization.Toolkit.product_state(hsr, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0]]) # too many
-      @test_throws ArgumentError ExactDiagonalization.Toolkit.product_state(hsr, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0, 0.0], [0.0, 1.0]])
+      @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hsr, [[1.0, 0.0], [0.0, 0.0]]) # too few
+      @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hsr, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0]]) # too many
+      @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hsr, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0, 0.0], [0.0, 1.0]])
     end
     @testset "sector-rep" begin
       hssr = represent(HilbertSpaceSector(hs, 0))
       # 0011, 0101, 0110, 1001, 1010, 1100
-      psi1 = ExactDiagonalization.Toolkit.product_state(hssr, local_states)
+      psi1 = QuantumHamiltonian.Toolkit.product_state(hssr, local_states)
       psi2 = zeros(ComplexF64, 6)
       psi2[5] = 2.0
       @test isapprox(psi1, psi2; atol=1E-8)

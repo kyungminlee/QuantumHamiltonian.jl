@@ -1,5 +1,5 @@
 using Test
-using ExactDiagonalization
+using QuantumHamiltonian
 
 @testset "util" begin
 
@@ -24,49 +24,49 @@ using ExactDiagonalization
         let
             a = Int[1,5,7,8]
             b = Int[2,3,4,6,9]
-            c = ExactDiagonalization.merge_vec(a, b)
+            c = QuantumHamiltonian.merge_vec(a, b)
             @test c == [1,2,3,4,5,6,7,8,9]
         end
 
         let
             a = Int[1,2,3]
             b = Int[4,5,6,7]
-            c = ExactDiagonalization.merge_vec(a, b)
+            c = QuantumHamiltonian.merge_vec(a, b)
             @test c == [1,2,3,4,5,6,7]
         end
 
         let
             a = Int[4,5,6,7]
             b = Int[1,2,3]
-            c = ExactDiagonalization.merge_vec(a, b)
+            c = QuantumHamiltonian.merge_vec(a, b)
             @test c == [1,2,3,4,5,6,7]
         end
 
         let
             a = Int[1,2,3]
             b = Int[4,5,6,7]
-            c = ExactDiagonalization.merge_vec(a, b)
+            c = QuantumHamiltonian.merge_vec(a, b)
             @test c == [1,2,3,4,5,6,7]
         end
 
         let
             a = Int[1,2,3,4]
             b = Int[5,6,7]
-            c = ExactDiagonalization.merge_vec(a, b)
+            c = QuantumHamiltonian.merge_vec(a, b)
             @test c == [1,2,3,4,5,6,7]
         end
 
         let
             a = Int[1,2,3]
             b = Int[4,5,6,7]
-            c = ExactDiagonalization.merge_vec(a, b)
+            c = QuantumHamiltonian.merge_vec(a, b)
             @test c == [1,2,3,4,5,6,7]
         end
 
         let
             a = Int[1,1,1,1]
             b = Int[1,1,1,1,1]
-            c = ExactDiagonalization.merge_vec(a, b)
+            c = QuantumHamiltonian.merge_vec(a, b)
             @test c == [1,1,1,1,1,1,1,1,1]
         end
 
@@ -105,32 +105,32 @@ using ExactDiagonalization
     end
 
     @testset "tuple" begin
-        ED = ExactDiagonalization
+        QH = QuantumHamiltonian
         t1 = (1.0, 2, 3.0 + 4im)
         T1 = typeof(t1)
-        @test ED.tupleone(T1)  === (1.0, 1, 1.0 + 0.0im)
-        @test ED.tupleone(T1)  ==  (1.0, 1, 1.0 + 0.0im)
-        @test ED.tuplezero(T1) === (0.0, 0, 0.0 + 0.0im)
-        @test ED.tuplezero(T1) ==  (0.0, 0, 0.0 + 0.0im)
-        @test ED.tupleone(T1)  !== (1, 1, 1)
-        @test ED.tupleone(T1)  ==  (1, 1, 1)
-        @test ED.tuplezero(T1) !== (0, 0, 0)
-        @test ED.tuplezero(T1) ==  (0, 0, 0)
+        @test QH.tupleone(T1)  === (1.0, 1, 1.0 + 0.0im)
+        @test QH.tupleone(T1)  ==  (1.0, 1, 1.0 + 0.0im)
+        @test QH.tuplezero(T1) === (0.0, 0, 0.0 + 0.0im)
+        @test QH.tuplezero(T1) ==  (0.0, 0, 0.0 + 0.0im)
+        @test QH.tupleone(T1)  !== (1, 1, 1)
+        @test QH.tupleone(T1)  ==  (1, 1, 1)
+        @test QH.tuplezero(T1) !== (0, 0, 0)
+        @test QH.tuplezero(T1) ==  (0, 0, 0)
 
-        @test ED.tupleone(t1)  === (1.0, 1, 1.0 + 0.0im)
-        @test ED.tupleone(t1)  ==  (1.0, 1, 1.0 + 0.0im)
-        @test ED.tuplezero(t1) === (0.0, 0, 0.0 + 0.0im)
-        @test ED.tuplezero(t1) ==  (0.0, 0, 0.0 + 0.0im)
-        @test ED.tupleone(t1)  !== (1, 1, 1)
-        @test ED.tupleone(t1)  ==  (1, 1, 1)
-        @test ED.tuplezero(t1) !== (0, 0, 0)
-        @test ED.tuplezero(t1) ==  (0, 0, 0)
+        @test QH.tupleone(t1)  === (1.0, 1, 1.0 + 0.0im)
+        @test QH.tupleone(t1)  ==  (1.0, 1, 1.0 + 0.0im)
+        @test QH.tuplezero(t1) === (0.0, 0, 0.0 + 0.0im)
+        @test QH.tuplezero(t1) ==  (0.0, 0, 0.0 + 0.0im)
+        @test QH.tupleone(t1)  !== (1, 1, 1)
+        @test QH.tupleone(t1)  ==  (1, 1, 1)
+        @test QH.tuplezero(t1) !== (0, 0, 0)
+        @test QH.tuplezero(t1) ==  (0, 0, 0)
 
-        @test ED.tupleadd((1.0, 2, 3.0 + 4im), (5.0, 6, 7.0 + 8.0im)) === (6.0, 8, 10.0 + 12.0im)
-        @test ED.tuplesubtract((1.0, 2, 3.0 + 4im), (5.0, 6, 7.0 + 8.0im)) === (-4.0, -4, -4.0 - 4.0im)
+        @test QH.tupleadd((1.0, 2, 3.0 + 4im), (5.0, 6, 7.0 + 8.0im)) === (6.0, 8, 10.0 + 12.0im)
+        @test QH.tuplesubtract((1.0, 2, 3.0 + 4im), (5.0, 6, 7.0 + 8.0im)) === (-4.0, -4, -4.0 - 4.0im)
 
-        @test ED.tuplelength((1, 'B', "γ")) == 3
-        @test ED.tuplelength(typeof((1,'B', "γ"))) == 3
+        @test QH.tuplelength((1, 'B', "γ")) == 3
+        @test QH.tuplelength(typeof((1,'B', "γ"))) == 3
     end
 end
 

@@ -7,7 +7,7 @@ using LatticeTools
 function symmetry_reduce(
     hsr::HilbertSpaceRepresentation{QN, BR, DT},
     symops_and_amplitudes::AbstractArray{Tuple{OperationType, ScalarType}};
-    tol::Real=Base.rtoldefault(real(ScalarType))
+    tol::Real=Base.rtoldefault(float(real(ScalarType)))
 ) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, ScalarType<:Number}
     symred = Threads.nthreads() == 1 ? symmetry_reduce_serial : symmetry_reduce_parallel
     return symred(hsr, symops_and_amplitudes; tol=tol)
@@ -21,12 +21,13 @@ The irreps have to follow certain order.
 """
 function symmetry_reduce_serial(
     hsr::HilbertSpaceRepresentation{QN, BR, DT},
-    symops_and_amplitudes::AbstractArray{Tuple{OperationType, ScalarType}};
-    tol::Real=Base.rtoldefault(real(ScalarType))
-) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, ScalarType<:Number}
+    symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
+    tol::Real=Base.rtoldefault(float(real(InputScalarType)))
+) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     if !all(isapprox(abs(y), one(abs(y))) for (_, y) in symops_and_amplitudes)
         throw(ArgumentError("all amplitudes need to have norm 1"))
     end
+    ScalarType = float(InputScalarType)
 
     n_basis = length(hsr.basis_list)
 
@@ -114,13 +115,14 @@ Symmetry-reduce the HilbertSpaceRepresentation using translation group (multi-th
 """
 function symmetry_reduce_parallel(
     hsr::HilbertSpaceRepresentation{QN, BR, DT},
-    symops_and_amplitudes::AbstractArray{Tuple{OperationType, ScalarType}};
-    tol::Real=Base.rtoldefault(Float64)
-) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, ScalarType<:Number}
+    symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
+    tol::Real=Base.rtoldefault(float(real(InputScalarType)))
+) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     @debug "BEGIN symmetry_reduce_parallel"
     if !all(isapprox(abs(y), one(abs(y))) for (_, y) in symops_and_amplitudes)
         throw(ArgumentError("all amplitudes need to have norm 1"))
     end
+    ScalarType = float(InputScalarType)
 
     n_basis = length(hsr.basis_list)
     @debug "Original Hilbert space dimension: $n_basis"

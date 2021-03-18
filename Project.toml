@@ -1,14 +1,16 @@
-name = "ExactDiagonalization"
-uuid = "cf149b0a-e8f7-4f00-9ab4-03e4f5ec5cff"
+name = "QuantumHamiltonian"
+uuid = "ca2024c7-d5ca-47dc-aafc-db87cbdab76e"
 authors = ["Kyungmin Lee <kyungmin.lee.42@gmail.com>"]
-version = "0.14.3"
+version = "0.14.4"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 LatticeTools = "8a267902-5e0e-44c3-8ef8-9b2b5c352816"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 julia = ">= 1.5"

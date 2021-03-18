@@ -118,6 +118,66 @@ function LinearAlgebra.mul!(
 end
 
 
+"""
+    C(i, k) = A(i, j) * B(j, k) 
+    C(:, k) = A(:, :) * B(:, k)
+"""
+function LinearAlgebra.mul!(
+    C::AbstractMatrix{S1},
+    A::AbstractOperatorRepresentation{S2},
+    B::AbstractMatrix{S3}
+) where {S1<:Number, S2<:Number, S3<:Number}
+    fill!(C, zero(S1))
+    Threads.@threads for k in 1:size(B, 2)
+        apply!(view(C, :, k), A, view(B, :, k))
+    end
+    return C
+end
+
+
+function Base.:(*)(A::AbstractOperatorRepresentation{S}, B::AbstractMatrix{T}) where {S, T}
+    size(A, 2) == size(B, 1) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
+    U = promote_type(S, T)
+    C = Matrix{U}(undef, (size(A, 1), size(B, 2)))
+    LinearAlgebra.mul!(C, A, B)
+    return C
+end
+
+
+function Base.:(*)(A::AbstractOperatorRepresentation{S}, B::AbstractVector{T}) where {S, T}
+    size(A, 2) == size(B, 1) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
+    U = promote_type(S, T)
+    C = Vector{U}(undef, size(A, 1))
+    LinearAlgebra.mul!(C, A, B)
+    return C
+end
+
+# C(i, k) = A(i, j) * B(j, k) 
+# C(:, k) = A(:, :) * B(:, k)
+# C(i, :) = A(i, :) * B(:, :)
+function Base.:(*)(A::AbstractMatrix{T}, B::AbstractOperatorRepresentation{S}) where {S, T}
+    size(A, 2) == size(B, 1) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
+    U = promote_type(S, T)
+    C = Matrix{U}(undef, (size(A, 1), size(B, 2)))
+    Threads.@threads for i in 1:size(A, 1)
+        apply!(view(C, i, :), view(A, i, :), B)
+    end
+    return C
+end
+
+
+# function Base.:(*)(A::AbstractOperatorRepresentation{S}, B::AbstractArray{T}) where {S, T}
+#     size(A, 2) == size(B, 1) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
+#     U = promote_type(S, T)
+#     iter_size = size(B)[2:end]
+#     C = zeros(U, (size(A, 1), iter_size...))
+#     for i3 in CartesianIndices(iter_size)
+#         apply!(view(C, :, i3.I...), A, view(B, :, i3.I...))
+#     end
+#     return C
+# end
+
+
 function Base.Matrix(opr::AbstractOperatorRepresentation{S}) where S
     m, n = size(opr)
     out = zeros(S, (m, n))

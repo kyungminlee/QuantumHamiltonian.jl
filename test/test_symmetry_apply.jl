@@ -1,8 +1,8 @@
 using Test
-using ExactDiagonalization
+using QuantumHamiltonian
 
 using LatticeTools
-using ExactDiagonalization.Toolkit: pauli_matrix
+using QuantumHamiltonian.Toolkit: pauli_matrix
 
 @testset "symmetry_apply" begin
 

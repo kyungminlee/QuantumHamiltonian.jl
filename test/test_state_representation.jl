@@ -1,5 +1,5 @@
 using Test
-using ExactDiagonalization
+using QuantumHamiltonian
 
 @testset "state_representation" begin
     n_sites = 4

@@ -122,6 +122,28 @@ function Base.:(+)(lhs::S1, rhs::SumOperator{S2, BR}) where {S1<:Number, S2, BR}
     return SumOperator{S3, BR}(PureOperator{S3, BR}[lhs*one(PureOperator{S3, BR}), rhs.terms...])
 end
 
+# and uniform scaling
+
+function Base.:(+)(lhs::UniformScaling{S1}, rhs::PureOperator{S2, BR}) where {S1<:Number, S2<:Number, BR}
+    S = promote_type(S1, S2)
+    return SumOperator{S, BR}(PureOperator{S, BR}[lhs.λ*one(PureOperator{S, BR}), rhs])
+end
+
+function Base.:(+)(lhs::PureOperator{S1, BR}, rhs::UniformScaling{S2}) where {S1<:Number, S2<:Number, BR}
+    S = promote_type(S1, S2)
+    return SumOperator{S, BR}(PureOperator{S, BR}[lhs, rhs.λ*one(PureOperator{S, BR})])
+end
+
+function Base.:(+)(lhs::SumOperator{S1, BR}, rhs::UniformScaling{S2}) where {S1, S2<:Number, BR}
+    S3 = promote_type(S1, S2)
+    return SumOperator{S3, BR}(PureOperator{S3, BR}[lhs.terms..., rhs.λ*one(PureOperator{S3, BR})])
+end
+
+function Base.:(+)(lhs::UniformScaling{S1}, rhs::SumOperator{S2, BR}) where {S1<:Number, S2, BR}
+    S3 = promote_type(S1, S2)
+    return SumOperator{S3, BR}(PureOperator{S3, BR}[lhs.λ*one(PureOperator{S3, BR}), rhs.terms...])
+end
+
 # === 6/6 Conversion ===
 
 function Base.promote_rule(::Type{SumOperator{S1, B1}}, ::Type{SumOperator{S2, B2}}) where {S1, S2, B1, B2}

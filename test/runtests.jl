@@ -1,5 +1,5 @@
 using Test
-using ExactDiagonalization
+using QuantumHamiltonian
 
 include("test_util.jl")
 include("test_frozensortedarray.jl")

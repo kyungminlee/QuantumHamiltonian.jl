@@ -1,11 +1,11 @@
 using SparseArrays
 using LinearAlgebra
-using ExactDiagonalization
+using QuantumHamiltonian
 using LatticeTools
 using MinimalPerfectHash
 
 n_sites = 7;
-(hs, σ) = ExactDiagonalization.Toolkit.spin_half_system(n_sites)
+(hs, σ) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
 
 unitcell = make_unitcell(1.0; SiteType=String)
 addsite!(unitcell, "Spin", FractCoord([0], [0.0]))
