@@ -1,5 +1,5 @@
-name = "ExactDiagonalization"
-uuid = "cf149b0a-e8f7-4f00-9ab4-03e4f5ec5cff"
+name = "QuantumHamiltonian"
+uuid = "ca2024c7-d5ca-47dc-aafc-db87cbdab76e"
 authors = ["Kyungmin Lee <kyungmin.lee.42@gmail.com>"]
 version = "0.14.3"
 
