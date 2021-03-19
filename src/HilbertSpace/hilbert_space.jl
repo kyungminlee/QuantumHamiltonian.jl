@@ -78,6 +78,7 @@ basespace(hs::HilbertSpace) = hs
 
 
 """
+    bitwidth(hs, [isite])
 Total number of bits
 
 ```jldoctest
@@ -104,6 +105,11 @@ function Base.:(==)(lhs::HilbertSpace{Q1}, rhs::HilbertSpace{Q2}) where {Q1, Q2}
 end
 
 
+"""
+    get_bitmask(hs, [isite, [type]])
+
+Get the bitmask of the site `isite`, optionally in type `type`
+"""
 function get_bitmask(hs::HilbertSpace, isite::Integer, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
     return make_bitmask(hs.bitoffsets[isite+1], hs.bitoffsets[isite], BR)
 end
@@ -114,7 +120,9 @@ end
 
 
 """
-    quantum_number_sectors
+    quantum_number_sectors(hs)
+
+Return a sorted list of quantum numbers of the hilbert space `hs`.
 """
 function quantum_number_sectors(hs::HilbertSpace{QN})::Vector{QN} where QN
     qns = Set{QN}([tuplezero(QN)])
@@ -130,7 +138,9 @@ end
 
 
 """
-    get_quantum_number
+    get_quantum_number(hs, rep)
+
+Get the quantum number of `rep`, which is either a binary representation, or a `CartesianIndex`.
 """
 function get_quantum_number(hs::HilbertSpace{QN}, binrep::BR) where {QN, BR}
     return mapreduce(
@@ -143,7 +153,6 @@ function get_quantum_number(hs::HilbertSpace{QN}, binrep::BR) where {QN, BR}
     )
 end
 
-
 function get_quantum_number(hs::HilbertSpace{QN}, indexarray::AbstractArray{I, 1}) where {QN, I<:Integer}
     return mapreduce(
         identity,
@@ -155,6 +164,8 @@ end
 
 
 """
+    extract(hs, binrep)
+
 Convert binary representation to an array of indices (of states)
 
 # Examples
@@ -170,6 +181,38 @@ CartesianIndex(2, 2)
 ```
 """
 function extract(hs::HilbertSpace{QN}, binrep::BR)::CartesianIndex where {QN, BR<:Unsigned}
+    out = Int[]
+    for (isite, site) in enumerate(hs.sites)
+        @inbounds mask = make_bitmask(hs.bitwidths[isite], BR)
+        index = Int(binrep & mask) + 1
+        @boundscheck if !(1 <= index <= length(site.states))
+            throw(BoundsError(1:length(site.states), index))
+        end
+        push!(out, index)
+        binrep = binrep >> hs.bitwidths[isite]
+    end
+    return CartesianIndex(out...)
+end
+
+
+"""
+    uncompress(hs, binrep)
+
+Convert binary representation to an array of indices (of states)
+
+# Examples
+```jldoctest
+julia> using QuantumHamiltonian
+
+julia> spin_site = Site([State("Up", +1), State("Dn", -1)]);
+
+julia> hs = HilbertSpace([spin_site, spin_site]);
+
+julia> extract(hs, 0x03)
+CartesianIndex(2, 2)
+```
+"""
+function uncompress(hs::HilbertSpace{QN}, binrep::BR)::CartesianIndex where {QN, BR<:Unsigned}
     out = Int[]
     for (isite, site) in enumerate(hs.sites)
         @inbounds mask = make_bitmask(hs.bitwidths[isite], BR)

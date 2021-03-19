@@ -5,6 +5,12 @@ export symmetry_apply
 
 import LatticeTools
 
+"""
+    GlobalBitFlip
+
+Global bit flip operation.
+For spin half systems, this amounts to ℤ₂ spin flip.
+"""
 struct GlobalBitFlip <: AbstractSymmetryOperation
     value::Bool
     GlobalBitFlip() = new(false)
