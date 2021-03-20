@@ -54,12 +54,12 @@ function symmetry_apply(
 end
 
 function symmetry_apply(
-    hs::HilbertSpace{QN},
+    hs::HilbertSpace,
     symop::AbstractSymmetryOperation,
-    op::SumOperator{S, BR}
-) where {QN, S<:Number, BR<:Unsigned}
+    op::SumOperator
+)
     terms = collect(symmetry_apply(hs, symop, t) for t in op.terms)
-    return SumOperator{S, BR}(terms)
+    return SumOperator(terms)
 end
 
 function symmetry_apply(
@@ -82,7 +82,8 @@ end
 function symmetry_apply(
     hs::HilbertSpace{QN},
     permutation::SitePermutation,
-    bitrep::BR
+    bitrep::BR,
+    # TODO: bitmask::BR,
 ) where {QN, BR<:Unsigned}
     out = zero(BR)
     for (i, j) in enumerate(permutation.permutation.map)

@@ -65,7 +65,7 @@ function symmetry_reduce_serial(
                 break
             end
             basis_states[i] = bvec_prime
-            basis_phases[i] = conj(ampl * sgn)
+            basis_phases[i] = conj(ampl) * sgn
         end # for i
         (!compatible) && continue
         basis_states[1] = bvec
@@ -196,7 +196,7 @@ function symmetry_reduce_parallel(
                 break
             end
             local_basis_states[id, i] = bvec_prime
-            local_basis_phases[id, i] = conj(ampl * sgn)
+            local_basis_phases[id, i] = conj(ampl) * sgn
         end # for i
         (!compatible) && continue
         local_basis_states[id, 1] = bvec
