@@ -60,7 +60,7 @@ function symmetry_reduce_serial(
             if bvec_prime < bvec
                 compatible = false
                 break
-            elseif bvec_prime == bvec && !isapprox(ampl * sgn, one(ScalarType); atol=tol)
+            elseif bvec_prime == bvec && !isapprox(conj(ampl) * sgn, one(ScalarType); atol=tol)
                 compatible = false
                 break
             end
@@ -191,7 +191,7 @@ function symmetry_reduce_parallel(
             if bvec_prime < bvec
                 compatible = false
                 break
-            elseif bvec_prime == bvec && !isapprox(ampl * sgn, one(ScalarType); atol=tol)
+            elseif bvec_prime == bvec && !isapprox(conj(ampl) * sgn, one(ScalarType); atol=tol)
                 compatible = false
                 break
             end
