@@ -13,7 +13,7 @@ function symmetry_reduce_serial(
     ::Type{ComplexType}=ComplexF64;
     tol::Real=Base.rtoldefault(Float64)
 ) where {QN, BR, DT, ComplexType<:Complex}
-    @warn "Method deprecated. use simpler symmetry_reduce functions that takes symops_and_amplitudes as input"
+    @warn "Method deprecated. use simpler symmetry_reduce functions that takes symops_and_amplitudes as input" maxlog=1
 
     HSR = HilbertSpaceRepresentation{QN, BR, DT}
 
@@ -119,7 +119,7 @@ function symmetry_reduce_parallel(
     ::Type{ComplexType}=ComplexF64;
     tol::Real=Base.rtoldefault(Float64)
 ) where {QN, BR, DT, ComplexType<:Complex}
-    @warn "Method deprecated. use simpler symmetry_reduce functions that takes symops_and_amplitudes as input"
+    @warn "Method deprecated. use simpler symmetry_reduce functions that takes symops_and_amplitudes as input" maxlog=1
 
     HSR = HilbertSpaceRepresentation{QN, BR, DT}
     @debug "BEGIN symmetry_reduce_parallel"
