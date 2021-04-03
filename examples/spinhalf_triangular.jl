@@ -15,7 +15,7 @@ using Arpack
 =#
 function make_triangular_lattice(shape::AbstractMatrix{<:Integer})
     latticevectors = [1 -0.5; 0 0.5*sqrt(3.0)];
-    unitcell = make_unitcell(latticevectors, SiteType=String)
+    unitcell = makeunitcell(latticevectors, SiteType=String)
     addsite!(unitcell, "A", carte2fract(unitcell, [0.0, 0.0]))
     nnbondtypes = [ [1, 0], [1, 1], [0, 1] ]
     nnnbondtypes = [ [ 2, 1], [ 1, 2], [-1, 1] ]
@@ -23,7 +23,7 @@ function make_triangular_lattice(shape::AbstractMatrix{<:Integer})
     lattice = make_lattice(unitcell, shape)
     hypercube = lattice.hypercube
     supercell = lattice.supercell
-    tsym = TranslationSymmetry(lattice)
+    tsym = FiniteTranslationSymmetry(lattice)
     psym = little_symmetry(tsym, PointSymmetryDatabase.find2d("6mm"))
     tsymbed = embed(lattice, tsym)
     psymbed = embed(lattice, psym)

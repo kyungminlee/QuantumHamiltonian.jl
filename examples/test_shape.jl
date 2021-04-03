@@ -7,10 +7,10 @@ using LatticeTools
 n_sites = 7;
 (hs, σ) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
 
-unitcell = make_unitcell(1.0; SiteType=String)
+unitcell = makeunitcell(1.0; SiteType=String)
 addsite!(unitcell, "Spin", FractCoord([0], [0.0]))
 lattice = make_lattice(unitcell, n_sites)
-tsym = TranslationSymmetry(lattice)
+tsym = FiniteTranslationSymmetry(lattice)
 
 Sx = sum(σ(i,:x) for i in 1:n_sites)
 Sy = sum(σ(i,:y) for i in 1:n_sites)

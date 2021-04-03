@@ -1,7 +1,7 @@
 export ReducedHilbertSpaceRepresentation
 export bintype
 export symmetry_reduce, symmetry_unreduce
-
+export get_basis_state, get_basis_index_amplitude
 
 """
     ReducedHilbertSpaceRepresentation{HSR, BR, C}
@@ -28,6 +28,20 @@ bintype(::Type{ReducedHilbertSpaceRepresentation{HSR, BR, C}}) where {HSR, BR, C
 
 
 basespace(lhs::ReducedHilbertSpaceRepresentation) = basespace(lhs.parent)
+
+
+@inline function get_basis_state(hsr::ReducedHilbertSpaceRepresentation, index::Integer)
+    return hsr.basis_list[index]
+end
+
+@inline function get_basis_index_amplitude(hsr::ReducedHilbertSpaceRepresentation{HSR, BR, C}, bvec::Unsigned) where {HSR, BR, C}
+    i = get_basis_index(hsr.parent, bvec)
+    if i <= 0
+        return (index=i, amplitude=zero(C))
+    else
+        return (index=basis_mapping_index[i], amplitude=basis_mapping_amplitude[i])
+    end
+end
 
 
 """

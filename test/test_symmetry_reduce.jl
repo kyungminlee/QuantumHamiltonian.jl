@@ -9,7 +9,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
 
   n_sites = 4;
 
-  unitcell = make_unitcell(1.0; SiteType=String)
+  unitcell = makeunitcell(1.0; SiteType=String)
   addsite!(unitcell, "Spin", FractCoord([0], [0.0]))
   lattice = make_lattice(unitcell, n_sites)
 
@@ -23,7 +23,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
   hsr = represent(hss);
 
   #translation_group = TranslationGroup([SitePermutation([2,3,4,1])])
-  tsym = TranslationSymmetry(lattice)
+  tsym = FiniteTranslationSymmetry(lattice)
   psym = project(PointSymmetryDatabase.find("-1"), [1 0 0;])
 
   tsymbed = embed(lattice, tsym)
@@ -165,7 +165,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
     # want  |ψ(k)⟩ = ∑ exp(+ikx) |ψ(x)⟩
 
     n_sites = 7;
-    unitcell = make_unitcell(1.0; SiteType=String)
+    unitcell = makeunitcell(1.0; SiteType=String)
     addsite!(unitcell, "Spin", FractCoord([0], [0.0]))
     lattice = make_lattice(unitcell, n_sites)
 
@@ -183,7 +183,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
       #translation_group = TranslationGroup(p)
       @test symmetry_apply(hs, p, 0b0000001) == (0b0000010, true)
 
-      tsym = TranslationSymmetry(lattice)
+      tsym = FiniteTranslationSymmetry(lattice)
       tsymbed = embed(lattice, tsym)
       tsic = IrrepComponent(tsymbed, 2, 1)
       rhsr = symmetry_reduce(hsr, tsic)
@@ -199,7 +199,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
       p = SitePermutation([2,3,4,5,6,7,1])
       @test symmetry_apply(hs, p, 0b0000001) == (0b0000010, true)
 
-      tsym = TranslationSymmetry(lattice)
+      tsym = FiniteTranslationSymmetry(lattice)
       tsymbed = embed(lattice, tsym)
       tsic = IrrepComponent(tsymbed, 2, 1)
       rhsr = symmetry_reduce(hsr, tsic)
