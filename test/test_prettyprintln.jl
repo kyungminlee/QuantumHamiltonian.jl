@@ -11,7 +11,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
     unitcell = make_unitcell(1.0; SiteType=String)
     addsite!(unitcell, "Spin", FractCoord([0], [0.0]))
     lattice = make_lattice(unitcell, n_sites)
-    tsym = TranslationSymmetry(lattice)
+    tsym = FiniteTranslationSymmetry(lattice)
     tsymbed = embed(lattice, tsym)
 
     up = State("Up",  1)

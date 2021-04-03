@@ -28,7 +28,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
   j2 = sum(σ[i, j] * σ[mod(i+1, n) + 1 , j] for i in 1:n, j in [:x, :y, :z])
 
   hsr = represent(HilbertSpaceSector(hs, 0))
-  tsym = TranslationSymmetry(lattice)
+  tsym = FiniteTranslationSymmetry(lattice)
   tsymbed = embed(lattice, tsym)
   psym = project(PointSymmetryDatabase.get3d(2), [1 0 0;])
   psymbed = embed(lattice, psym)
@@ -320,7 +320,7 @@ end
 
   # hsr = represent(HilbertSpaceSector(hs, 0))
   hsr = represent(hs)
-  tsym = TranslationSymmetry(lattice)
+  tsym = FiniteTranslationSymmetry(lattice)
   tsymbed = embed(lattice, tsym)
   psym = PointSymmetryDatabase.get2d(6)
   psymbed = embed(lattice, psym)

@@ -23,7 +23,7 @@ function make_triangular_lattice(shape::AbstractMatrix{<:Integer})
     lattice = make_lattice(unitcell, shape)
     hypercube = lattice.hypercube
     supercell = lattice.supercell
-    tsym = TranslationSymmetry(lattice)
+    tsym = FiniteTranslationSymmetry(lattice)
     psym = little_symmetry(tsym, PointSymmetryDatabase.find2d("6mm"))
     tsymbed = embed(lattice, tsym)
     psymbed = embed(lattice, psym)

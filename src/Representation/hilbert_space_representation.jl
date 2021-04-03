@@ -1,6 +1,7 @@
 export HilbertSpaceRepresentation
 export dimension
 export represent, represent_array, represent_dict
+export get_basis_state, get_basis_index
 
 
 """
@@ -22,38 +23,6 @@ struct HilbertSpaceRepresentation{
     hilbert_space::HS
     basis_list::Vector{BR}
     basis_lookup::DictType
-
-    # function HilbertSpaceRepresentation(
-    #     hilbert_space::HilbertSpace{QN},
-    #     basis_list::AbstractVector{BR},
-    #     basis_lookup::DictType
-    # ) where {QN, BR<:Unsigned, DictType<:AbstractDict{BR, <:Int}}
-    #     if sizeof(BR)*8 <= bitwidth(hilbert_space)
-    #         # equality added such that the MSB checks overflow
-    #         throw(ArgumentError(
-    #             "type $(BR) not enough to represent the hilbert space"*
-    #             " (need $(bitwidth(hilbert_space)) bits)"
-    #         ))
-    #     end
-    #     return new{HilbertSpace{QN}, BR, DictType}(hilbert_space, basis_list, basis_lookup)
-    # end
-
-    # function HilbertSpaceRepresentation(
-    #     hilbert_space_sector::HilbertSpaceSector{HS, QN},
-    #     basis_list::AbstractVector{BR},
-    #     basis_lookup::DictType
-    # ) where {HS, QN, BR<:Unsigned, DictType<:AbstractDict{BR, <:Int}}
-    #     if sizeof(BR)*8 <= bitwidth(hilbert_space_sector)
-    #         # equality added such that the MSB checks overflow
-    #         throw(ArgumentError(
-    #             "type $(BR) not enough to represent the hilbert space"*
-    #             " (need $(bitwidth(hilbert_space_sector)) bits)"
-    #         ))
-    #     end
-    #     hilbert_space = basespace(hilbert_space_sector)
-    #     HS_T = typeof(hilbert_space)
-    #     return new{HS_T, BR, DictType}(hilbert_space, basis_list, basis_lookup)
-    # end
 
     function HilbertSpaceRepresentation(
         hilbert_space::AbstractHilbertSpace,
@@ -96,6 +65,33 @@ function Base.:(==)(
 ) where {H1, B1, D1, H2, B2, D2}
     return basespace(lhs) == basespace(rhs) && (lhs.basis_list == rhs.basis_list)
 end
+
+
+"""
+    get_basis_state(hsr, index)
+
+Get the basis state representation at index.
+"""
+@inline function get_basis_state(hsr::HilbertSpaceRepresentation, index::Integer)
+    return hsr.basis_list[index]
+end
+
+
+"""
+    get_basis_index_amplitude(hsr, bvec)
+
+Get the index of the basis state that overlaps with bvec, and the value of the overlap.
+Currentiy it is guaranteed to be at most one.
+Returns (i, ⟨b|ϕᵢ⟩). For the unsymmetrized `HilbertSpaceRepresentation`, the amplitude is
+1 of Int type.
+If no such basis vector exists, return (-1, 0).
+"""
+@inline function get_basis_index_amplitude(hsr::HilbertSpaceRepresentation, bvec::Unsigned)
+    index = get(hsr.basis_lookup, bvec, -1)
+    return (index=index, amplitude=(index <= 0) ? 1 : 0)
+end
+
+
 
 
 function checkvalidbasis(hsr::HilbertSpaceRepresentation{HS, BR, DT}) where {HS, BR, DT}

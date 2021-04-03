@@ -9,7 +9,7 @@ Symmetry-reduce the HilbertSpaceRepresentation using translation group (single t
 """
 function symmetry_reduce_serial(
     hsr::HilbertSpaceRepresentation{QN, BR, DT},
-    tsic::IrrepComponent{SymmetryEmbedding{TranslationSymmetry}},
+    tsic::IrrepComponent{SymmetryEmbedding{FiniteTranslationSymmetry}},
     ::Type{ComplexType}=ComplexF64;
     tol::Real=Base.rtoldefault(Float64)
 ) where {QN, BR, DT, ComplexType<:Complex}
@@ -115,7 +115,7 @@ Symmetry-reduce the HilbertSpaceRepresentation using translation group (multi-th
 """
 function symmetry_reduce_parallel(
     hsr::HilbertSpaceRepresentation{QN, BR, DT},
-    tsic::IrrepComponent{SymmetryEmbedding{TranslationSymmetry}},
+    tsic::IrrepComponent{SymmetryEmbedding{FiniteTranslationSymmetry}},
     ::Type{ComplexType}=ComplexF64;
     tol::Real=Base.rtoldefault(Float64)
 ) where {QN, BR, DT, ComplexType<:Complex}
