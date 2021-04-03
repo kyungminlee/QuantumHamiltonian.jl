@@ -7,7 +7,7 @@ using MinimalPerfectHash
 ## Set up lattice
 n_sites = 6;
 
-unitcell = make_unitcell(1.0; SiteType=String)
+unitcell = makeunitcell(1.0; SiteType=String)
 addsite!(unitcell, "Spin", FractCoord([0], [0.0]))
 lattice = make_lattice(unitcell, n_sites)
 tsym = FiniteTranslationSymmetry(lattice)

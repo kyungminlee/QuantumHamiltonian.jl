@@ -13,7 +13,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
   tol = Base.rtoldefault(Float64)
 
   n = 4
-  unitcell = make_unitcell(1.0; SiteType=String)
+  unitcell = makeunitcell(1.0; SiteType=String)
   addsite!(unitcell, "Spin", FractCoord([0], [0.0]))
   lattice = make_lattice(unitcell, n)
 
@@ -256,7 +256,7 @@ end # testset RedOp4
 @testset "RedOp7" begin
   # testing complex phase
   n = 7
-  unitcell = make_unitcell(1.0; SiteType=String)
+  unitcell = makeunitcell(1.0; SiteType=String)
   addsite!(unitcell, "Spin", FractCoord([0], [0.0]))
   lattice = make_lattice(unitcell, n)
 
@@ -303,7 +303,7 @@ end
 @testset "ReducedRepresentation-Square" begin
   tol = Base.rtoldefault(Float64)
   shape = [3 0; 0 3]
-  unitcell = make_unitcell([1.0 0.0; 0.0 1.0]; SiteType=String)
+  unitcell = makeunitcell([1.0 0.0; 0.0 1.0]; SiteType=String)
   addsite!(unitcell, "Spin", FractCoord([0, 0], [0.0, 0.0]))
   lattice = make_lattice(unitcell, shape)
   n = numsite(lattice.supercell)
