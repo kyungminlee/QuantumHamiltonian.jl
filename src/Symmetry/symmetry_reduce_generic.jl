@@ -49,10 +49,27 @@ function symmetry_reduce_serial(
 ) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     if length(symops) != length(amplitudes)
         throw(ArgumentError("number of symmetry operations and number of amplitudes should match ($(length(symops)) != $(length(amplitudes)))"))
+    elseif length(symops) < 1
+        throw(ArgumentError("length of symops cannot be less than 1"))
     end
-    if !all(isapprox(abs(y), one(abs(y))) || isapprox(abs(y), zero(abs(y))) for y in amplitudes)
+    if !all(isapprox(abs(y), one(abs(y)); atol=tol) || isapprox(abs(y), zero(abs(y)); atol=tol) for y in amplitudes)
         throw(ArgumentError("all amplitudes need to have norm 1 or 0"))
+    elseif !isapprox(amplitudes[1], one(amplitudes[1]); atol=tol)
+        throw(ArgumentError("amplitude of first element (identity) needs to be one"))
     end
+
+    symops, amplitudes = let 
+        new_symops = OperationType[]
+        new_amplitudes = InputScalarType[]
+        for (x, y) in zip(symops, amplitudes)
+            if !isapprox(abs(y), zero(abs(y)); atol=tol)
+                push!(new_symops, x)
+                push!(new_amplitudes, y)
+            end
+        end
+        new_symops, new_amplitudes
+    end
+
     ScalarType = float(InputScalarType)
 
     n_basis = length(hsr.basis_list)
@@ -159,10 +176,27 @@ function symmetry_reduce_parallel(
     @debug "BEGIN symmetry_reduce_parallel"
     if length(symops) != length(amplitudes)
         throw(ArgumentError("number of symmetry operations and number of amplitudes should match ($(length(symops)) != $(length(amplitudes)))"))
+    elseif length(symops) < 1
+        throw(ArgumentError("length of symops cannot be less than 1"))
     end
     if !all(isapprox(abs(y), one(abs(y)); atol=tol) || isapprox(abs(y), zero(abs(y)); atol=tol) for y in amplitudes)
         throw(ArgumentError("all amplitudes need to have norm 1"))
+    elseif !isapprox(amplitudes[1], one(amplitudes[1]); atol=tol)
+        throw(ArgumentError("amplitude of first element (identity) needs to be one"))
     end
+
+    symops, amplitudes = let 
+        new_symops = OperationType[]
+        new_amplitudes = InputScalarType[]
+        for (x, y) in zip(symops, amplitudes)
+            if !isapprox(abs(y), zero(abs(y)); atol=tol)
+                push!(new_symops, x)
+                push!(new_amplitudes, y)
+            end
+        end
+        new_symops, new_amplitudes
+    end
+
     ScalarType = float(InputScalarType)
 
     n_basis = length(hsr.basis_list)
