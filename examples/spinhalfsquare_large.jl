@@ -20,7 +20,7 @@ psym = project(PointSymmetryDatabase.get(13), [1 0 0; 0 1 0])  # inversion symme
 
 tsymbed = embed(lattice, tsym)
 psymbed = embed(lattice, psym)
-ssymbed = tsymbed ⋊ psymbed
+ssymbed = SymmorphicSymmetryEmbedding(tsymbed, psymbed)
 
 ## Setup Hilbert Space
 (hs, σ) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
@@ -247,7 +247,7 @@ let
     @show norm(alleigenvalues1 - alleigenvalues3)
 end
 
-ssymbed = tsymbed ⋊ psymbed
+ssymbed = SymmorphicSymmetryEmbedding(tsymbed, psymbed)
 
 println("## Symmorphic Space Symmetry (S = T ⋊ P)")
 let

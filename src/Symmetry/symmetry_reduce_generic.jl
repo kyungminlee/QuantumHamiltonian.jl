@@ -6,11 +6,22 @@ using LatticeTools
 
 function symmetry_reduce(
     hsr::HilbertSpaceRepresentation{QN, BR, DT},
-    symops_and_amplitudes::AbstractArray{Tuple{OperationType, ScalarType}};
-    tol::Real=Base.rtoldefault(float(real(ScalarType)))
-) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, ScalarType<:Number}
+    symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
+    tol::Real=Base.rtoldefault(float(real(InputScalarType)))
+) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     symred = Threads.nthreads() == 1 ? symmetry_reduce_serial : symmetry_reduce_parallel
     return symred(hsr, symops_and_amplitudes; tol=tol)
+end
+
+
+function symmetry_reduce(
+    hsr::HilbertSpaceRepresentation{QN, BR, DT},
+    symops::AbstractArray{OperationType},
+    amplitudes::AbstractArray{InputScalarType};
+    tol::Real=Base.rtoldefault(float(real(InputScalarType)))
+) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+    symred = Threads.nthreads() == 1 ? symmetry_reduce_serial : symmetry_reduce_parallel
+    return symred(hsr, symops, amplitudes; tol=tol)
 end
 
 
@@ -24,8 +35,23 @@ function symmetry_reduce_serial(
     symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
 ) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
-    if !all(isapprox(abs(y), one(abs(y))) for (_, y) in symops_and_amplitudes)
-        throw(ArgumentError("all amplitudes need to have norm 1"))
+    symops = [x for (x, y) in symops_and_amplitudes]
+    amplitudes = [y for (x, y) in symops_and_amplitudes]
+    return symmetry_reduce_serial(hsr, symops, amplitudes; tol=tol)
+end
+
+
+function symmetry_reduce_serial(
+    hsr::HilbertSpaceRepresentation{QN, BR, DT},
+    symops::AbstractArray{OperationType},
+    amplitudes::AbstractArray{InputScalarType};
+    tol::Real=Base.rtoldefault(float(real(InputScalarType)))
+) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+    if length(symops) != length(amplitudes)
+        throw(ArgumentError("number of symmetry operations and number of amplitudes should match ($(length(symops)) != $(length(amplitudes)))"))
+    end
+    if !all(isapprox(abs(y), one(abs(y))) || isapprox(abs(y), zero(abs(y))) for y in amplitudes)
+        throw(ArgumentError("all amplitudes need to have norm 1 or 0"))
     end
     ScalarType = float(InputScalarType)
 
@@ -34,7 +60,7 @@ function symmetry_reduce_serial(
     basis_mapping_representative = Vector{Int}(undef, n_basis)
     fill!(basis_mapping_representative, -1)
     basis_mapping_amplitude = zeros(ScalarType, n_basis)
-    subgroup_size = length(symops_and_amplitudes)
+    subgroup_size = length(symops)
     size_estimate = n_basis ÷ max(1, subgroup_size - 1)
 
     inv_norm_cache = [inv(sqrt(float(i))) for i in 1:subgroup_size]
@@ -55,7 +81,7 @@ function symmetry_reduce_serial(
 
         compatible = true
         for i in 2:subgroup_size
-            (symop, ampl) = symops_and_amplitudes[i]
+            symop, ampl = symops[i], amplitudes[i]
             bvec_prime, sgn = symmetry_apply(hsr.hilbert_space, symop, bvec)
             if bvec_prime < bvec
                 compatible = false
@@ -118,8 +144,23 @@ function symmetry_reduce_parallel(
     symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
 ) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+    symops = [x for (x, y) in symops_and_amplitudes]
+    amplitudes = [y for (x, y) in symops_and_amplitudes]
+    return symmetry_reduce_parallel(hsr, symops, amplitudes; tol=tol)
+end
+
+
+function symmetry_reduce_parallel(
+    hsr::HilbertSpaceRepresentation{QN, BR, DT},
+    symops::AbstractArray{OperationType},
+    amplitudes::AbstractArray{InputScalarType};
+    tol::Real=Base.rtoldefault(float(real(InputScalarType)))
+) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     @debug "BEGIN symmetry_reduce_parallel"
-    if !all(isapprox(abs(y), one(abs(y))) for (_, y) in symops_and_amplitudes)
+    if length(symops) != length(amplitudes)
+        throw(ArgumentError("number of symmetry operations and number of amplitudes should match ($(length(symops)) != $(length(amplitudes)))"))
+    end
+    if !all(isapprox(abs(y), one(abs(y)); atol=tol) || isapprox(abs(y), zero(abs(y)); atol=tol) for y in amplitudes)
         throw(ArgumentError("all amplitudes need to have norm 1"))
     end
     ScalarType = float(InputScalarType)
@@ -134,7 +175,7 @@ function symmetry_reduce_parallel(
     fill!(basis_mapping_representative, -1)
     basis_mapping_amplitude = zeros(ScalarType, n_basis)
 
-    subgroup_size = length(symops_and_amplitudes)
+    subgroup_size = length(symops)
 
     size_estimate = n_basis ÷ max(1, subgroup_size - 1)
     @debug "Estimate for the reduced Hilbert space dimension: $size_estimate"
@@ -171,8 +212,6 @@ function symmetry_reduce_parallel(
         end
     end
 
-    @assert all(isapprox(abs(y), one(abs(y))) for (_, y) in symops_and_amplitudes)
-
     @debug "Starting reduction (parallel)"
     Threads.@threads for itemp in 1:n_basis
         ivec_p = reorder[itemp]
@@ -186,7 +225,7 @@ function symmetry_reduce_parallel(
         # (2) its star is smaller than the representation
         compatible = true
         for i in 2:subgroup_size
-            (symop, ampl) = symops_and_amplitudes[i]
+            symop, ampl = symops[i], amplitudes[i]
             bvec_prime, sgn = symmetry_apply(hsr.hilbert_space, symop, bvec)
             if bvec_prime < bvec
                 compatible = false

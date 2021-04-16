@@ -178,7 +178,7 @@ let
     @show norm(alleigenvalues1 - alleigenvalues3)
 end
 
-ssymbed = tsymbed ⋊ psymbed
+ssymbed = SymmorphicSymmetryEmbedding(tsymbed, psymbed)
 
 println("## Symmorphic Space Symmetry (S = T ⋊ P)")
 let
