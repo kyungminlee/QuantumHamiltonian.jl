@@ -27,7 +27,7 @@ function make_triangular_lattice(shape::AbstractMatrix{<:Integer})
     psym = little_symmetry(tsym, PointSymmetryDatabase.find2d("6mm"))
     tsymbed = embed(lattice, tsym)
     psymbed = embed(lattice, psym)
-    ssymbed = tsymbed ⋊ psymbed
+    ssymbed = SymmorphicSymmetryEmbedding(tsymbed, psymbed)
 
     nnbonds = []
     nnnbonds = []

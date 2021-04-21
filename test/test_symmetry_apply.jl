@@ -83,7 +83,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
     @test isinvariant(hs, psymbed, j1)
     @test isinvariant(HilbertSpaceSector(hs, 0), psymbed, j1)
 
-    ssymbed = tsymbed ⋊ psymbed
+    ssymbed = SymmorphicSymmetryEmbedding(tsymbed, psymbed)
     @test isinvariant(hs, ssymbed, nop)
     @test isinvariant(HilbertSpaceSector(hs, 0), ssymbed, nop)
     @test !isinvariant(hs, ssymbed, pop1)
