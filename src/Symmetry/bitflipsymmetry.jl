@@ -29,13 +29,14 @@ Base.:(==)(lhs::GlobalBitFlip, rhs::GlobalBitFlip) = lhs.value == rhs.value
 function symmetry_apply(
     hs::HilbertSpace,
     op::GlobalBitFlip,
-    bitrep::BR
-) where {BR<:Unsigned}
+    bitrep::BR,
+    amplitude::S=one(Int)
+) where {BR<:Unsigned, S<:Number}
     if op.value
         @boundscheck (sizeof(BR)*8 >= bitwidth(hs)) || throw(ArgumentError("binary representation too small"))
         mask = get_bitmask(hs, BR)
-        return (mask & (~bitrep), 1)
+        return (mask & (~bitrep), amplitude)
     else
-        return (bitrep, 1)
+        return (bitrep, amplitude)
     end
 end
