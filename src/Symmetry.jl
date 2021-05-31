@@ -13,3 +13,4 @@ include("Symmetry/deprecated_symmetry_reduce_point.jl")
 include("Symmetry/deprecated_symmetry_reduce_symmorphic.jl")
 
 include("Symmetry/bitflipsymmetry.jl")
+include("Symmetry/LocalGeneralizedPermutation.jl")
