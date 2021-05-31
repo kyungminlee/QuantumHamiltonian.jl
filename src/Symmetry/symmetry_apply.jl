@@ -64,17 +64,16 @@ function symmetry_apply(
 end
 
 function symmetry_apply(
-    hs::HilbertSpace{QN},
+    hs::AbstractHilbertSpace,
     dop::DirectProductOperation,
-    bitrep::BR
-) where {QN, BR<:Unsigned}
+    bitrep::BR,
+    amplitude::S=one(Int)
+) where {BR<:Unsigned, S<:Number}
     # assumption is that the operations commute.
-    sign = 1
     for op in reverse(dop.operations)  # (ABC)(ψ) = A(B(C(ψ)))
-        bitrep, v = symmetry_apply(hs, op, bitrep)
-        sign *= v
+        bitrep, amplitude = symmetry_apply(hs, op, bitrep, amplitude)
     end
-    return (bitrep, sign)
+    return (bitrep, amplitude)
 end
 
 
@@ -84,13 +83,14 @@ function symmetry_apply(
     hs::HilbertSpace{QN},
     permutation::SitePermutation,
     bitrep::BR,
+    amplitude::S=one(Int)
     # TODO: bitmask::BR,
-) where {QN, BR<:Unsigned}
+) where {QN, BR<:Unsigned, S<:Number}
     out = zero(BR)
     for (i, j) in enumerate(permutation.permutation.map)
         out |= ( (bitrep >> hs.bitoffsets[i]) & make_bitmask(hs.bitwidths[i]) ) << hs.bitoffsets[j]
     end
-    return (out, 1)
+    return (out, amplitude)
 end
 
 
