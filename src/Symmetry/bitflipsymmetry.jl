@@ -3,6 +3,7 @@
 export GlobalBitFlip
 export symmetry_apply
 
+import GroupTools
 import LatticeTools
 
 """
@@ -11,7 +12,7 @@ import LatticeTools
 Global bit flip operation.
 For spin half systems, this amounts to ℤ₂ spin flip.
 """
-struct GlobalBitFlip <: AbstractSymmetryOperation
+struct GlobalBitFlip <: GroupTools.AbstractSymmetryOperation
     value::Bool
     GlobalBitFlip() = new(false)
     GlobalBitFlip(value::Bool) = new(value)

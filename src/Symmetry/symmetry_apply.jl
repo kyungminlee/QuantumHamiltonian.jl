@@ -9,53 +9,53 @@ import LatticeTools.SymmetryEmbedding
 
 ### HilbertSpaceSector
 function symmetry_apply(
-    hss::HilbertSpaceSector{QN},
+    hss::HilbertSpaceSector,
     symop::AbstractSymmetryOperation,
     args...;
     kwargs...
-) where {QN}
+)
     return symmetry_apply(hss.parent, symop, args...; kwargs...)
 end
 
 function isinvariant(
-    hss::HilbertSpaceSector{QN},
+    hss::HilbertSpaceSector,
     symop::AbstractSymmetryOperation,
     args...;
     kwargs...
-) where {QN}
+)
     return isinvariant(hss.parent, symop, args...; kwargs...)
 end
 
 function isinvariant(
-    hss::HilbertSpaceSector{QN},
+    hss::HilbertSpaceSector,
     symbed::SymmetryEmbedding,
     args...;
     kwargs...
-) where {QN}
+)
     return isinvariant(hss.parent, symbed, args...; kwargs...)
 end
 
 function isinvariant(
-    hss::HilbertSpaceSector{QN},
+    hss::HilbertSpaceSector,
     symbed::SymmorphicSymmetryEmbedding,
     args...;
     kwargs...
-) where {QN}
+)
     return isinvariant(hss.parent, symbed, args...; kwargs...)
 end
 
 
 ### generic symmetry operations for NullOperator and SumOperator
 function symmetry_apply(
-    hs::HilbertSpace{QN},
+    hs::AbstractHilbertSpace,
     symop::AbstractSymmetryOperation,
     op::NullOperator
-) where {QN}
+)
     return op
 end
 
 function symmetry_apply(
-    hs::HilbertSpace,
+    hs::AbstractHilbertSpace,
     symop::AbstractSymmetryOperation,
     op::SumOperator
 )
@@ -73,6 +73,29 @@ function symmetry_apply(
     for op in reverse(dop.operations)  # (ABC)(ψ) = A(B(C(ψ)))
         bitrep, amplitude = symmetry_apply(hs, op, bitrep, amplitude)
     end
+    return (bitrep, amplitude)
+end
+
+function symmetry_apply(
+    hs::AbstractHilbertSpace,
+    dop::ProductOperation,
+    bitrep::Unsigned,
+    amplitude::Number=one(Int)
+)
+    for op in reverse(dop.operations)  # (ABC)(ψ) = A(B(C(ψ)))
+        bitrep, amplitude = symmetry_apply(hs, op, bitrep, amplitude)
+    end
+    return (bitrep, amplitude)
+end
+
+function symmetry_apply(
+    hs::AbstractHilbertSpace,
+    p::SemidirectProductOperation,
+    bitrep::Unsigned,
+    amplitude::Number=one(Int)
+)
+    (bitrep, amplitude) = symmetry_apply(hs, p.normal, bitrep, amplitude)
+    (bitrep, amplitude) = symmetry_apply(hs, p.rest, bitrep, amplitude)
     return (bitrep, amplitude)
 end
 
@@ -94,6 +117,34 @@ function symmetry_apply(
 end
 
 
+function symmetry_apply(
+    hs::AbstractHilbertSpace,
+    perm::LocalGeneralizedPermutation{A},
+    bitrep::BR,
+    amplitude::S=one(Int)
+) where {A, BR<:Unsigned, S<:Number}
+    @boundscheck let
+        if length(hs.sites) != length(perm.operations)
+            throw(ArgumentError("number of sites should match"))
+        end
+        for (isite, (site, op)) in enumerate(zip(hs.sites, perm.operations))
+            if dimension(site) != length(op.map)
+                throw(ArgumentError("dimension mismatch at site $isite: $(dimension(site)) != $(length(op.map))"))
+            end
+        end
+    end
+    indexarray = extract(hs, bitrep)
+    new_indexarray = CartesianIndex([
+        let 
+            istate_new, amplitude = op(istate, amplitude)
+            istate_new
+        end
+        for (istate, op) in zip(indexarray.I, perm.operations)
+    ]...)
+    return (compress(hs, new_indexarray), amplitude)
+end
+
+
 ### Operator
 function symmetry_apply(
     hs::HilbertSpace{QN},
@@ -110,26 +161,26 @@ end
 
 ## isinvariant
 function isinvariant(
-    hs::HilbertSpace{QN},
+    hs::HilbertSpace,
     symop::AbstractSymmetryOperation,
     op::AbstractOperator
-) where {QN}
+)
     return simplify(op - symmetry_apply(hs, symop, op)) == NullOperator()
 end
 
 function isinvariant(
-    hs::HilbertSpace{QN},
+    hs::HilbertSpace,
     symbed::SymmetryEmbedding,
     op::AbstractOperator
-) where {QN}
+)
     return all(isinvariant(hs, g, op) for g in generator_elements(symbed))
 end
 
 function isinvariant(
-    hs::HilbertSpace{QN},
+    hs::HilbertSpace,
     symbed::SymmorphicSymmetryEmbedding,
     op::AbstractOperator
-) where {QN}
+)
     return (
         all(isinvariant(hs, g, op) for g in generator_elements(symbed.normal)) &&
         all(isinvariant(hs, g, op) for g in generator_elements(symbed.rest))
