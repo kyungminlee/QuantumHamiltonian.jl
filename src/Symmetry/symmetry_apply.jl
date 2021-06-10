@@ -123,7 +123,6 @@ function symmetry_apply(
     bitrep::BR,
     amplitude::S=one(Int)
 ) where {A, BR<:Unsigned, S<:Number}
-    # TODO: Boundcheck?
     @boundscheck let
         if length(hs.sites) != length(perm.operations)
             throw(ArgumentError("number of sites should match"))
@@ -134,14 +133,13 @@ function symmetry_apply(
             end
         end
     end
-    # @show "HERE"
     indexarray = extract(hs, bitrep)
     new_indexarray = CartesianIndex([
         let 
             istate_new, amplitude = op(istate, amplitude)
             istate_new
         end
-        for (isite, (istate, op)) in enumerate(zip(indexarray.I, perm.operations))
+        for (istate, op) in zip(indexarray.I, perm.operations)
     ]...)
     return (compress(hs, new_indexarray), amplitude)
 end
