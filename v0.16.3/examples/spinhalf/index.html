@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Example 1: S=1/2 Heisenberg Chain · QuantumHamiltonian.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">QuantumHamiltonian.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Types</span><ul><li><a class="tocitem" href="../../hilbertspace/">Hilbert space</a></li><li><a class="tocitem" href="../../operator/">Operator</a></li><li><a class="tocitem" href="../../representation/">Representation</a></li><li><a class="tocitem" href="../../symmetry/">Symmetry</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li class="is-active"><a class="tocitem" href>Example 1: S=1/2 Heisenberg Chain</a></li></ul></li><li><a class="tocitem" href="../../links/">Index</a></li><li><a class="tocitem" href="../../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Example 1: S=1/2 Heisenberg Chain</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Example 1: S=1/2 Heisenberg Chain</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kyungminlee/QuantumHamiltonian.jl/blob/master/docs/src/examples/spinhalf.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Example-1:-S1/2-Heisenberg-Chain"><a class="docs-heading-anchor" href="#Example-1:-S1/2-Heisenberg-Chain">Example 1: S=1/2 Heisenberg Chain</a><a id="Example-1:-S1/2-Heisenberg-Chain-1"></a><a class="docs-heading-anchor-permalink" href="#Example-1:-S1/2-Heisenberg-Chain" title="Permalink"></a></h1><pre><code class="language-julia">using SparseArrays
+using LinearAlgebra
+using Arpack
+using Plots
+
+using LatticeTools
+using QuantumHamiltonian
+
+println(&quot;# S=1/2 Heisenberg Chain&quot;)
+n_sites = 8;
+(hs, σ) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
+println(&quot;Quantum number sectors (2Sz) : &quot;, quantum_number_sectors(hs))
+
+S = Dict(μ =&gt; sum(σ(i, μ) for i in 1:n_sites) for μ in [:x, :y, :z])
+spin_squared = simplify(S[:x]^2 + S[:y]^2 + S[:z]^2)
+j1 = simplify(sum(σ(i, j) * σ(mod(i, n_sites)+1 , j) for i in 1:n_sites for j in [:x, :y, :z]))
+hs_rep = represent(hs);     # Use FrozenSortedArrayIndex{UInt} for basis lookup
+
+println(&quot;## All sectors at once&quot;)
+plt = plot(size=(400, 400))
+begin
+  j1_rep = represent(hs_rep, j1)
+  eigenvalues, eigenvectors = eigs(j1_rep; nev=32, which=:SR, )
+  eigenvalues = real.(eigenvalues)
+  println(&quot;E : &quot;, eigenvalues[1:5])
+  scatter!(plt,
+           zeros(size(eigenvalues)), eigenvalues,
+           markershape=:hline,
+           markersize=10,
+           markerstrokecolor=:red,
+           legend=:none)
+end
+
+println(&quot;## Sz=0, each momentum sectors&quot;)
+hs_sector = HilbertSpaceSector(hs, 0)
+hs_rep = represent_dict(hs_sector) # Use Dict{UInt, Int} for basis lookup
+
+unitcell = makeunitcell(1.0; SiteType=String)
+addsite!(unitcell, &quot;Spin&quot;, FractCoord([0], [0.0]))
+lattice = make_lattice(unitcell, 8)
+tsymbed = translation_symmetry_embedding(lattice)
+
+#translation_group = TranslationGroup([Permutation([ mod(i, n_sites)+1 for i in 1:n_sites])])
+ks = symmetry(tsymbed).fractional_momenta
+
+for tsic in get_irrep_components(tsymbed)
+  k = ks[tsic.irrep_index]
+  hs_redrep = symmetry_reduce(hs_rep, tsic)
+  j1_redrep = represent(hs_redrep, j1)
+  j1_redrep_dense = Matrix(j1_redrep)   # Make a dense matrix
+  eigenvalues = eigvals(Hermitian(j1_redrep_dense))
+  println(&quot;E(k=&quot;, join(string.(k), &quot;,&quot;), &quot;) : &quot;, eigenvalues[1:5])
+  scatter!(plt,
+           ones(size(eigenvalues)).*tsic.irrep_index, eigenvalues,
+           markershape=:hline,
+           markersize=10,
+           markerstrokecolor=:blue,
+           legend=:none)
+end
+xticks!(plt, collect(0:n_sites), [&quot;All&quot;, string.(1:n_sites)...])
+xlims!(plt, -1, n_sites+1)
+xlabel!(plt, &quot;Momentum index&quot;)
+ylabel!(plt, &quot;Energy&quot;)
+savefig(plt, &quot;spinchain.svg&quot;); nothing</code></pre><pre class="documenter-example-output"># S=1/2 Heisenberg Chain
+Quantum number sectors (2Sz) : [(-8,), (-6,), (-4,), (-2,), (0,), (2,), (4,), (6,), (8,)]
+## All sectors at once
+E : [-14.604373635748718, -12.513676255378321, -12.513676255378291, -12.51367625537829, -10.798512593101258]
+## Sz=0, each momentum sectors
+┌ Warning: Assignment to `eigenvalues` in soft scope is ambiguous because a global variable by the same name exists: `eigenvalues` will be treated as a new local. Disambiguate by using `local eigenvalues` to suppress this warning or `global eigenvalues` to assign to the existing global variable.
+└ @ none:7
+┌ Warning: Method deprecated. use simpler symmetry_reduce functions that takes symops_and_amplitudes as input
+└ @ QuantumHamiltonian ~/work/QuantumHamiltonian.jl/QuantumHamiltonian.jl/src/Symmetry/deprecated_symmetry_reduce_translation.jl:16
+E(k=0//1) : [-14.604373635748708, -7.207750943219354, -4.000000000000003, -2.90443778014313, -1.780167471650515]
+E(k=1//8) : [-9.834954035579333, -4.576491222541476, -2.513513707532247, -2.0507328122555006, -1.17157287525381]
+E(k=1//4) : [-7.418550718873843, -6.472135954999586, -5.068140393445465, -2.387873132949261, -1.0346080900166121]
+E(k=3//8) : [-8.580593495682871, -6.82842712474619, -3.435694198841033, -1.7480640977952846, 1.0618108463019815]
+E(k=1//2) : [-12.513676255378304, -10.798512593101272, -4.806558702893615, -3.043506886973782, 5.962399532906195e-16]
+E(k=5//8) : [-8.580593495682864, -6.828427124746187, -3.435694198841034, -1.7480640977952848, 1.0618108463019806]
+E(k=3//4) : [-7.418550718873843, -6.472135954999586, -5.068140393445465, -2.387873132949261, -1.0346080900166121]
+E(k=7//8) : [-9.834954035579335, -4.576491222541476, -2.5135137075322467, -2.0507328122555, -1.17157287525381]
+qt.qpa.xcb: could not connect to display
+qt.qpa.plugin: Could not load the Qt platform plugin &quot;xcb&quot; in &quot;&quot; even though it was found.
+This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
+
+Available platform plugins are: linuxfb, minimal, offscreen, vnc, xcb.
+
+Aborted (core dumped)
+connect: Connection refused
+GKS: can&#39;t connect to GKS socket application
+
+GKS: Open failed in routine OPEN_WS
+GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</pre><p><img src="../spinchain.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../symmetry/">« Symmetry</a><a class="docs-footer-nextpage" href="../../links/">Index »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 13 June 2021 14:46">Sunday 13 June 2021</span>. Using Julia version 1.6.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
