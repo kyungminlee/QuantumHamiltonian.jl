@@ -145,7 +145,7 @@ end
 
 
 function Base.:(*)(A::AbstractOperatorRepresentation{S}, B::AbstractVector{T}) where {S, T}
-    size(A, 2) == size(B, 1) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
+    size(A, 2) == length(B) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
     U = promote_type(S, T)
     C = Vector{U}(undef, size(A, 1))
     LinearAlgebra.mul!(C, A, B)
@@ -158,10 +158,19 @@ end
 function Base.:(*)(A::AbstractMatrix{T}, B::AbstractOperatorRepresentation{S}) where {S, T}
     size(A, 2) == size(B, 1) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
     U = promote_type(S, T)
-    C = Matrix{U}(undef, (size(A, 1), size(B, 2)))
+    C = zeros(U, (size(A, 1), size(B, 2)))
     Threads.@threads for i in 1:size(A, 1)
         apply!(view(C, i, :), view(A, i, :), B)
     end
+    return C
+end
+
+
+function Base.:(*)(A::AbstractVector{T}, B::AbstractOperatorRepresentation{S}) where {S, T}
+    length(A) == size(B, 1) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
+    U = promote_type(S, T)
+    C = zeros(U, size(B, 2))
+    apply!(C, A, B)
     return C
 end
 
