@@ -65,6 +65,27 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
     
     @testset "RHSR" begin #TODO: rename
         symops_and_amplitudes = collect(get_irrep_iterator(IrrepComponent(tsymbed, 2, 1)))
+        let rhsr = symmetry_reduce(hsr, symops_and_amplitudes)
+            @test get_basis_state(rhsr, 1) == 0b0011
+            @test_throws BoundsError get_basis_state(rhsr, 2)
+            let out = get_basis_index_amplitude(rhsr, 0b0011)
+                @test out.index == 1
+                @test isapprox(out.amplitude, 0.5)
+            end
+            let out = get_basis_index_amplitude(rhsr, 0b1100)
+                @test out.index == 1
+                @test isapprox(out.amplitude, -0.5)
+            end
+            let out = get_basis_index_amplitude(rhsr, 0b0101)
+                @test out.index < 0
+                @test iszero(out.amplitude)
+            end
+            let out = get_basis_index_amplitude(rhsr, 0b0000)
+                @test out.index < 0
+                @test iszero(out.amplitude)
+            end
+        end
+
         for symred in [symmetry_reduce, symmetry_reduce_serial, symmetry_reduce_parallel]
             rhsr = symred(hsr, symops_and_amplitudes)
             @test scalartype(rhsr) === ComplexF64
