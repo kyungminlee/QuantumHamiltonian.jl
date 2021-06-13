@@ -147,6 +147,12 @@ end # testset NullOperator
         push!(arr1, t1)
         arr2 = PureOperator{Float64, UInt}[]
         push!(arr2, t2)
+
+        v = [t1]
+        push!(v, LinearAlgebra.I)
+        @test v[2] == PureOperator{Float64, UInt}(0b0, 0b0, 0b0, one(Float64))
+        p2 = convert(AbstractOperator{ComplexF64}, t1)
+        @test typeof(p2) == PureOperator{ComplexF64, UInt}
     end
     
     @testset "equality" begin
@@ -430,8 +436,13 @@ end
         push!(arr1, sop1)
         arr2 = SumOperator{Float64, UInt}[]
         push!(arr2, sop2)
+
+        v = [sop1]
+        push!(v, LinearAlgebra.I)
+        @test v[2] == SumOperator([PureOperator{Float64, UInt}(0b0, 0b0, 0b0, one(Float64))])
+        p2 = convert(AbstractOperator{ComplexF64}, sop1)
+        @test typeof(p2) == SumOperator{ComplexF64, UInt}
     end
-    
     
     @testset "unary" begin
         @testset "real" begin
