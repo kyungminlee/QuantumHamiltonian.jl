@@ -156,6 +156,18 @@ function Base.convert(::Type{SumOperator{S1, B1}}, obj::SumOperator{S2, B2}) whe
     return SumOperator{S1, B1}([convert(PureOperator{S1, B1}, t) for t in obj.terms])
 end
 
+
+function Base.promote_rule(::Type{SumOperator{S1, B1}}, ::UniformScaling{S2}) where {S1, S2, B1}
+    S3 = promote_type(S1, S2)
+    return SumOperator{S3, B1}
+end
+
+function Base.convert(::Type{SumOperator{S1, B1}}, obj::UniformScaling{S2}) where {S1, S2, B1}
+    return SumOperator([PureOperator{S1, B1}(zero(B1), zero(B1), zero(B1), obj.λ)])
+end
+
+
 function Base.convert(::Type{AbstractOperator{S1}}, obj::SumOperator{S2, B}) where {S1, S2, B}
     return convert(SumOperator{S1, B}, obj)
 end
+
