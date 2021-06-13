@@ -182,6 +182,9 @@ function Base.convert(::Type{PureOperator{S1, B1}}, obj::UniformScaling{S2}) whe
     return PureOperator{S1, B1}(zero(B1), zero(B1), zero(B1), obj.λ)
 end
 
+function Base.convert(::Type{AbstractOperator{S1}}, obj::PureOperator{S2, B}) where {S1, S2, B}
+    return convert(PureOperator{S1, B}, obj)
+end
 
 """
     pure_operator(hilbert_space, isite, istate_row, istate_col, amplitude=1, binary_type=UInt)
