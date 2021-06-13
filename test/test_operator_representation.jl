@@ -53,6 +53,16 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
             @test valtype(typeof(opr1)) === Int
             @test valtype(typeof(opr2)) === Complex{Int}
         end
+
+        @testset "convert" begin
+            oprx = OperatorRepresentation(hsr, σ[1, :x])
+            @test valtype(oprx) == Int
+            oprx2 = convert(AbstractMatrix{Float64}, oprx)
+            @test isa(oprx2, OperatorRepresentation)
+            @test valtype(oprx2) == Float64
+            opry = OperatorRepresentation(hsr, σ[1, :y])
+            @test_throws InexactError convert(AbstractMatrix{Float64}, opry)
+        end
             
         @testset "show" begin
             opr = OperatorRepresentation(hsr, σ[1, :x])
