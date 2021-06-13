@@ -1,5 +1,5 @@
 export HilbertSpace
-export quantum_number_sectors, get_quantum_number, extract, compress, update, get_state, get_state_index
+export quantum_number_sectors, get_quantum_number, extract, uncompress, compress, update, get_state, get_state_index
 export get_bitmask
 export bitwidth, bitoffset
 export scalartype

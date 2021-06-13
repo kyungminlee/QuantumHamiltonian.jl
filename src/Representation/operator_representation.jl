@@ -119,21 +119,26 @@ function get_element(opr::OperatorRepresentation{HSR, S, O}, irow::Integer, icol
 end
 
 
-function Base.:(*)(opr::OperatorRepresentation{HSR, SO, O}, state::AbstractVector{SV}) where {HSR, O, SO, SV<:Number}
-    hsr = opr.hilbert_space_representation
-    n = dimension(hsr)
-    T = promote_type(SO, SV)
-    out = zeros(T, n)
-    err = apply!(out, opr, state)
-    return out
-end
+# function Base.:(*)(opr::OperatorRepresentation{HSR, SO, O}, state::AbstractVector{SV}) where {HSR, O, SO, SV<:Number}
+#     hsr = opr.hilbert_space_representation
+#     n = dimension(hsr)
+#     T = promote_type(SO, SV)
+#     out = zeros(T, n)
+#     err = apply!(out, opr, state)
+#     return out
+# end
 
 
-function Base.:(*)(state::AbstractVector{SV}, opr::OperatorRepresentation{HSR, SO, O}) where {HSR, SO, O, SV<:Number}
-    hsr = opr.hilbert_space_representation
-    n = dimension(hsr)
-    T = promote_type(SO, SV)
-    out = zeros(T, n)
-    err = apply!(out, state, opr)
-    return out
+# function Base.:(*)(state::AbstractVector{SV}, opr::OperatorRepresentation{HSR, SO, O}) where {HSR, SO, O, SV<:Number}
+#     hsr = opr.hilbert_space_representation
+#     n = dimension(hsr)
+#     T = promote_type(SO, SV)
+#     out = zeros(T, n)
+#     err = apply!(out, state, opr)
+#     return out
+# end
+
+
+function Base.convert(::Type{AbstractMatrix{T}}, arg::OperatorRepresentation) where {T}
+    return OperatorRepresentation(arg.hilbert_space_representation, convert(AbstractOperator{T}, arg.operator))
 end

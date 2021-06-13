@@ -88,7 +88,7 @@ If no such basis vector exists, return (-1, 0).
 """
 @inline function get_basis_index_amplitude(hsr::HilbertSpaceRepresentation, bvec::Unsigned)
     index = get(hsr.basis_lookup, bvec, -1)
-    return (index=index, amplitude=(index <= 0) ? 1 : 0)
+    return (index=index, amplitude=(index <= 0) ? 0 : 1)
 end
 
 

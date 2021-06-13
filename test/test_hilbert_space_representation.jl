@@ -21,6 +21,18 @@ using StaticArrays
             @test hsr1 == hsr3
             @test hsr1 == hsr4
             @test basespace(hsr1) === hilbert_space
+
+            @testset "getters" begin
+                @test get_basis_state(hsr1, 3) == 0b0110
+                let out = get_basis_index_amplitude(hsr1, 0b0110)
+                    @test out.index == 3
+                    @test isone(out.amplitude)
+                end
+                let out = get_basis_index_amplitude(hsr1, 0b0000)
+                    @test out.index <= 0
+                    @test iszero(out.amplitude)
+                end
+            end
         end
         
         @testset "constructor-exceptions" begin

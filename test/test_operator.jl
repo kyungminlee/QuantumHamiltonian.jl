@@ -147,6 +147,11 @@ end # testset NullOperator
         push!(arr1, t1)
         arr2 = PureOperator{Float64, UInt}[]
         push!(arr2, t2)
+
+        v = [t1, LinearAlgebra.I]
+        @test v[2] == PureOperator{Float64, UInt}(0b0, 0b0, 0b0, one(Float64))
+        p2 = convert(AbstractOperator{ComplexF64}, t1)
+        @test typeof(p2) == PureOperator{ComplexF64, UInt}
     end
     
     @testset "equality" begin
@@ -430,8 +435,12 @@ end
         push!(arr1, sop1)
         arr2 = SumOperator{Float64, UInt}[]
         push!(arr2, sop2)
+
+        v = [sop1, LinearAlgebra.I]
+        @test v[2] == SumOperator([PureOperator{Float64, UInt}(0b0, 0b0, 0b0, one(Float64))])
+        p2 = convert(AbstractOperator{ComplexF64}, sop1)
+        @test typeof(p2) == SumOperator{ComplexF64, UInt}
     end
-    
     
     @testset "unary" begin
         @testset "real" begin
@@ -496,6 +505,16 @@ end
             @test 3 - pop1 == SumOperator{Float64, UInt}([PureOperator{Float64, UInt}(0x0, 0x0, 0x0, 3), -pop1])
             @test sop - 3 == SumOperator{ComplexF64, UInt}([pop1, pop2, PureOperator{ComplexF64, UInt}(0x0, 0x0, 0x0, -3)])
             @test 3 - sop == SumOperator{ComplexF64, UInt}([PureOperator{ComplexF64, UInt}(0x0, 0x0, 0x0, 3), -pop1, -pop2])
+
+            @test pop1 + 3*LinearAlgebra.I == SumOperator{Float64, UInt}([pop1, PureOperator{Float64, UInt}(0x0, 0x0, 0x0, 3)])
+            @test 3*LinearAlgebra.I + pop1 == SumOperator{Float64, UInt}([PureOperator{Float64, UInt}(0x0, 0x0, 0x0, 3), pop1])
+            @test sop + 3*LinearAlgebra.I == SumOperator{ComplexF64, UInt}([pop1, pop2, PureOperator{ComplexF64, UInt}(0x0, 0x0, 0x0, 3)])
+            @test 3*LinearAlgebra.I + sop == SumOperator{ComplexF64, UInt}([PureOperator{ComplexF64, UInt}(0x0, 0x0, 0x0, 3), pop1, pop2])
+            
+            @test pop1 - 3*LinearAlgebra.I == SumOperator{Float64, UInt}([pop1, PureOperator{Float64, UInt}(0x0, 0x0, 0x0, -3)])
+            @test 3*LinearAlgebra.I - pop1 == SumOperator{Float64, UInt}([PureOperator{Float64, UInt}(0x0, 0x0, 0x0, 3), -pop1])
+            @test sop - 3*LinearAlgebra.I == SumOperator{ComplexF64, UInt}([pop1, pop2, PureOperator{ComplexF64, UInt}(0x0, 0x0, 0x0, -3)])
+            @test 3*LinearAlgebra.I - sop == SumOperator{ComplexF64, UInt}([PureOperator{ComplexF64, UInt}(0x0, 0x0, 0x0, 3), -pop1, -pop2])
         end
         
         @testset "product" begin
