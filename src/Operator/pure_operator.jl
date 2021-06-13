@@ -187,7 +187,7 @@ function Base.convert(::Type{AbstractOperator{S1}}, obj::PureOperator{S2, B}) wh
 end
 
 """
-    pure_operator(hilbert_space, isite, istate_row, istate_col, amplitude=1, binary_type=UInt)
+    pure_operator(hilbert_space, isite, istate_row, istate_col, amplitude=1, [binary_type=UInt])
 
 Creates a pure operator where projection is at one of the sites.
 """
@@ -197,12 +197,12 @@ function pure_operator(
     istate_row::Integer,
     istate_col::Integer,
     amplitude::S=1,
-    binary_type::Type{BR}=UInt,
+    ::Type{BR}=UInt,
 ) where {S<:Number, BR<:Unsigned}
     @boundscheck let
-        site = hilbert_space.sites[isite]
-        state_row = site.states[istate_row]
-        state_col = site.states[istate_col]
+        hilbert_space.sites[isite]
+        site.states[istate_row]
+        site.states[istate_col]
     end
     bm = get_bitmask(hilbert_space, isite, BR)
     br = BR(istate_row - 1) << hilbert_space.bitoffsets[isite]
