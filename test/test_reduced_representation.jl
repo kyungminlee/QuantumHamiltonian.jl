@@ -63,9 +63,11 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
         end
     end
     
-    @testset "RHSR" begin #TODO: rename
-        symops_and_amplitudes = collect(get_irrep_iterator(IrrepComponent(tsymbed, 2, 1)))
-        let rhsr = symmetry_reduce(hsr, symops_and_amplitudes)
+    @testset "RHSR" begin
+        # symops_and_amplitudes = collect(get_irrep_iterator(IrrepComponent(tsymbed, 2, 1)))
+        symops = elements(tsymbed)
+        amplitudes = [m[1,1] for m in irrep(tsymbed, 2)]
+        let rhsr = symmetry_reduce(hsr, symops, amplitudes)
             @test get_basis_state(rhsr, 1) == 0b0011
             @test_throws BoundsError get_basis_state(rhsr, 2)
             let out = get_basis_index_amplitude(rhsr, 0b0011)
@@ -85,9 +87,8 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
                 @test iszero(out.amplitude)
             end
         end
-
         for symred in [symmetry_reduce, symmetry_reduce_serial, symmetry_reduce_parallel]
-            rhsr = symred(hsr, symops_and_amplitudes)
+            rhsr = symred(hsr, symops, amplitudes)
             @test scalartype(rhsr) === ComplexF64
             @test scalartype(typeof(rhsr)) === ComplexF64
             @test valtype(rhsr) === ComplexF64
@@ -98,9 +99,11 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
             @test bitwidth(rhsr) == n
             show(devnull, MIME("text/plain"), rhsr)  # make sure it doesn't crash  
         end
-        symops_and_amplitudes = collect(get_irrep_iterator(IrrepComponent(psymbed, 2, 1)))
+        # symops_and_amplitudes = collect(get_irrep_iterator(IrrepComponent(psymbed, 2, 1)))
+        symops = elements(psymbed)
+        amplitudes = [m[1,1] for m in irrep(psymbed, 2)]
         for symred in [symmetry_reduce, symmetry_reduce_serial, symmetry_reduce_parallel]
-            rhsr = symred(hsr, symops_and_amplitudes)
+            rhsr = symred(hsr, symops, amplitudes)
             @test scalartype(rhsr) === ComplexF64
             @test scalartype(typeof(rhsr)) === ComplexF64
             @test valtype(rhsr) === ComplexF64
@@ -109,7 +112,13 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
             @test bintype(typeof(rhsr)) === UInt
             @test dimension(rhsr) <= 2^n
             @test bitwidth(rhsr) == n
-            show(devnull, MIME("text/plain"), rhsr)  # make sure it doesn't crash  
+            show(devnull, MIME("text/plain"), rhsr)  # make sure it doesn't crash
+
+            @test_throws ArgumentError symred(hsr, symops, amplitudes[1:end-1])
+            @test_throws ArgumentError symred(hsr, empty(symops), empty(amplitudes))
+            @test_throws ArgumentError symred(hsr, symops, [amplitudes[1:end-1]..., 0.2])
+            symred(hsr, symops, [1.0, amplitudes[2:end]...])
+            @test_throws ArgumentError symred(hsr, symops, [0.0, amplitudes[2:end]...])
         end
     end
     
