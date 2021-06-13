@@ -36,7 +36,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
     # @test isinvariant(hs, translation_group, j1)
     # @test isinvariant(HilbertSpaceSector(hs, 0), translation_group, j1)
     
-    @testset "RHSR" begin
+    @testset "RHSR-old implementation" begin
         #rhsr = symmetry_reduce(hsr, translation_group, [0//1])
         for symred in [symmetry_reduce, symmetry_reduce_serial, symmetry_reduce_parallel]
             rhsr = symred(hsr, IrrepComponent(tsymbed, 2, 1))
@@ -63,7 +63,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
         end
     end
     
-    @testset "RHSR-new implementation" begin #TODO: rename
+    @testset "RHSR" begin #TODO: rename
         symops_and_amplitudes = collect(get_irrep_iterator(IrrepComponent(tsymbed, 2, 1)))
         for symred in [symmetry_reduce, symmetry_reduce_serial, symmetry_reduce_parallel]
             rhsr = symred(hsr, symops_and_amplitudes)
