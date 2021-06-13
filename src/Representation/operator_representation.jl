@@ -137,3 +137,8 @@ function Base.:(*)(state::AbstractVector{SV}, opr::OperatorRepresentation{HSR, S
     err = apply!(out, state, opr)
     return out
 end
+
+
+function Base.convert(::Type{AbstractMatrix{T}}, arg::OperatorRepresentation) where {T}
+    return OperatorRepresentation(arg.hilbert_space_representation, convert(AbstractOperator{T}, arg.operator))
+end
