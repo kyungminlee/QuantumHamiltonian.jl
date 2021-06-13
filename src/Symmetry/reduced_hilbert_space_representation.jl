@@ -35,11 +35,11 @@ basespace(lhs::ReducedHilbertSpaceRepresentation) = basespace(lhs.parent)
 end
 
 @inline function get_basis_index_amplitude(hsr::ReducedHilbertSpaceRepresentation{HSR, BR, C}, bvec::Unsigned) where {HSR, BR, C}
-    i = get_basis_index(hsr.parent, bvec)
+    i, a = get_basis_index_amplitude(hsr.parent, bvec)
     if i <= 0
         return (index=i, amplitude=zero(C))
     else
-        return (index=basis_mapping_index[i], amplitude=basis_mapping_amplitude[i])
+        return (index=hsr.basis_mapping_index[i], amplitude=hsr.basis_mapping_amplitude[i] * a)
     end
 end
 
