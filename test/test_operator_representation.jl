@@ -259,16 +259,26 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
                     @test !isapprox(vec_out0, vec_out1, atol=1E-6)
                 end
                 
-                let vec_out0, vec_out1
-                    vec_out0 = zeros(Float64, dim)
-                    vec_out1 = collect(1:dim) * 10.0
+                let vec_out0 = zeros(Float64, dim),
+                    vec_out1 = collect(1:dim) * 10.0,
+                    mat_in = hcat(vec_in, 2*vec_in),
+                    mat_out0 = zeros(Float64, (dim, 2)),
+                    mat_out1 = ones(Float64, (dim, 2))
                     
                     mul!(vec_out0, opr, vec_in)
-                    mul!(vec_out1, opr, vec_in)
-                    
-                    @test isapprox(vec_out0, vec_out1, atol=1E-6)
+                    mul!(vec_out1, opr, vec_in)                    
+                    @test isapprox(vec_out0, vec_out1; atol=1E-6)
+
+                    mul!(mat_out0, opr, mat_in)
+                    mul!(mat_out1, opr, mat_in)                  
+                    @test isapprox(mat_out0, mat_out1; atol=1E-6)
+
+                    @test isapprox(mat_out0, hcat(vec_out0, 2*vec_out0); atol=1E-6)
+
+                    @test isapprox(vec_out0, opr * vec_in; atol=1E-6)
+                    @test isapprox(mat_out0, opr * mat_in; atol=1E-6)
+                    @test isapprox(transpose(mat_out0), transpose(mat_in) * opr; atol=1E-6)
                 end
-                
             end
             # TODO(kyungminlee): Check for bounds error with range.
             
