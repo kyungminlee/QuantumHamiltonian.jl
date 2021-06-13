@@ -200,7 +200,7 @@ function pure_operator(
     ::Type{BR}=UInt,
 ) where {S<:Number, BR<:Unsigned}
     @boundscheck let
-        hilbert_space.sites[isite]
+        site = hilbert_space.sites[isite]
         site.states[istate_row]
         site.states[istate_col]
     end
