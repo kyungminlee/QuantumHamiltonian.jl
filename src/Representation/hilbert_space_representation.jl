@@ -3,6 +3,7 @@ export dimension
 export represent, represent_array, represent_dict
 export get_basis_state, get_basis_index
 
+@inline represent(::Site, istate::Integer, ::Type{BR}=UInt) where {BR} = BR(istate-1)
 
 """
     HilbertSpaceRepresentation{HS, BR, DictType}
@@ -179,7 +180,7 @@ function hs_get_basis_list(hss::HilbertSpaceSector{HS, QN}, binary_type::Type{BR
                 if haskey(sector_basis_list, q_prev)
                     append!(
                         new_sector_basis_list_q,
-                        (s | (BR(i_state-1) << hs.bitoffsets[i])) for s in sector_basis_list[q_prev]
+                        (s | (represent(hs.sites[i], i_state, BR) << hs.bitoffsets[i])) for s in sector_basis_list[q_prev]
                     )
                 end
             end
