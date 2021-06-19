@@ -1,6 +1,7 @@
 export IntegerModulo
 
 export make_bitmask
+export bitsplit, bitjoin
 export choptol!
 export merge_vec
 
@@ -54,6 +55,28 @@ function make_bitmask(msb::Integer, lsb::Integer, ::Type{BR}=UInt) where {BR<:Un
     mask = one(BR) << msb - one(BR)
     submask = one(BR) << lsb - one(BR)
     return mask ⊻ submask
+end
+
+function bitsplit(bitwidths::NTuple{N, Integer}, bvec::BR) where {N, BR<:Unsigned}
+    out = BR[]
+    for bw in bitwidths
+        bm = make_bitmask(bw, BR)
+        push!(out, bm & bvec)
+        bvec >>= bw
+    end
+    return tuple(out...)
+end
+
+function bitjoin(bitwidths::NTuple{N, Integer}, bvecs::NTuple{N, BR}) where {N, BR<:Unsigned}
+    bvec = zero(BR)
+    for i in N:-1:1
+        wi = bitwidths[i]
+        bi = bvecs[i]
+        mi = make_bitmask(wi, BR)
+        bvec <<= wi
+        bvec |= bi & mi
+    end
+    return bvec
 end
 
 function merge_vec(x::AbstractVector{T}, y::AbstractVector{T})::Vector{T} where {T}
