@@ -1,7 +1,7 @@
 export HilbertSpaceRepresentation
 export dimension
 export represent, represent_array, represent_dict
-export get_basis_state, get_basis_index
+export get_basis_list, get_basis_state, get_basis_index_amplitude
 
 
 """
@@ -66,6 +66,8 @@ function Base.:(==)(
     return basespace(lhs) == basespace(rhs) && (lhs.basis_list == rhs.basis_list)
 end
 
+
+@inline get_basis_list(hsr::HilbertSpaceRepresentation) = hsr.basis_list
 
 """
     get_basis_state(hsr, index)
