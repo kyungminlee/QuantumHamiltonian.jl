@@ -46,16 +46,13 @@ tupleone(::Type{T}) where {T<:Tuple} = ((one(S) for S in T.parameters)...,)
 tuplezero(::T) where {T<:Tuple} = ((zero(S) for S in T.parameters)...,)
 tupleone(::T) where {T<:Tuple} = ((one(S) for S in T.parameters)...,)
 
-function make_bitmask(
-    msb::Integer,
-    binary_type::Type{BR}=UInt
-) where {BR<:Unsigned}
-    return BR(0x1) << msb - BR(0x1)
+function make_bitmask(msb::Integer, ::Type{BR}=UInt) where {BR<:Unsigned}
+    return one(BR) << msb - one(BR)
 end
 
-function make_bitmask(msb::Integer, lsb::Integer, binary_type::Type{BR}=UInt) where {BR<:Unsigned}
-    mask = BR(0x1) << msb - BR(0x1)
-    submask = BR(0x1) << lsb - BR(0x1)
+function make_bitmask(msb::Integer, lsb::Integer, ::Type{BR}=UInt) where {BR<:Unsigned}
+    mask = one(BR) << msb - one(BR)
+    submask = one(BR) << lsb - one(BR)
     return mask ⊻ submask
 end
 
