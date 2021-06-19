@@ -59,10 +59,11 @@ end
 
 function bitsplit(bitwidths::NTuple{N, Integer}, bvec::BR) where {N, BR<:Unsigned}
     out = BR[]
-    for bw in bitwidths
-        bm = make_bitmask(bw, BR)
-        push!(out, bm & bvec)
-        bvec >>= bw
+    for wi in bitwidths
+        @boundscheck wi >= 0 || throw(ArgumentError("bitwidths should be nonnegative"))
+        mi = make_bitmask(wi, BR)
+        push!(out, mi & bvec)
+        bvec >>= wi
     end
     return tuple(out...)
 end
@@ -71,6 +72,7 @@ function bitjoin(bitwidths::NTuple{N, Integer}, bvecs::NTuple{N, BR}) where {N, 
     bvec = zero(BR)
     for i in N:-1:1
         wi = bitwidths[i]
+        @boundscheck wi >= 0 || throw(ArgumentError("bitwidths should be nonnegative"))
         bi = bvecs[i]
         mi = make_bitmask(wi, BR)
         bvec <<= wi
