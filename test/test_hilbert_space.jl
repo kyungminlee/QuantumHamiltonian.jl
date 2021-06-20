@@ -94,6 +94,8 @@ end
         @test hs == hs2
         
         @test numsites(hs) == 4
+        @test get_site(hs, 2) == spin_site
+        @test_throws BoundsError get_site(hs, 100)
         @test qntype(hs) === Tuple{Int}
         @test scalartype(hs) === Bool
         @test valtype(hs) === Bool
@@ -139,6 +141,9 @@ end
         hs = HilbertSpace([site, site, spin_site, site])
         
         @test numsites(hs) == 4
+        @test get_site(hs, 2) == site
+        @test get_site(hs, 3) == spin_site
+        @test_throws BoundsError get_site(hs, 100)
         @test qntype(hs) === QN
         @test scalartype(hs) === Bool
         @test valtype(hs) === Bool
@@ -146,8 +151,7 @@ end
         @test scalartype(typeof(hs)) === Bool
         @test valtype(typeof(hs)) === Bool
         @test basespace(hs) === hs
-        
-        
+                
         @test hs.bitoffsets[end] == 2 + 2 + 1 + 2
         @test bitwidth(hs) == 2 + 2 + 1 + 2
         @test bitwidth(hs, 1) == 2
@@ -202,7 +206,6 @@ end
         @test get_state(hs, 0b0010000, 3) == dn
         @test get_state(hs, 0b1101111, 3) == up
         @test get_state(hs, 0b1111111, 3) == dn
-        
         
         @test get_quantum_number(hs, 0b0000000) == (1, 1)
         @test get_quantum_number(hs, 0b0000001) == (2, 2)
