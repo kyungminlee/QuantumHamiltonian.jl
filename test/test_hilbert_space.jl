@@ -93,6 +93,7 @@ end
         hs2 = HilbertSpace{QN}([spin_site, spin_site, spin_site, spin_site])
         @test hs == hs2
         
+        @test numsites(hs) == 4
         @test qntype(hs) === Tuple{Int}
         @test scalartype(hs) === Bool
         @test valtype(hs) === Bool
@@ -137,6 +138,7 @@ end
         site = Site([em, up, dn])
         hs = HilbertSpace([site, site, spin_site, site])
         
+        @test numsites(hs) == 4
         @test qntype(hs) === QN
         @test scalartype(hs) === Bool
         @test valtype(hs) === Bool
