@@ -1,6 +1,8 @@
 export HilbertSpace
-export quantum_number_sectors, get_quantum_numbers, get_quantum_number, extract, uncompress, compress, update, get_state, get_state_index
+export quantum_number_sectors, get_quantum_numbers, get_quantum_number
+export extract, uncompress, compress, update, get_state, get_state_index
 export get_bitmask
+export get_tag, get_tags
 export bitwidth, bitoffset
 export scalartype, qntype
 export basespace
@@ -162,6 +164,9 @@ function get_quantum_number(hs::HilbertSpace{QN}, indexarray::AbstractArray{I, 1
     )
 end
 
+# TODO: introduce TagStrategy template argument for HilbertSpace
+get_tag(hs::HilbertSpace, binrep::Unsigned) = get_quantum_number(hs, binrep)
+get_tags(hs::HilbertSpace) = quantum_number_sectors(hs)
 
 """
     extract(hs, binrep)
