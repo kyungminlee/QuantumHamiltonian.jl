@@ -150,7 +150,7 @@ quantum_number_sectors(hs::HilbertSpace{QN}) where QN = get_quantum_numbers(hs)
 
 Get the quantum number of `rep`, which is either a binary representation, or a `CartesianIndex`.
 """
-function get_quantum_number(hs::HilbertSpace{QN}, binrep::Unsigned) where {QN}
+function get_quantum_number(hs::HilbertSpace, binrep::Unsigned)
     return mapreduce(
         identity,
         tupleadd,
@@ -161,7 +161,7 @@ function get_quantum_number(hs::HilbertSpace{QN}, binrep::Unsigned) where {QN}
     )
 end
 
-function get_quantum_number(hs::HilbertSpace{QN}, indexarray::AbstractArray{I, 1}) where {QN, I<:Integer}
+function get_quantum_number(hs::HilbertSpace, indexarray::AbstractVector{<:Integer})
     return mapreduce(
         identity,
         tupleadd,
@@ -290,7 +290,7 @@ by changing the state at site `isite` to a new local state specified by
     @boundscheck if !(1 <= new_state_index <= dimension(hs.sites[isite]))
         throw(BoundsError(1:dimension(hs.sites[isite]), new_state_index))
     end
-    mask = make_bitmask(hs.bitoffsets[isite+1], hs.bitoffsets[isite], BR)
+    mask = get_bitmask(hs, isite, BR)
     return (binrep & (~mask)) | (BR(new_state_index-1) << hs.bitoffsets[isite])
 end
 
@@ -302,7 +302,8 @@ Get the *index of* the local state at site `isite` for the basis state
 represented by `binrep`.
 """
 function get_state_index(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-    return Int((binrep >> hs.bitoffsets[isite]) & make_bitmask(hs.bitwidths[isite], BR)) + 1
+    # return Int((binrep >> hs.bitoffsets[isite]) & make_bitmask(hs.bitwidths[isite], BR)) + 1
+    return Int((binrep >> bitoffset(hs, isite)) & make_bitmask(bitwidth(hs, isite), BR)) + 1
 end
 
 
@@ -313,7 +314,7 @@ Get the local state at site `isite` for the basis state
 represented by `binrep`. Returns an object of type `State`
 """
 function get_state(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-    return hs.sites[isite].states[get_state_index(hs, binrep, isite)]
+    return get_site(hs, isite).states[get_state_index(hs, binrep, isite)]
 end
 
 
