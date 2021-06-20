@@ -1,6 +1,6 @@
 export HilbertSpace
 import LatticeTools.numsites
-export numsites
+export numsites, get_site
 export quantum_number_sectors, get_quantum_numbers, get_quantum_number
 export extract, uncompress, compress, update, get_state, get_state_index
 export get_bitmask
@@ -79,8 +79,9 @@ Get the base space of the HilbertSpace `hs`, which is itself.
 """
 basespace(hs::HilbertSpace) = hs
 
-
 numsites(hs::HilbertSpace) = length(hs.sites)
+
+get_site(hs::HilbertSpace, i::Integer) = hs.sites[i]
 
 
 """
