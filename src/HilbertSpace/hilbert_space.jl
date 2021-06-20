@@ -1,9 +1,8 @@
 export HilbertSpace
-export quantum_number_sectors, get_quantum_number, extract, uncompress, compress, update, get_state, get_state_index
+export quantum_number_sectors, get_quantum_numbers, get_quantum_number, extract, uncompress, compress, update, get_state, get_state_index
 export get_bitmask
 export bitwidth, bitoffset
-export scalartype
-export qntype
+export scalartype, qntype
 export basespace
 
 
@@ -120,11 +119,11 @@ end
 
 
 """
-    quantum_number_sectors(hs)
+    get_quantum_numbers(hs)
 
 Return a sorted list of quantum numbers of the hilbert space `hs`.
 """
-function quantum_number_sectors(hs::HilbertSpace{QN})::Vector{QN} where QN
+function get_quantum_numbers(hs::HilbertSpace{QN})::Vector{QN} where QN
     qns = Set{QN}([tuplezero(QN)])
     for site in hs.sites
         qns_next = Set{QN}()
@@ -136,13 +135,14 @@ function quantum_number_sectors(hs::HilbertSpace{QN})::Vector{QN} where QN
     return sort(collect(qns))
 end
 
+quantum_number_sectors(hs::HilbertSpace{QN})::Vector{QN} where QN = get_quantum_numbers(hs)
 
 """
     get_quantum_number(hs, rep)
 
 Get the quantum number of `rep`, which is either a binary representation, or a `CartesianIndex`.
 """
-function get_quantum_number(hs::HilbertSpace{QN}, binrep::BR) where {QN, BR}
+function get_quantum_number(hs::HilbertSpace{QN}, binrep::Unsigned) where {QN}
     return mapreduce(
         identity,
         tupleadd,
