@@ -137,7 +137,7 @@ function get_quantum_numbers(hs::HilbertSpace{QN})::Vector{QN} where QN
     return sort(collect(qns))
 end
 
-quantum_number_sectors(hs::HilbertSpace{QN})::Vector{QN} where QN = get_quantum_numbers(hs)
+quantum_number_sectors(hs::HilbertSpace{QN}) where QN = get_quantum_numbers(hs)
 
 """
     get_quantum_number(hs, rep)
