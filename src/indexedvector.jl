@@ -44,6 +44,8 @@ Base.eltype(::Type{DictIndexedVector{E}}) where E = E
 Base.length(obj::DictIndexedVector) = length(obj.elements)
 Base.size(obj::DictIndexedVector, args...) = size(obj.elements, args...)
 
+Base.hash(obj::D, h::UInt) where {D<:DictIndexedVector} = hash(D, hash(obj.elements, h))
+Base.:(==)(lhs::DictIndexedVector, rhs::DictIndexedVector) = lhs.elements == rhs.elements
 
 """
 """
@@ -87,3 +89,6 @@ Base.IteratorEltype(::Type{<:SortedIndexedVector}) = Base.HasEltype()
 Base.eltype(::Type{SortedIndexedVector{E}}) where E = E
 Base.length(obj::SortedIndexedVector) = length(obj.elements)
 Base.size(obj::SortedIndexedVector, args...) = size(obj.elements, args...)
+
+Base.hash(obj::D, h::UInt) where {D<:SortedIndexedVector} = hash(D, hash(obj.elements, h))
+Base.:(==)(lhs::SortedIndexedVector, rhs::SortedIndexedVector) = lhs.elements == rhs.elements
