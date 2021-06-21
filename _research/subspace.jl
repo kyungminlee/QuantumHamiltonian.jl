@@ -47,7 +47,7 @@ basis_list = UInt[]
 for (qn1, qn2) in out[(2,)]
     hsr1 = reps1[qn1]
     hsr2 = reps2[qn2]
-    for bvec2 in hsr2.basis_list, bvec1 in hsr1.basis_list
+    for bvec2 in hsr2.basis, bvec1 in hsr1.basis
         bw1 = bitwidth(hsr1)
         bvec = bvec2 << bw1 | bvec1
         push!(basis_list, bvec)

@@ -75,7 +75,8 @@ function product_state(
     )...,)
     for indexarray in index_iterator
         bvec = compress(hs, CartesianIndex(indexarray), BR)
-        idx = get(hsr.basis_lookup, bvec, -1)
+        # idx = get(hsr.basis_lookup, bvec, -1)
+        idx = findindex(hsr.basis, bvec)
         idx <= 0 && continue
         coeff = prod(local_states[i_site][indexarray[i_site]] for i_site in Base.OneTo(n_sites))
         out[idx] = coeff

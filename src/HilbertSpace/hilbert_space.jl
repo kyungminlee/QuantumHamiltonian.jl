@@ -340,3 +340,16 @@ end
 function Base.keys(hs::HilbertSpace{QN}) where QN
     return CartesianIndices(((1:length(site.states) for site in hs.sites)...,))
 end
+
+
+function hs_get_basis_list(hs::HilbertSpace{QN}, binary_type::Type{BR}=UInt)::Vector{BR} where {QN, BR<:Unsigned}
+    if sizeof(BR) * 8 <= bitwidth(hs)
+        throw(ArgumentError("type $(BR) not enough to represent the hilbert space (need $(bitwidth(hs)) bits)"))
+    end
+    basis_list = BR[]
+    for indexarray in keys(hs)
+        push!(basis_list, compress(hs, indexarray, BR))
+    end
+    sort!(basis_list)
+    return basis_list
+end

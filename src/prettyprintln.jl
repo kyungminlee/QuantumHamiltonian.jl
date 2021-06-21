@@ -24,7 +24,7 @@ end
 function prettyprintln(io::IO, hsr::HilbertSpaceRepresentation; prefix::AbstractString="")
     n = bitwidth(hsr)
     println(io, prefix, "HilbertSpaceRepresentation")
-    for bvec in hsr.basis_list
+    for bvec in hsr.basis
         println(io, prefix, "| ", string(bvec, base=2, pad=n))
     end
 end
@@ -32,8 +32,8 @@ end
 function prettyprintln(io::IO, rhsr::ReducedHilbertSpaceRepresentation; prefix::AbstractString="")
     n = bitwidth(rhsr)
     println(io, prefix, "ReducedHilbertSpaceRepresentation")
-    println(io, prefix, "| basis_list")
-    for bvec in rhsr.basis_list
+    println(io, prefix, "| basis")
+    for bvec in rhsr.basis
         println(io, prefix, "| | ", string(bvec, base=2, pad=n))
     end
     println(io, prefix, "| basis_mapping")

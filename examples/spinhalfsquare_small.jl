@@ -109,7 +109,7 @@ if true
                 # println("      psym irrep component: $(psym_irrep_compo)")
                 # println("      hilbert dimension: $(dimension(rhssr))")
                 #
-                # for bvec in rhssr.basis_list
+                # for bvec in rhssr.basis
                 #     println(string(bvec, base=2, pad=9))
                 # end
                 # println()

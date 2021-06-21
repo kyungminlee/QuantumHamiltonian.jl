@@ -32,19 +32,19 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
 
     for symred in [symmetry_reduce, symmetry_reduce_serial, symmetry_reduce_parallel]
         rhsr = symred(hsr, IrrepComponent(tsymbed, 1))
-        @test rhsr.basis_list == UInt[0b0011, 0b0101]
+        @test rhsr.basis == UInt[0b0011, 0b0101]
         @test rhsr.parent === hsr
 
         rhsr = symred(hsr, IrrepComponent(tsymbed, 2))
-        @test rhsr.basis_list == UInt[0b0011]
+        @test rhsr.basis == UInt[0b0011]
         @test rhsr.parent === hsr
 
         rhsr = symred(hsr, IrrepComponent(tsymbed, 3))
-        @test rhsr.basis_list == UInt[0b0011, 0b0101]
+        @test rhsr.basis == UInt[0b0011, 0b0101]
         @test rhsr.parent === hsr
 
         rhsr = symred(hsr, IrrepComponent(tsymbed, 4))
-        @test rhsr.basis_list == UInt[0b0011]
+        @test rhsr.basis == UInt[0b0011]
         @test rhsr.parent === hsr
 
         tol = Base.rtoldefault(Float64)
@@ -52,16 +52,16 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
         for tsic in get_irrep_components(tsymbed)
             rhsr = symred(hsr, tsic)
             count_translation += dimension(rhsr)
-            for (i_p, b) in enumerate(hsr.basis_list)
-                if b in rhsr.basis_list
+            for (i_p, b) in enumerate(hsr.basis)
+                if b in rhsr.basis
                     @test 1 <= rhsr.basis_mapping_index[i_p] <= dimension(rhsr)
-                    @test rhsr.basis_list[rhsr.basis_mapping_index[i_p]] == b
+                    @test rhsr.basis[rhsr.basis_mapping_index[i_p]] == b
                     @test isapprox(imag(rhsr.basis_mapping_amplitude[i_p]), 0; atol=tol)
                 end
             end
             for (i_p, i_r) in enumerate(rhsr.basis_mapping_index)
                 if i_r == -1
-                    @test ! (rhsr.parent.basis_list[i_p] in rhsr.basis_list)
+                    @test ! (rhsr.parent.basis[i_p] in rhsr.basis)
                 end
             end
 
@@ -102,24 +102,24 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
         #                               0011,   0101,   0110,   1001,   1010,   1100
         #                               1001    0101    1100    0011    1010    0110
         rhsr = symred(hsr, IrrepComponent(psymbed, 1))
-        @test rhsr.basis_list == UInt[0b0011, 0b0101, 0b0110, 0b1010]
+        @test rhsr.basis == UInt[0b0011, 0b0101, 0b0110, 0b1010]
         rhsr = symred(hsr, IrrepComponent(psymbed, 2))
-        @test rhsr.basis_list == UInt[0b0011, 0b0110]
+        @test rhsr.basis == UInt[0b0011, 0b0110]
 
         count_point = 0
         for psic in get_irrep_components(psymbed)
             rhsr = symred(hsr, psic)
             count_point += dimension(rhsr)
-            for (i_p, b) in enumerate(hsr.basis_list)
-                if b in rhsr.basis_list
+            for (i_p, b) in enumerate(hsr.basis)
+                if b in rhsr.basis
                     @test 1 <= rhsr.basis_mapping_index[i_p] <= dimension(rhsr)
-                    @test rhsr.basis_list[rhsr.basis_mapping_index[i_p]] == b
+                    @test rhsr.basis[rhsr.basis_mapping_index[i_p]] == b
                     @test isapprox(imag(rhsr.basis_mapping_amplitude[i_p]), 0; atol=tol)
                 end
             end
             for (i_p, i_r) in enumerate(rhsr.basis_mapping_index)
                 if i_r == -1
-                    @test ! (rhsr.parent.basis_list[i_p] in rhsr.basis_list)
+                    @test ! (rhsr.parent.basis[i_p] in rhsr.basis)
                 end
             end
         end # for psic
@@ -127,33 +127,33 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
         # space symmetry
         let ssic = first(get_irrep_components(ssymbed))
             rhsr = symred(hsr, ssic)
-            @test rhsr.basis_list == UInt[0b0011, 0b0101]
+            @test rhsr.basis == UInt[0b0011, 0b0101]
         end
         let ssic = SymmorphicIrrepComponent(IrrepComponent(tsymbed, 1, 1),
                                             IrrepComponent(psymbed, 1, 1))
             rhsr = symred(hsr, ssic)
-            @test rhsr.basis_list == UInt[0b0011, 0b0101]
+            @test rhsr.basis == UInt[0b0011, 0b0101]
         end
         let ssic = SymmorphicIrrepComponent(IrrepComponent(tsymbed, 1, 1),
                                             IrrepComponent(psymbed, 2, 1))
             rhsr = symred(hsr, ssic)
-            @test rhsr.basis_list == UInt[]
+            @test rhsr.basis == UInt[]
         end
 
         count_space = 0
         for ssic in get_irrep_components(ssymbed)
             rhsr = symred(hsr, ssic)
             count_space += dimension(rhsr)
-            for (i_p, b) in enumerate(hsr.basis_list)
-                if b in rhsr.basis_list
+            for (i_p, b) in enumerate(hsr.basis)
+                if b in rhsr.basis
                     @test 1 <= rhsr.basis_mapping_index[i_p] <= dimension(rhsr)
-                    @test rhsr.basis_list[rhsr.basis_mapping_index[i_p]] == b
+                    @test rhsr.basis[rhsr.basis_mapping_index[i_p]] == b
                     @test isapprox(imag(rhsr.basis_mapping_amplitude[i_p]), 0; atol=tol)
                 end
             end
             for (i_p, i_r) in enumerate(rhsr.basis_mapping_index)
                 if i_r == -1
-                    @test ! (rhsr.parent.basis_list[i_p] in rhsr.basis_list)
+                    @test ! (rhsr.parent.basis[i_p] in rhsr.basis)
                 end
             end
         end # for ssic
@@ -187,8 +187,8 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
         tsymbed = embed(lattice, tsym)
         tsic = IrrepComponent(tsymbed, 2, 1)
         rhsr = symmetry_reduce(hsr, tsic)
-        @test hsr.basis_list == UInt[0b0000001, 0b0000010, 0b0000100, 0b0001000, 0b0010000, 0b0100000, 0b1000000]
-        @test rhsr.basis_list == UInt[0b0000001]
+        @test hsr.basis == UInt[0b0000001, 0b0000010, 0b0000100, 0b0001000, 0b0010000, 0b0100000, 0b1000000]
+        @test rhsr.basis == UInt[0b0000001]
         ψk = symmetry_unreduce(rhsr, [1.0])
         @test isapprox(ψk, [cis(2π * i/n_sites) / sqrt(n_sites) for i in 0:(n_sites-1)]; atol=Base.rtoldefault(Float64))
     end
@@ -205,8 +205,8 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
         rhsr = symmetry_reduce(hsr, tsic)
 
         # opposite order
-        @test hsr.basis_list == UInt[0b0111111, 0b1011111, 0b1101111, 0b1110111, 0b1111011, 0b1111101, 0b1111110]
-        @test rhsr.basis_list == UInt[0b0111111]
+        @test hsr.basis == UInt[0b0111111, 0b1011111, 0b1101111, 0b1110111, 0b1111011, 0b1111101, 0b1111110]
+        @test rhsr.basis == UInt[0b0111111]
         ψk = symmetry_unreduce(rhsr, [1.0])
         @test isapprox(ψk, [cis(-2π * i/n_sites) / sqrt(n_sites) for i in 0:(n_sites-1)]; atol=Base.rtoldefault(Float64))
     end

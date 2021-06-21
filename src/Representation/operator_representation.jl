@@ -68,11 +68,12 @@ function get_row_iterator(
     irow::Integer
 ) where {HSR, S, O}
     hsr = opr.hilbert_space_representation
-    brow = hsr.basis_list[irow]
-    basis_lookup = hsr.basis_lookup
+    brow = hsr.basis[irow]
+    # basis_lookup = hsr.basis_lookup
     operator = opr.operator
     iter = (
-        get(basis_lookup, bcol, -1) => amplitude
+        # get(basis_lookup, bcol, -1) => amplitude
+        findindex(hsr.basis, bcol) => amplitude
             for (bcol, amplitude) in get_row_iterator(operator, brow)
     )
     return iter
@@ -92,11 +93,12 @@ function get_column_iterator(
     icol::Integer
 ) where {HSR, S, O}
     hsr = opr.hilbert_space_representation
-    bcol = hsr.basis_list[icol]
-    basis_lookup = hsr.basis_lookup
+    bcol = hsr.basis[icol]
+    # basis_lookup = hsr.basis_lookup
     operator = opr.operator
     iter = (
-        get(basis_lookup, brow, -1) => amplitude
+        # get(basis_lookup, brow, -1) => amplitude
+        findindex(hsr.basis, brow) => amplitude
             for (brow, amplitude) in get_column_iterator(operator, bcol)
     )
     return iter
@@ -108,13 +110,13 @@ end
 """
 function get_element(opr::OperatorRepresentation{HSR, S, O}, irow::Integer, icol::Integer) where {HSR, S, O}
     hsr = opr.hilbert_space_representation
-    @boundscheck let dim = length(hsr.basis_list)
+    @boundscheck let dim = length(hsr.basis)
         if irow <= 0 || irow > dim || icol <= 0 || icol > dim
             throw(BoundsError(opr, [irow, icol]))
         end
     end
-    @inbounds brow = hsr.basis_list[irow]
-    @inbounds bcol = hsr.basis_list[icol]
+    @inbounds brow = hsr.basis[irow]
+    @inbounds bcol = hsr.basis[icol]
     return get_element(opr.operator, brow, bcol)
 end
 

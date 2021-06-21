@@ -13,28 +13,29 @@ Currently only supports Translation group (i.e. Abelian group).
 struct ReducedHilbertSpaceRepresentation{
     HSR<:HilbertSpaceRepresentation,
     BR<:Unsigned,
-    C<:Number
+    C<:Number,
+    IV<:AbstractIndexedVector{BR}
 }<:AbstractHilbertSpaceRepresentation{C}
     parent::HSR
-    basis_list::Vector{BR}
+    basis::IV
     basis_mapping_index::Vector{Int} # has size of parent dimension. each index item contains index at reduced basis, or -1 if not included
     basis_mapping_amplitude::Vector{C}
 end
 
 
-Base.valtype(::Type{ReducedHilbertSpaceRepresentation{HSR, BR, C}}) where {HSR, BR, C} = C
-scalartype(::Type{ReducedHilbertSpaceRepresentation{HSR, BR, C}}) where {HSR, BR, C} = C
-bintype(::Type{ReducedHilbertSpaceRepresentation{HSR, BR, C}}) where {HSR, BR, C} = BR
+Base.valtype(::Type{ReducedHilbertSpaceRepresentation{HSR, BR, C, IV}}) where {HSR, BR, C, IV} = C
+scalartype(::Type{ReducedHilbertSpaceRepresentation{HSR, BR, C, IV}}) where {HSR, BR, C, IV} = C
+bintype(::Type{ReducedHilbertSpaceRepresentation{HSR, BR, C, IV}}) where {HSR, BR, C, IV} = BR
 
 
 basespace(lhs::ReducedHilbertSpaceRepresentation) = basespace(lhs.parent)
 
 
 @inline function get_basis_state(hsr::ReducedHilbertSpaceRepresentation, index::Integer)
-    return hsr.basis_list[index]
+    return hsr.basis[index]
 end
 
-@inline function get_basis_index_amplitude(hsr::ReducedHilbertSpaceRepresentation{HSR, BR, C}, bvec::Unsigned) where {HSR, BR, C}
+@inline function get_basis_index_amplitude(hsr::ReducedHilbertSpaceRepresentation{HSR, BR, C, IV}, bvec::Unsigned) where {HSR, BR, C, IV}
     i, a = get_basis_index_amplitude(hsr.parent, bvec)
     if i <= 0
         return (index=i, amplitude=zero(C))
@@ -49,4 +50,4 @@ end
 
 Dimension of the given reduced hilbert space representation, i.e. number of basis elements.
 """
-dimension(arg::ReducedHilbertSpaceRepresentation) = length(arg.basis_list)
+dimension(arg::ReducedHilbertSpaceRepresentation) = length(arg.basis)
