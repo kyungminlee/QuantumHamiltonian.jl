@@ -5,12 +5,20 @@ using QuantumHamiltonian
     elems = ["A", "BB", "CCC"]
     for VT in [DictIndexedVector, SortedIndexedVector]
         v = VT(elems)
-        v1 = VT{String}(elems)
-        v2 = VT(["A"])
-        @test v == v1
-        @test v != v2
-        @test hash(v) == hash(v1)
-        @test hash(v) != hash(v2)
+        let
+            v1 = VT{String}(elems)
+            @test v == v1
+            @test hash(v) == hash(v1)
+            v2 = VT(["A"])
+            @test v != v2
+            @test hash(v) != hash(v2)
+            if VT == DictIndexedVector
+                lookup = Dict(v => i for (i, v) in enumerate(elems))
+                v3 = VT{String}(elems, lookup)
+                @test v1 == v3
+            end
+        end
+        @test eltype(v) == String
         @test v[1] == "A"
         @test v[2] == "BB"
         @test v[3] == "CCC"
@@ -24,6 +32,7 @@ using QuantumHamiltonian
         @test "CCC" in v
         @test !("DDDD" in v)
         @test [x for x in v] == elems
+        @test collect(v) == elems
         @test length(v) == 3
         @test size(v) == (3,)
         @test size(v, 1) == 3
