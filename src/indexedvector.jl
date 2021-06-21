@@ -19,11 +19,19 @@ struct DictIndexedVector{E} <: AbstractIndexedVector{E}
     elements::Vector{E}
     lookup::Dict{E, Int}
     function DictIndexedVector(elements::AbstractVector{E}) where {E}
-        lookup = Dict(v => k for (k, v) in enumerate(elements))
+        lookup = Dict{E, Int}()
+        sizehint!(lookup, length(elements) + length(elements) ÷ 4)
+        for (i, v) in enumerate(elements)
+            lookup[v] = i
+        end
         return new{E}(elements, lookup)
     end
     function DictIndexedVector{E}(elements) where {E}
-        lookup = Dict(v => k for (k, v) in enumerate(elements))
+        lookup = Dict{E, Int}()
+        sizehint!(lookup, length(elements) + length(elements) ÷ 4)
+        for (i, v) in enumerate(elements)
+            lookup[v] = i
+        end
         return new{E}(elements, lookup)
     end
     function DictIndexedVector{E}(elements::AbstractVector{E}, lookup::AbstractDict{E, Int}) where {E}
@@ -31,7 +39,7 @@ struct DictIndexedVector{E} <: AbstractIndexedVector{E}
     end
 end
 
-findindex(obj::DictIndexedVector{E}, key::E) where E = get(obj.lookup, key, -1)
+findindex(obj::DictIndexedVector, val) where E = get(obj.lookup, val, -1)
 Base.getindex(obj::DictIndexedVector, idx::Integer) = obj.elements[idx]
 Base.in(val, obj::DictIndexedVector) = haskey(obj.lookup, val)
 
@@ -45,11 +53,13 @@ Base.length(obj::DictIndexedVector) = length(obj.elements)
 Base.size(obj::DictIndexedVector, args...) = size(obj.elements, args...)
 
 Base.hash(obj::V, h::UInt) where {V<:DictIndexedVector} = hash(V, hash(obj.elements, h))
-Base.:(==)(lhs::DictIndexedVector, rhs::DictIndexedVector) = lhs.elements == rhs.elements
+# Base.:(==)(lhs::DictIndexedVector, rhs::DictIndexedVector) = lhs.elements == rhs.elements
+# Base.:(==)(lhs::DictIndexedVector, rhs::AbstractVector) = lhs.elements == rhs
+# Base.:(==)(lhs::AbstractVector, rhs::DictIndexedVector) = lhs == rhs.elements
 
 """
 """
-struct SortedIndexedVector{E}
+struct SortedIndexedVector{E} <: AbstractIndexedVector{E}
     elements::Vector{E}
 
     function SortedIndexedVector{E}(elements) where E
@@ -91,4 +101,6 @@ Base.length(obj::SortedIndexedVector) = length(obj.elements)
 Base.size(obj::SortedIndexedVector, args...) = size(obj.elements, args...)
 
 Base.hash(obj::V, h::UInt) where {V<:SortedIndexedVector} = hash(V, hash(obj.elements, h))
-Base.:(==)(lhs::SortedIndexedVector, rhs::SortedIndexedVector) = lhs.elements == rhs.elements
+# Base.:(==)(lhs::SortedIndexedVector, rhs::SortedIndexedVector) = lhs.elements == rhs.elements
+# Base.:(==)(lhs::SortedIndexedVector, rhs::AbstractVector) = lhs.elements == rhs
+# Base.:(==)(lhs::AbstractVector, rhs::SortedIndexedVector) = lhs == rhs.elements

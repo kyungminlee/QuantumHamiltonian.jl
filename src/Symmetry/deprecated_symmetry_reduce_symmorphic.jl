@@ -19,7 +19,7 @@ function symmetry_reduce_serial(
 
     HSR = HilbertSpaceRepresentation{QN, BR, DT}
 
-    n_basis = length(hsr.basis_list)
+    n_basis = length(hsr.basis)
 
     basis_mapping_representative = Vector{Int}(undef, n_basis)
     fill!(basis_mapping_representative, -1)
@@ -64,7 +64,7 @@ function symmetry_reduce_serial(
 
     for ivec_p in 1:n_basis
         visited[ivec_p] && continue
-        bvec = hsr.basis_list[ivec_p]
+        bvec = hsr.basis[ivec_p]
 
         compatible = true
         for i in 2:subgroup_size
@@ -93,7 +93,8 @@ function symmetry_reduce_serial(
         end
         inv_norm = inv(sqrt(float(length(basis_amplitudes))))
         for (bvec_prime, amplitude) in basis_amplitudes
-            ivec_p_prime = hsr.basis_lookup[bvec_prime]
+            # ivec_p_prime = hsr.basis_lookup[bvec_prime]
+            ivec_p_prime = findindex(hsr.basis, bvec_prime)
             visited[ivec_p_prime] = true
             basis_mapping_representative[ivec_p_prime] = ivec_p
             basis_mapping_amplitude[ivec_p_prime] = amplitude * inv_norm
@@ -104,7 +105,8 @@ function symmetry_reduce_serial(
     fill!(basis_mapping_index, -1)
 
     for (ivec_r, bvec) in enumerate(reduced_basis_list)
-        ivec_p = hsr.basis_lookup[bvec]
+        # ivec_p = hsr.basis_lookup[bvec]
+        ivec_p = findindex(hsr.basis, bvec)
         basis_mapping_index[ivec_p] = ivec_r
     end
 
@@ -118,10 +120,12 @@ function symmetry_reduce_serial(
     RHSR = ReducedHilbertSpaceRepresentation{
         HSR,
         BR,
-        ComplexType
+        ComplexType,
+        SortedIndexedVector{BR}
     }
+    reduced_basis = SortedIndexedVector(reduced_basis_list)
     return RHSR(
-        hsr, reduced_basis_list,
+        hsr, reduced_basis,
         basis_mapping_index, basis_mapping_amplitude
     )
 end
@@ -149,7 +153,7 @@ function symmetry_reduce_parallel(
     HSR = HilbertSpaceRepresentation{QN, BR, DT}
     @debug "BEGIN symmetry_reduce_parallel"
 
-    n_basis = length(hsr.basis_list)
+    n_basis = length(hsr.basis)
     @debug "Original Hilbert space dimension: $n_basis"
 
     # basis_mapping_index and basis_mapping_amplitude contain information about
@@ -217,7 +221,7 @@ function symmetry_reduce_parallel(
         (visited[ivec_p] != 0x0) && continue
 
         id = Threads.threadid()
-        bvec = hsr.basis_list[ivec_p]
+        bvec = hsr.basis[ivec_p]
 
         # A basis binary representation is incompatible with the reduced Hilbert space if
         # (1) it is not the smallest among the its star, or
@@ -250,7 +254,8 @@ function symmetry_reduce_parallel(
         end
         inv_norm = inv(sqrt(float(length(local_basis_amplitudes[id]))))
         for (bvec_prime, amplitude) in local_basis_amplitudes[id]
-            ivec_p_prime = hsr.basis_lookup[bvec_prime]
+            # ivec_p_prime = hsr.basis_lookup[bvec_prime]
+            ivec_p_prime = findindex(hsr.basis, bvec_prime)
             visited[ivec_p_prime] = 0x1
             basis_mapping_representative[ivec_p_prime] = ivec_p
             basis_mapping_amplitude[ivec_p_prime] = amplitude * inv_norm
@@ -276,7 +281,8 @@ function symmetry_reduce_parallel(
 
     Threads.@threads for ivec_r in eachindex(reduced_basis_list)
         bvec = reduced_basis_list[ivec_r]
-        ivec_p = hsr.basis_lookup[bvec]
+        # ivec_p = hsr.basis_lookup[bvec]
+        ivec_p = findindex(hsr.basis, bvec)
         basis_mapping_index[ivec_p] = ivec_r
     end
     @debug "Collected basis lookup (diagonal)"
@@ -294,10 +300,12 @@ function symmetry_reduce_parallel(
     RHSR = ReducedHilbertSpaceRepresentation{
         HSR,
         BR,
-        ComplexType
+        ComplexType,
+        SortedIndexedVector{BR}
     }
+    reduced_basis = SortedIndexedVector(reduced_basis_list)
     return RHSR(
-        hsr, reduced_basis_list,
+        hsr, reduced_basis,
         basis_mapping_index, basis_mapping_amplitude
     )
 end

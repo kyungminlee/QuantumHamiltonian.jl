@@ -45,7 +45,7 @@ for tsym_irrep_index in 1:num_irreps(tsym)
     rhsr = symmetry_reduce_serial(hsr, lattice, tsym, tsym_irrep_index)
     # @show rhsr
     # @show rhsr.parent
-    # @show rhsr.basis_list
+    # @show rhsr.basis
     # @show rhsr.basis_mapping_index
     # @show rhsr.basis_mapping_amplitude
     # # println()

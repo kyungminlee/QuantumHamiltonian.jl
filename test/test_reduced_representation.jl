@@ -124,13 +124,13 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
     
     j1_rep = represent(hsr, j1)
     j1_mat = Matrix(j1_rep)
-    @test hsr.basis_list == [0b0011, 0b0101, 0b0110, 0b1001, 0b1010, 0b1100]
+    @test hsr.basis == [0b0011, 0b0101, 0b0110, 0b1001, 0b1010, 0b1100]
     
     @testset "ROR" begin
         #rhsr = symmetry_reduce(hsr, translation_group, [0//1])
         rhsr = symmetry_reduce(hsr, IrrepComponent(tsymbed, 1, 1))
         @test dimension(rhsr) == 2
-        @test rhsr.basis_list == UInt[0b0011, 0b0101]
+        @test collect(rhsr.basis) == UInt[0b0011, 0b0101]
         dim = dimension(rhsr)
         
         j1_redrep = represent(rhsr, j1)
@@ -417,13 +417,13 @@ end
     #=
     j1_rep = represent(hsr, j1)
     j1_mat = Matrix(j1_rep)
-    @test hsr.basis_list == [0b0011, 0b0101, 0b0110, 0b1001, 0b1010, 0b1100]
+    @test hsr.basis == [0b0011, 0b0101, 0b0110, 0b1001, 0b1010, 0b1100]
     
     @testset "ROR" begin
         #rhsr = symmetry_reduce(hsr, translation_group, [0//1])
         rhsr = symmetry_reduce(hsr, IrrepComponent(tsymbed, 1, 1))
         @test dimension(rhsr) == 2
-        @test rhsr.basis_list == UInt[0b0011, 0b0101]
+        @test rhsr.basis == UInt[0b0011, 0b0101]
         dim = dimension(rhsr)
         
         j1_redrep = represent(rhsr, j1)
