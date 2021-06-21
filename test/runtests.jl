@@ -3,6 +3,7 @@ using QuantumHamiltonian
 
 include("test_util.jl")
 include("test_frozensortedarray.jl")
+include("test_indexedvector.jl")
 
 include("test_hilbert_space.jl")
 include("test_hilbert_space_sector.jl")
