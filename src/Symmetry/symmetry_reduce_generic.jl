@@ -4,22 +4,38 @@ export make_symmetrizer
 using LatticeTools
 
 
+"""
+    symmetry_reduce(hsr, lattice, symmetry_irrep_component, complex_type=ComplexF64, tol=√ϵ)
+
+Symmetry-reduce the HilbertSpaceRepresentation using translation group.
+
+"""
 function symmetry_reduce(
-    hsr::HilbertSpaceRepresentation{QN, BR, DT},
+    hsr::HilbertSpaceRepresentation,
+    ssic::AbstractSymmetryIrrepComponent;
+    tol::Real=Base.rtoldefault(Float64)
+)
+    symred = Threads.nthreads() == 1 ? symmetry_reduce_serial : symmetry_reduce_parallel
+    return symred(hsr, ssic; tol=tol)
+end
+
+
+function symmetry_reduce(
+    hsr::HilbertSpaceRepresentation,
     symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+) where {OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     symred = Threads.nthreads() == 1 ? symmetry_reduce_serial : symmetry_reduce_parallel
     return symred(hsr, symops_and_amplitudes; tol=tol)
 end
 
 
 function symmetry_reduce(
-    hsr::HilbertSpaceRepresentation{QN, BR, DT},
+    hsr::HilbertSpaceRepresentation,
     symops::AbstractArray{OperationType},
     amplitudes::AbstractArray{InputScalarType};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+) where {OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     symred = Threads.nthreads() == 1 ? symmetry_reduce_serial : symmetry_reduce_parallel
     return symred(hsr, symops, amplitudes; tol=tol)
 end
@@ -31,10 +47,10 @@ end
 The irreps have to follow certain order.
 """
 function symmetry_reduce_serial(
-    hsr::HilbertSpaceRepresentation{QN, BR, DT},
+    hsr::HilbertSpaceRepresentation,
     symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+) where {OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     symops = [x for (x, y) in symops_and_amplitudes]
     amplitudes = [y for (x, y) in symops_and_amplitudes]
     return symmetry_reduce_serial(hsr, symops, amplitudes; tol=tol)
@@ -42,11 +58,11 @@ end
 
 
 function symmetry_reduce_serial(
-    hsr::HilbertSpaceRepresentation{QN, BR, DT},
+    hsr::HilbertSpaceRepresentation{QN, BR, BT},
     symops::AbstractArray{OperationType},
     amplitudes::AbstractArray{InputScalarType};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+) where {QN, BR, BT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     if length(symops) != length(amplitudes)
         throw(ArgumentError("number of symmetry operations and number of amplitudes should match ($(length(symops)) != $(length(amplitudes)))"))
     elseif length(symops) < 1
@@ -145,7 +161,7 @@ function symmetry_reduce_serial(
         basis_mapping_index[ivec_p_prime] = ivec_r
     end
 
-    HSR = HilbertSpaceRepresentation{QN, BR, DT}
+    HSR = HilbertSpaceRepresentation{QN, BR, BT}
     RHSR = ReducedHilbertSpaceRepresentation{HSR, BR, ScalarType, SortedIndexedVector{BR}}
     reduced_basis = SortedIndexedVector{BR}(reduced_basis_list)
     return RHSR(hsr, reduced_basis, basis_mapping_index, basis_mapping_amplitude)
@@ -159,10 +175,10 @@ Symmetry-reduce the HilbertSpaceRepresentation using translation group (multi-th
 
 """
 function symmetry_reduce_parallel(
-    hsr::HilbertSpaceRepresentation{QN, BR, DT},
+    hsr::HilbertSpaceRepresentation,
     symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+) where {OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     symops = [x for (x, y) in symops_and_amplitudes]
     amplitudes = [y for (x, y) in symops_and_amplitudes]
     return symmetry_reduce_parallel(hsr, symops, amplitudes; tol=tol)
@@ -170,11 +186,11 @@ end
 
 
 function symmetry_reduce_parallel(
-    hsr::HilbertSpaceRepresentation{QN, BR, DT},
+    hsr::HilbertSpaceRepresentation{QN, BR, BT},
     symops::AbstractArray{OperationType},
     amplitudes::AbstractArray{InputScalarType};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {QN, BR, DT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+) where {QN, BR, BT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     @debug "BEGIN symmetry_reduce_parallel"
     if length(symops) != length(amplitudes)
         throw(ArgumentError("number of symmetry operations and number of amplitudes should match ($(length(symops)) != $(length(amplitudes)))"))
@@ -328,7 +344,7 @@ function symmetry_reduce_parallel(
     @debug "Collected basis lookup (offdiagonal)"
 
     @debug "END symmetry_reduce_parallel"
-    HSR = HilbertSpaceRepresentation{QN, BR, DT}
+    HSR = HilbertSpaceRepresentation{QN, BR, BT}
     RHSR = ReducedHilbertSpaceRepresentation{HSR, BR, ScalarType, SortedIndexedVector{BR}}
     reduced_basis = SortedIndexedVector(reduced_basis_list)
     return RHSR(hsr, reduced_basis, basis_mapping_index, basis_mapping_amplitude)
