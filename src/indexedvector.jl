@@ -33,18 +33,18 @@ end
 
 findindex(obj::DictIndexedVector{E}, key::E) where E = get(obj.lookup, key, -1)
 Base.getindex(obj::DictIndexedVector, idx::Integer) = obj.elements[idx]
-Base.in(obj::DictIndexedVector, key) = haskey(obj.lookup, key)
+Base.in(val, obj::DictIndexedVector) = haskey(obj.lookup, val)
 
 Base.iterate(obj::DictIndexedVector) = iterate(obj.elements)
 Base.iterate(obj::DictIndexedVector, state) = iterate(obj.elements, state)
 
-Base.IteratorSize(::Type{<:DictIndexedVector}) = Base.HasLength()
 Base.IteratorEltype(::Type{<:DictIndexedVector}) = Base.HasEltype()
+Base.IteratorSize(::Type{<:DictIndexedVector}) = Base.HasLength()
 Base.eltype(::Type{DictIndexedVector{E}}) where E = E
 Base.length(obj::DictIndexedVector) = length(obj.elements)
 Base.size(obj::DictIndexedVector, args...) = size(obj.elements, args...)
 
-Base.hash(obj::D, h::UInt) where {D<:DictIndexedVector} = hash(D, hash(obj.elements, h))
+Base.hash(obj::V, h::UInt) where {V<:DictIndexedVector} = hash(V, hash(obj.elements, h))
 Base.:(==)(lhs::DictIndexedVector, rhs::DictIndexedVector) = lhs.elements == rhs.elements
 
 """
@@ -79,16 +79,16 @@ end
     return (idx <= length(arr.elements) && @inbounds arr.elements[idx] == val) ? idx : -1
 end
 Base.getindex(obj::SortedIndexedVector, idx::Integer) = obj.elements[idx]
-Base.in(obj::SortedIndexedVector, val) = (findindex(obj, val) > 0)
+Base.in(val, obj::SortedIndexedVector) = (findindex(obj, val) > 0)
 
 Base.iterate(obj::SortedIndexedVector) = iterate(obj.elements)
 Base.iterate(obj::SortedIndexedVector, state) = iterate(obj.elements, state)
 
-Base.IteratorSize(::Type{<:SortedIndexedVector}) = Base.HasLength()
 Base.IteratorEltype(::Type{<:SortedIndexedVector}) = Base.HasEltype()
+Base.IteratorSize(::Type{<:SortedIndexedVector}) = Base.HasLength()
 Base.eltype(::Type{SortedIndexedVector{E}}) where E = E
 Base.length(obj::SortedIndexedVector) = length(obj.elements)
 Base.size(obj::SortedIndexedVector, args...) = size(obj.elements, args...)
 
-Base.hash(obj::D, h::UInt) where {D<:SortedIndexedVector} = hash(D, hash(obj.elements, h))
+Base.hash(obj::V, h::UInt) where {V<:SortedIndexedVector} = hash(V, hash(obj.elements, h))
 Base.:(==)(lhs::SortedIndexedVector, rhs::SortedIndexedVector) = lhs.elements == rhs.elements
