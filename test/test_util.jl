@@ -12,6 +12,16 @@ using QuantumHamiltonian
         @test make_bitmask(5, 3) == 0b11000
     end
 
+    @testset "bitsplit/bitjoin" begin
+        bvec = UInt(0b101_1011_010)
+        bw = (3,4,3)
+        bvecs = bitsplit(bw, bvec)
+        bvec2 = bitjoin(bw, bvecs)
+        @test bvecs == (UInt(0b010), UInt(0b1011), UInt(0b101))
+        @test bvec == bvec2
+        @test bitjoin(bw, (UInt(0b1111111), UInt(0b0), UInt(0b1111111))) == UInt(0b1110000111) # test for bit overflow
+    end
+
     @testset "compress" begin
         bitwidth = [2, 3, 1, 2]
         @test compress(bitwidth, [1,2,0,1], UInt) == UInt(0b01_0_010_01)

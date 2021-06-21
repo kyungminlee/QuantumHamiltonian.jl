@@ -1,9 +1,12 @@
 export HilbertSpace
-export quantum_number_sectors, get_quantum_number, extract, uncompress, compress, update, get_state, get_state_index
+import LatticeTools.numsites
+export numsites, get_site
+export quantum_number_sectors, get_quantum_numbers, get_quantum_number
+export extract, uncompress, compress, update, get_state, get_state_index
 export get_bitmask
+export get_tag, get_tags
 export bitwidth, bitoffset
-export scalartype
-export qntype
+export scalartype, qntype
 export basespace
 
 
@@ -76,6 +79,10 @@ Get the base space of the HilbertSpace `hs`, which is itself.
 """
 basespace(hs::HilbertSpace) = hs
 
+numsites(hs::HilbertSpace) = length(hs.sites)
+
+get_site(hs::HilbertSpace, i::Integer) = hs.sites[i]
+
 
 """
     bitwidth(hs, [isite])
@@ -120,11 +127,11 @@ end
 
 
 """
-    quantum_number_sectors(hs)
+    get_quantum_numbers(hs)
 
 Return a sorted list of quantum numbers of the hilbert space `hs`.
 """
-function quantum_number_sectors(hs::HilbertSpace{QN})::Vector{QN} where QN
+function get_quantum_numbers(hs::HilbertSpace{QN})::Vector{QN} where QN
     qns = Set{QN}([tuplezero(QN)])
     for site in hs.sites
         qns_next = Set{QN}()
@@ -136,13 +143,14 @@ function quantum_number_sectors(hs::HilbertSpace{QN})::Vector{QN} where QN
     return sort(collect(qns))
 end
 
+quantum_number_sectors(hs::HilbertSpace{QN}) where QN = get_quantum_numbers(hs)
 
 """
     get_quantum_number(hs, rep)
 
 Get the quantum number of `rep`, which is either a binary representation, or a `CartesianIndex`.
 """
-function get_quantum_number(hs::HilbertSpace{QN}, binrep::BR) where {QN, BR}
+function get_quantum_number(hs::HilbertSpace, binrep::Unsigned)
     return mapreduce(
         identity,
         tupleadd,
@@ -153,7 +161,7 @@ function get_quantum_number(hs::HilbertSpace{QN}, binrep::BR) where {QN, BR}
     )
 end
 
-function get_quantum_number(hs::HilbertSpace{QN}, indexarray::AbstractArray{I, 1}) where {QN, I<:Integer}
+function get_quantum_number(hs::HilbertSpace, indexarray::AbstractVector{<:Integer})
     return mapreduce(
         identity,
         tupleadd,
@@ -162,6 +170,9 @@ function get_quantum_number(hs::HilbertSpace{QN}, indexarray::AbstractArray{I, 1
     )
 end
 
+# TODO: introduce TagStrategy template argument for HilbertSpace
+get_tag(hs::HilbertSpace, binrep::Unsigned) = get_quantum_number(hs, binrep)
+get_tags(hs::HilbertSpace) = quantum_number_sectors(hs)
 
 """
     extract(hs, binrep)
@@ -279,7 +290,7 @@ by changing the state at site `isite` to a new local state specified by
     @boundscheck if !(1 <= new_state_index <= dimension(hs.sites[isite]))
         throw(BoundsError(1:dimension(hs.sites[isite]), new_state_index))
     end
-    mask = make_bitmask(hs.bitoffsets[isite+1], hs.bitoffsets[isite], BR)
+    mask = get_bitmask(hs, isite, BR)
     return (binrep & (~mask)) | (BR(new_state_index-1) << hs.bitoffsets[isite])
 end
 
@@ -291,7 +302,8 @@ Get the *index of* the local state at site `isite` for the basis state
 represented by `binrep`.
 """
 function get_state_index(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-    return Int((binrep >> hs.bitoffsets[isite]) & make_bitmask(hs.bitwidths[isite], BR)) + 1
+    # return Int((binrep >> hs.bitoffsets[isite]) & make_bitmask(hs.bitwidths[isite], BR)) + 1
+    return Int((binrep >> bitoffset(hs, isite)) & make_bitmask(bitwidth(hs, isite), BR)) + 1
 end
 
 
@@ -302,7 +314,7 @@ Get the local state at site `isite` for the basis state
 represented by `binrep`. Returns an object of type `State`
 """
 function get_state(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-    return hs.sites[isite].states[get_state_index(hs, binrep, isite)]
+    return get_site(hs, isite).states[get_state_index(hs, binrep, isite)]
 end
 
 
