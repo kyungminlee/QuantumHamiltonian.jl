@@ -68,13 +68,13 @@ function bitsplit(bitwidths::NTuple{N, Integer}, bvec::BR) where {N, BR<:Unsigne
     return tuple(out...)
 end
 
-function bitjoin(bitwidths::NTuple{N, Integer}, bvecs::NTuple{N, BR}) where {N, BR<:Unsigned}
+function bitjoin(bitwidths::NTuple{N, Integer}, bvecs::NTuple{N, BRi}, ::Type{BR}=BRi) where {N, BRi<:Unsigned, BR<:Unsigned}
     bvec = zero(BR)
     for i in N:-1:1
         wi = bitwidths[i]
         @boundscheck wi >= 0 || throw(ArgumentError("bitwidths should be nonnegative"))
         bi = bvecs[i]
-        mi = make_bitmask(wi, BR)
+        mi = make_bitmask(wi, BRi)
         bvec <<= wi
         bvec |= bi & mi
     end
