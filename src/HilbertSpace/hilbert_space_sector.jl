@@ -70,18 +70,7 @@ end
 Returns the quantum number type of the given hilbert space sector type.
 """
 qntype(::Type{HilbertSpaceSector{QN, HS}}) where {QN, HS} = QN
-qntype(::HilbertSpaceSector{QN, HS}) where {QN, HS} = QN
-
-
-"""
-    basespace(hss)
-
-Get the base space of the `HilbertSpaceSector`, which is
-its parent `HilbertSpace` (with no quantum number restriction).
-"""
-basespace(hss::HilbertSpaceSector) = basespace(hss.parent)
-
-#bitwidth(hss::HilbertSpaceSector) = bitwidth(basespace(hss))
+tagtype(::Type{HilbertSpaceSector{QN, HS}}) where {QN, HS} = QN
 
 function Base.:(==)(lhs::HilbertSpaceSector{QN, HS}, rhs::HilbertSpaceSector{QN, HS}) where {QN, HS}
     return (
@@ -178,13 +167,23 @@ function hs_get_basis_list(hss::HilbertSpaceSector{QN, HS}, binary_type::Type{BR
 end
 
 
+get_quantum_numbers(hss::HilbertSpaceSector) = sort(collect(hss.allowed_quantum_numbers))
+get_tags(hss::HilbertSpaceSector) = get_quantum_numbers(hss)
+quantum_number_sectors(hss::HilbertSpaceSector) = get_quantum_numbers(hss)
 
 
 for fname in [
+    :basespace,
+    :numsites,
+    :get_site,
     :bitwidth,
+    :bitoffset,
     :get_bitmask,
-    :quantum_number_sectors,
     :get_quantum_number,
+    :get_tag,
+    # :get_quantum_numbers,
+    # :quantum_number_sectors,
+    # :get_tags,
     :extract,
     :compress,
     :update,

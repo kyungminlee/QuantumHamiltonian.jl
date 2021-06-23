@@ -41,7 +41,7 @@ using StaticArrays
         @test_throws BoundsError get_bitmask(hs, 5)
         @test_throws BoundsError get_bitmask(hs,-1)
         
-        @test quantum_number_sectors(hs) == [(-4,), (-2,), (0,), (2,), (4,)]
+        @test quantum_number_sectors(hs) == [(0,)]
         @test get_quantum_number(hs, 0b0000) == (4,)
         @test get_quantum_number(hs, 0b0001) == (2,)
         @test get_quantum_number(hs, 0b0010) == (2,)
