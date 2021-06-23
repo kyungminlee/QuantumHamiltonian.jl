@@ -3,14 +3,16 @@ export scalartype, bintype
 
 
 """
-    AbstractHilbertSpaceRepresentation{S}
+    AbstractHilbertSpaceRepresentation{BR, S}
 """
-abstract type AbstractHilbertSpaceRepresentation{S<:Number} end
+abstract type AbstractHilbertSpaceRepresentation{BR<:Unsigned, S<:Number} end
 
+Base.valtype(::T) where {T<:AbstractHilbertSpaceRepresentation} = valtype(T)
+scalartype(::T) where {T<:AbstractHilbertSpaceRepresentation} = scalartype(T)
+bintype(::T) where {T<:AbstractHilbertSpaceRepresentation} = bintype(T)
 
-scalartype(::AbstractHilbertSpaceRepresentation{S}) where S = S
-Base.valtype(::AbstractHilbertSpaceRepresentation{S}) where S = S
-bintype(lhs::AbstractHilbertSpaceRepresentation{S}) where S = bintype(typeof(lhs))
-
+Base.valtype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = S
+scalartype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = S
+bintype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = BR
 
 bitwidth(lhs::AbstractHilbertSpaceRepresentation) = bitwidth(basespace(lhs))

@@ -6,20 +6,14 @@ export get_basis, get_basis_list, get_basis_state, get_basis_index_amplitude
 @inline represent(::Site, istate::Integer, ::Type{BR}=UInt) where {BR} = BR(istate-1)
 
 """
-    HilbertSpaceRepresentation{HS, BR, DictType}
+    HilbertSpaceRepresentation{BR, HS, DictType}
 
-# Fields
-```
-hilbert_space :: HS
-basis_list    :: Vector{BR}
-basis_lookup  :: DictType
-```
 """
 struct HilbertSpaceRepresentation{
-    HS<:AbstractHilbertSpace,
     BR<:Unsigned,
+    HS<:AbstractHilbertSpace,
     BasisType<:AbstractIndexedVector{BR}
-}<:AbstractHilbertSpaceRepresentation{Bool}
+}<:AbstractHilbertSpaceRepresentation{BR, Bool}
 
     hilbert_space::HS
     basis::BasisType
@@ -37,17 +31,12 @@ struct HilbertSpaceRepresentation{
         end
         hs = basespace(hilbert_space)
         HS = typeof(hs)
-        return new{HS, BR, BT}(hs, basis)
+        return new{BR, HS, BT}(hs, basis)
     end
 end
 
 
-Base.valtype(::Type{HilbertSpaceRepresentation{HS, BR, BT}}) where {HS, BR, BT} = Bool
-scalartype(::Type{HilbertSpaceRepresentation{HS, BR, BT}}) where {HS, BR, BT} = Bool
-bintype(::Type{HilbertSpaceRepresentation{HS, BR, BT}}) where {HS, BR, BT} = BR
-
-
-basespace(lhs::HilbertSpaceRepresentation{HS, BR, BT}) where {HS, BR, BT} = lhs.hilbert_space::HS
+basespace(lhs::HilbertSpaceRepresentation) = lhs.hilbert_space
 
 
 """
@@ -59,9 +48,9 @@ dimension(hsr::HilbertSpaceRepresentation) = length(hsr.basis)
 
 
 function Base.:(==)(
-    lhs::HilbertSpaceRepresentation{HS1, BR1, BT1},
-    rhs::HilbertSpaceRepresentation{HS2, BR2, BT2},
-) where {HS1, BR1, BT1, HS2, BR2, BT2}
+    lhs::HilbertSpaceRepresentation{BR1, HS1, BT1},
+    rhs::HilbertSpaceRepresentation{BR2, HS2, BT2},
+) where {BR1, HS1, BT1, BR2, HS2, BT2}
     return basespace(lhs) == basespace(rhs) && (lhs.basis == rhs.basis)
 end
 
@@ -74,9 +63,7 @@ end
 
 Get the basis state representation at index.
 """
-@inline function get_basis_state(hsr::HilbertSpaceRepresentation, index::Integer)
-    return hsr.basis[index]
-end
+@inline get_basis_state(hsr::HilbertSpaceRepresentation, index::Integer) = hsr.basis[index]
 
 
 """
@@ -90,22 +77,16 @@ If no such basis vector exists, return (-1, 0).
 """
 @inline function get_basis_index_amplitude(hsr::HilbertSpaceRepresentation, bvec::Unsigned)
     index = findindex(hsr.basis, bvec)
-    # index = get(hsr.basis_lookup, bvec, -1)
     return (index=index, amplitude=(index <= 0) ? 0 : 1)
 end
 
 
-
-
-function checkvalidbasis(hsr::HilbertSpaceRepresentation{HS, BR, BT}) where {HS, BR, BT}
+function checkvalidbasis(hsr::HilbertSpaceRepresentation)
     for (ivec, bvec) in enumerate(hsr.basis)
-        # ivec2 = hsr.basis_lookup[bvec]
         ivec2 = findindex(hsr.basis, bvec)
         @assert ivec == ivec2
     end
 end
-
-
 
 
 """
@@ -125,9 +106,8 @@ end
 Make a HilbertSpaceRepresentation with all the basis vectors of the specified HilbertSpace
 using [`FrozenSortedArrayIndex`](@ref).
 """
-function represent_array(hs::AbstractHilbertSpace, ::Type{BR}=UInt) where {BR <:Unsigned}
+function represent_array(hs::AbstractHilbertSpace, ::Type{BR}=UInt) where {BR<:Unsigned}
     basis_list = hs_get_basis_list(hs, BR)
-    # basis_lookup = FrozenSortedArrayIndex{BR}(basis_list)
     basis = SortedIndexedVector(basis_list)
     return HilbertSpaceRepresentation(basespace(hs), basis)
 end
@@ -151,10 +131,6 @@ Make a HilbertSpaceRepresentation with the provided list of basis vectors
 using [`FrozenSortedArrayIndex`](@ref).
 """
 function represent_array(hs::AbstractHilbertSpace, basis_list::AbstractVector{BR}) where {BR<:Unsigned}
-    # if !issorted(basis_list)
-    #     basis_list = sort(basis_list)
-    # end
-    # basis_lookup = FrozenSortedArrayIndex{BR}(basis_list)
     basis = SortedIndexedVector(basis_list)
     return HilbertSpaceRepresentation(basespace(hs), basis)
 end
@@ -166,7 +142,7 @@ end
 Make a HilbertSpaceRepresentation with the provided list of basis vectors
 using `Dict{binary_type, Int}`.
 """
-function represent_dict(hs::AbstractHilbertSpace, binary_type::Type{BR}=UInt) where {BR<:Unsigned}
+function represent_dict(hs::AbstractHilbertSpace, ::Type{BR}=UInt) where {BR<:Unsigned}
     basis_list = hs_get_basis_list(hs, BR)
     basis = DictIndexedVector(basis_list)
     return HilbertSpaceRepresentation(basespace(hs), basis)

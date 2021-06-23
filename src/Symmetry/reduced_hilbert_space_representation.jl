@@ -15,7 +15,7 @@ struct ReducedHilbertSpaceRepresentation{
     BR<:Unsigned,
     C<:Number,
     IV<:AbstractIndexedVector{BR}
-}<:AbstractHilbertSpaceRepresentation{C}
+}<:AbstractHilbertSpaceRepresentation{BR, C}
     parent::HSR
     basis::IV
     basis_mapping_index::Vector{Int} # has size of parent dimension. each index item contains index at reduced basis, or -1 if not included

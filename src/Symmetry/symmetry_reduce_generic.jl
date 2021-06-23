@@ -58,11 +58,11 @@ end
 
 
 function symmetry_reduce_serial(
-    hsr::HilbertSpaceRepresentation{QN, BR, BT},
+    hsr::HilbertSpaceRepresentation{BR, HS, BT},
     symops::AbstractArray{OperationType},
     amplitudes::AbstractArray{InputScalarType};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {QN, BR, BT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+) where {BR, HS, BT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     if length(symops) != length(amplitudes)
         throw(ArgumentError("number of symmetry operations and number of amplitudes should match ($(length(symops)) != $(length(amplitudes)))"))
     elseif length(symops) < 1
@@ -161,7 +161,7 @@ function symmetry_reduce_serial(
         basis_mapping_index[ivec_p_prime] = ivec_r
     end
 
-    HSR = HilbertSpaceRepresentation{QN, BR, BT}
+    HSR = HilbertSpaceRepresentation{BR, HS, BT}
     RHSR = ReducedHilbertSpaceRepresentation{HSR, BR, ScalarType, SortedIndexedVector{BR}}
     reduced_basis = SortedIndexedVector{BR}(reduced_basis_list)
     return RHSR(hsr, reduced_basis, basis_mapping_index, basis_mapping_amplitude)
@@ -186,11 +186,11 @@ end
 
 
 function symmetry_reduce_parallel(
-    hsr::HilbertSpaceRepresentation{QN, BR, BT},
+    hsr::HilbertSpaceRepresentation{BR, HS, BT},
     symops::AbstractArray{OperationType},
     amplitudes::AbstractArray{InputScalarType};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {QN, BR, BT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+) where {BR, HS, BT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
     @debug "BEGIN symmetry_reduce_parallel"
     if length(symops) != length(amplitudes)
         throw(ArgumentError("number of symmetry operations and number of amplitudes should match ($(length(symops)) != $(length(amplitudes)))"))
@@ -344,7 +344,7 @@ function symmetry_reduce_parallel(
     @debug "Collected basis lookup (offdiagonal)"
 
     @debug "END symmetry_reduce_parallel"
-    HSR = HilbertSpaceRepresentation{QN, BR, BT}
+    HSR = HilbertSpaceRepresentation{BR, HS, BT}
     RHSR = ReducedHilbertSpaceRepresentation{HSR, BR, ScalarType, SortedIndexedVector{BR}}
     reduced_basis = SortedIndexedVector(reduced_basis_list)
     return RHSR(hsr, reduced_basis, basis_mapping_index, basis_mapping_amplitude)
