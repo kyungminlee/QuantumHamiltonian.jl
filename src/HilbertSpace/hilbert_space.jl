@@ -45,31 +45,19 @@ end
 
 
 """
-    scalartype(::Type{HilbertSpace{QN}})
-
-Returns the scalar type of the given hilbert space type.
-For HilbertSpace{QN}, it is always `Bool`.
-"""
-scalartype(::Type{<:HilbertSpace}) = Bool
-scalartype(::HilbertSpace) = Bool
-
-
-"""
-    valtype(::Type{HilbertSpace{QN}})
-
-Returns the `valtype` (scalar type) of the given hilbert space type.
-"""
-Base.valtype(::Type{<:HilbertSpace}) = Bool
-Base.valtype(::HilbertSpace) = Bool
-
-
-"""
     qntype(::Type{HilbertSpace{QN}})
 
 Returns the quantum number type of the given hilbert space type.
 """
 qntype(::Type{HilbertSpace{QN}}) where QN = QN
-qntype(::HilbertSpace{QN}) where QN = QN
+
+
+"""
+    tagtype(::Type{HilbertSpace{QN}})
+
+Returns the tag type of the given Hilbert space type, which is its qntype.
+"""
+tagtype(::Type{HilbertSpace{QN}}) where QN = QN
 
 
 """

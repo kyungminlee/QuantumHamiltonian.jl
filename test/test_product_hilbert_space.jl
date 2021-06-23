@@ -8,8 +8,6 @@ using QuantumHamiltonian
     hs1 = HilbertSpace([spinhalfsite, spinhalfsite, spinhalfsite])
     hs2 = HilbertSpace([spinonesite, spinonesite])
     phs = ProductHilbertSpace((hs1, hs2))
-    @test scalartype(phs) == Bool
-    @test valtype(phs) == Bool
     @test qntype(phs) == Tuple{Int}
     @test basespace(phs) === phs
     @test numsites(phs) == 5

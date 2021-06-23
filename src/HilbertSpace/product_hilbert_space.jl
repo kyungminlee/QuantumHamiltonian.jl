@@ -2,18 +2,22 @@ export ProductHilbertSpace
 
 struct ProductHilbertSpace{
     QN<:Tuple{Vararg{AbstractQuantumNumber}},
-    S<:Tuple{Vararg{AbstractHilbertSpace{QN}}}
-} <: AbstractHilbertSpace{QN}
+    N,
+    S<:Tuple{Vararg{AbstractHilbertSpace{QN}, N}}
+}<:AbstractHilbertSpace{QN}
     subspaces::S
 
-    function ProductHilbertSpace(subspaces::S) where {QN, S<:Tuple{Vararg{AbstractHilbertSpace{QN}}}}
-        return new{QN, S}(subspaces)
+    function ProductHilbertSpace(subspaces::S) where {QN, N, S<:Tuple{Vararg{AbstractHilbertSpace{QN}, N}}}
+        return new{QN, N, S}(subspaces)
+    end
+    function ProductHilbertSpace(subspaces::Vararg{AbstractHilbertSpace{QN}, N}) where {QN, N}
+        return ProductHilbertSpace(subspaces)
     end
 end
 
-scalartype(::Type{<:ProductHilbertSpace}) = Bool
-Base.valtype(::Type{<:ProductHilbertSpace}) = Bool
-qntype(::Type{<:ProductHilbertSpace{QN, S}}) where {QN, S} = QN
+qntype(::Type{<:ProductHilbertSpace{QN, N, S}}) where {QN, N, S} = QN
+tagtype(::Type{<:ProductHilbertSpace{QN, N, S}}) where {QN, N, S} = NTuple{N, QN}
+
 basespace(hs::ProductHilbertSpace) = hs
 
 numsites(hs::ProductHilbertSpace) = mapreduce(numsites, +, hs.subspaces)
@@ -114,10 +118,10 @@ end
 
 
 function compress(
-    hs::ProductHilbertSpace{QN},
+    hs::ProductHilbertSpace,
     indexarray::CartesianIndex,
     ::Type{BR}=UInt
-) where {QN, BR<:Unsigned}
+) where {BR<:Unsigned}
     ns = collect(map(numsites, hs.subspaces))
     splitindices = map(x -> CartesianIndex(x...), arraysplit(ns, collect(indexarray.I)))
     bvecs = tuple([compress(x, y, BR) for (x,y) in zip(hs.subspaces, splitindices)]...)

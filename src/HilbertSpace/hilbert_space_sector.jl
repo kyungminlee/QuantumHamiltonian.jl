@@ -65,26 +65,6 @@ end
 
 
 """
-    scalartype(arg::Type{HilbertSpaceSector{HS, QN}})
-
-Returns the scalar type of the given hilbert space sector type.
-For HilbertSpaceSector{QN}, it is always `Bool`.
-"""
-scalartype(::Type{HilbertSpaceSector{HS, QN}}) where {HS, QN} = Bool
-scalartype(::HilbertSpaceSector{HS, QN}) where {HS, QN} = Bool
-
-
-"""
-    valtype(arg::Type{HilbertSpaceSector{HS, QN}})
-
-Returns the `valtype` (scalar type) of the given hilbert space sector type.
-For HilbertSpaceSector{QN}, it is always `Bool`.
-"""
-Base.valtype(::Type{HilbertSpaceSector{HS, QN}}) where {HS, QN} = Bool
-Base.valtype(::HilbertSpaceSector{HS, QN}) where {HS, QN} = Bool
-
-
-"""
     qntype(arg::Type{HilbertSpaceSector{QN}})
 
 Returns the quantum number type of the given hilbert space sector type.
@@ -99,7 +79,7 @@ qntype(::HilbertSpaceSector{HS, QN}) where {HS, QN} = QN
 Get the base space of the `HilbertSpaceSector`, which is
 its parent `HilbertSpace` (with no quantum number restriction).
 """
-basespace(hss::HilbertSpaceSector{HS, QN}) where {HS, QN} = basespace(hss.parent)::HS
+basespace(hss::HilbertSpaceSector) = basespace(hss.parent)
 
 #bitwidth(hss::HilbertSpaceSector) = bitwidth(basespace(hss))
 
@@ -109,8 +89,6 @@ function Base.:(==)(lhs::HilbertSpaceSector{HS, Q1}, rhs::HilbertSpaceSector{HS,
         lhs.allowed_quantum_numbers == rhs.allowed_quantum_numbers
     )
 end
-
-
 
 
 """

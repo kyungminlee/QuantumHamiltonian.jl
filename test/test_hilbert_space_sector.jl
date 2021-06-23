@@ -23,10 +23,6 @@ using StaticArrays
             @test HilbertSpaceSector(hs, Set([0, 2])) == HilbertSpaceSector(hs, [(0,), (2,)])
             
             hss = HilbertSpaceSector(hs, (0,))
-            @test scalartype(hss) === Bool
-            @test scalartype(typeof(hss)) === Bool
-            @test valtype(hss) === Bool
-            @test valtype(typeof(hss)) === Bool
             @test qntype(typeof(hss)) === Tuple{Int}
             
             @test basespace(hss) != hss
@@ -35,10 +31,6 @@ using StaticArrays
         end
         @test qntype(hs) === Tuple{Int}
         @test qntype(typeof(hs)) === Tuple{Int}
-        @test scalartype(hs) === Bool
-        @test scalartype(typeof(hs)) === Bool
-        @test valtype(hs) === Bool
-        @test valtype(typeof(hs)) === Bool
         
         @test bitwidth(hs) == 4
         
@@ -78,14 +70,9 @@ using StaticArrays
         site = Site([em, up, dn])
         hs = HilbertSpace([site, site, spin_site, site])
         
-        @test qntype(hs) === QN
-        @test scalartype(hs) === Bool
-        @test valtype(hs) === Bool
-        
+        @test qntype(hs) === QN        
         @test qntype(typeof(hs)) === QN
-        @test scalartype(typeof(hs)) === Bool
-        @test valtype(typeof(hs)) === Bool
-        
+
         @test basespace(hs) === hs
         
         @test hs.bitoffsets[end] == 2 + 2 + 1 + 2

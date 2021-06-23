@@ -97,11 +97,7 @@ end
         @test get_site(hs, 2) == spin_site
         @test_throws BoundsError get_site(hs, 100)
         @test qntype(hs) === Tuple{Int}
-        @test scalartype(hs) === Bool
-        @test valtype(hs) === Bool
         @test qntype(typeof(hs)) === Tuple{Int}
-        @test scalartype(typeof(hs)) === Bool
-        @test valtype(typeof(hs)) === Bool
         @test basespace(hs) === hs
         
         @test get_bitmask(hs, 1) == 0b0001
@@ -145,11 +141,7 @@ end
         @test get_site(hs, 3) == spin_site
         @test_throws BoundsError get_site(hs, 100)
         @test qntype(hs) === QN
-        @test scalartype(hs) === Bool
-        @test valtype(hs) === Bool
         @test qntype(typeof(hs)) === QN
-        @test scalartype(typeof(hs)) === Bool
-        @test valtype(typeof(hs)) === Bool
         @test basespace(hs) === hs
                 
         @test hs.bitoffsets[end] == 2 + 2 + 1 + 2
