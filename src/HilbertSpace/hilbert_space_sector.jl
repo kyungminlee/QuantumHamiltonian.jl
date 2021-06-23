@@ -10,7 +10,7 @@ export bitwidth
 
 Hilbert space sector.
 """
-struct HilbertSpaceSector{HS<:AbstractHilbertSpace, QN<:Tuple{Vararg{<:AbstractQuantumNumber}}}<:AbstractHilbertSpace{QN}
+struct HilbertSpaceSector{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}, HS<:AbstractHilbertSpace{QN}}<:AbstractHilbertSpace{QN}
     parent::HS
     allowed_quantum_numbers::Set{QN}
 
@@ -20,7 +20,7 @@ struct HilbertSpaceSector{HS<:AbstractHilbertSpace, QN<:Tuple{Vararg{<:AbstractQ
     function HilbertSpaceSector(parent::HS) where {HS<:AbstractHilbertSpace}
         QN = qntype(HS)
         sectors = quantum_number_sectors(parent)
-        return new{HS, QN}(parent, Set(sectors))
+        return new{QN, HS}(parent, Set(sectors))
     end
 
     """
@@ -29,7 +29,7 @@ struct HilbertSpaceSector{HS<:AbstractHilbertSpace, QN<:Tuple{Vararg{<:AbstractQ
     function HilbertSpaceSector(parent::HS, allowed::Integer) where {HS<:AbstractHilbertSpace{<:Tuple{<:Integer}}}
         QN = qntype(HS)
         sectors = Set{QN}(quantum_number_sectors(parent))
-        return new{HS, QN}(parent, intersect(sectors, Set([(allowed,)])))
+        return new{QN, HS}(parent, intersect(sectors, Set([(allowed,)])))
     end
 
     """
@@ -38,7 +38,7 @@ struct HilbertSpaceSector{HS<:AbstractHilbertSpace, QN<:Tuple{Vararg{<:AbstractQ
     function HilbertSpaceSector(parent::AbstractHilbertSpace{QN}, allowed::QN) where {QN}
         HS = typeof(parent)
         sectors = Set{QN}(quantum_number_sectors(parent))
-        return new{HS, QN}(parent, intersect(sectors, Set([allowed])))
+        return new{QN, HS}(parent, intersect(sectors, Set([allowed])))
     end
 
     """
@@ -50,7 +50,7 @@ struct HilbertSpaceSector{HS<:AbstractHilbertSpace, QN<:Tuple{Vararg{<:AbstractQ
     ) where {QN}
         HS = typeof(parent)
         sectors = Set{QN}(quantum_number_sectors(parent))
-        return new{HS, QN}(parent, intersect(sectors, Set((x,) for x in allowed)))
+        return new{QN, HS}(parent, intersect(sectors, Set((x,) for x in allowed)))
     end
 
     function HilbertSpaceSector(
@@ -59,7 +59,7 @@ struct HilbertSpaceSector{HS<:AbstractHilbertSpace, QN<:Tuple{Vararg{<:AbstractQ
     ) where QN
         HS = typeof(parent)
         sectors = Set{QN}(quantum_number_sectors(parent))
-        return new{HS, QN}(parent, intersect(sectors, Set(allowed)))
+        return new{QN, HS}(parent, intersect(sectors, Set(allowed)))
     end
 end
 
@@ -69,8 +69,8 @@ end
 
 Returns the quantum number type of the given hilbert space sector type.
 """
-qntype(::Type{HilbertSpaceSector{HS, QN}}) where {HS, QN} = QN
-qntype(::HilbertSpaceSector{HS, QN}) where {HS, QN} = QN
+qntype(::Type{HilbertSpaceSector{QN, HS}}) where {QN, HS} = QN
+qntype(::HilbertSpaceSector{QN, HS}) where {QN, HS} = QN
 
 
 """
@@ -83,7 +83,7 @@ basespace(hss::HilbertSpaceSector) = basespace(hss.parent)
 
 #bitwidth(hss::HilbertSpaceSector) = bitwidth(basespace(hss))
 
-function Base.:(==)(lhs::HilbertSpaceSector{HS, Q1}, rhs::HilbertSpaceSector{HS, Q2}) where {HS, Q1, Q2}
+function Base.:(==)(lhs::HilbertSpaceSector{QN, HS}, rhs::HilbertSpaceSector{QN, HS}) where {QN, HS}
     return (
         basespace(lhs) == basespace(rhs) &&
         lhs.allowed_quantum_numbers == rhs.allowed_quantum_numbers
@@ -96,7 +96,7 @@ end
 
 Generate a basis for the `HilbertSpaceSector`.
 """
-function hs_get_basis_list(hss::HilbertSpaceSector{HS, QN}, binary_type::Type{BR}=UInt)::Vector{BR} where {HS, QN, BR<:Unsigned}
+function hs_get_basis_list(hss::HilbertSpaceSector{QN, HS}, binary_type::Type{BR}=UInt)::Vector{BR} where {QN, HS, BR<:Unsigned}
     hs = hss.parent
     if sizeof(BR) * 8 <= bitwidth(hs)
         throw(ArgumentError("type $(BR) not enough to represent the hilbert space (need $(bitwidth(hs)) bits)"))
