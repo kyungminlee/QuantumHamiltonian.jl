@@ -23,7 +23,6 @@ using StaticArrays
             @test HilbertSpaceSector(hs, Set([0, 2])) == HilbertSpaceSector(hs, [(0,), (2,)])
             
             hss = HilbertSpaceSector(hs, (0,))
-            @test qntype(typeof(hss)) === Tuple{Int}
             
             @test basespace(hss) != hss
             @test basespace(hss) == hs
@@ -31,7 +30,12 @@ using StaticArrays
         end
         @test qntype(hs) === Tuple{Int}
         @test qntype(typeof(hs)) === Tuple{Int}
-        
+        @test get_quantum_numbers(hs) == [(0,)]
+
+        @test tagtype(hs) === Tuple{Int}
+        @test tagtype(typeof(hs)) === Tuple{Int}
+        @test get_tags(hs) == [(0,)]
+    
         @test bitwidth(hs) == 4
         
         @test get_bitmask(hs, 1) == 0b0001

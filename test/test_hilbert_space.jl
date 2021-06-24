@@ -98,6 +98,8 @@ end
         @test_throws BoundsError get_site(hs, 100)
         @test qntype(hs) === Tuple{Int}
         @test qntype(typeof(hs)) === Tuple{Int}
+        @test tagtype(hs) === Tuple{Int}
+        @test tagtype(typeof(hs)) === Tuple{Int}
         @test basespace(hs) === hs
         
         @test get_bitmask(hs, 1) == 0b0001
