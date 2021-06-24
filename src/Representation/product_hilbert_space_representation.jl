@@ -70,14 +70,15 @@ function get_basis_list(hsr::ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR
 end
 
 
-function get_basis_index_amplitude(hsr::ProductHilbertSpaceRepresentation, bvec::Unsigned)
+function get_basis_index_amplitude(hsr::ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}, bvec::Unsigned) where {BR, S, N, HS, HSR}
+    iszero((~get_bitmask(hsr)) & bvec) || return (index=-1, amplitude=zero(S))
     bvecs = bitsplit(hsr.bitwidths, bvec)
     iat = get_basis_index_amplitude.(hsr.subrepresentations, bvecs)
     indices = CartesianIndex(map(x->x[1], iat))
     amplitude = mapreduce(x -> x[2], *, iat)
     if any(x -> x <= 0, indices.I)
-        return (index=-1, amplitude=zero(amplitude))
+        return (index=-1, amplitude=zero(S))
     end
-    return (index=LinearIndices(hsr.indices)[indices], amplitude=amplitude)
+    return (index=LinearIndices(hsr.indices)[indices], amplitude=S(amplitude))
 end
 
