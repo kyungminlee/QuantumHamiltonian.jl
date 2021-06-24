@@ -179,7 +179,7 @@ julia> extract(hs, 0x03)
 CartesianIndex(2, 2)
 ```
 """
-function extract(hs::HilbertSpace{QN}, binrep::BR)::CartesianIndex where {QN, BR<:Unsigned}
+function extract(hs::HilbertSpace, binrep::BR)::CartesianIndex where {BR<:Unsigned}
     out = Int[]
     for (isite, site) in enumerate(hs.sites)
         @inbounds mask = make_bitmask(hs.bitwidths[isite], BR)
@@ -211,7 +211,7 @@ julia> extract(hs, 0x03)
 CartesianIndex(2, 2)
 ```
 """
-function uncompress(hs::HilbertSpace{QN}, binrep::BR)::CartesianIndex where {QN, BR<:Unsigned}
+function uncompress(hs::HilbertSpace, binrep::BR)::CartesianIndex where {BR<:Unsigned}
     out = Int[]
     for (isite, site) in enumerate(hs.sites)
         @inbounds mask = make_bitmask(hs.bitwidths[isite], BR)
@@ -244,10 +244,10 @@ julia> compress(hs, CartesianIndex(2,2))
 ```
 """
 function compress(
-    hs::HilbertSpace{QN},
+    hs::HilbertSpace,
     indexarray::CartesianIndex,
     ::Type{BR}=UInt
-) where {QN, BR<:Unsigned}
+) where {BR<:Unsigned}
     if length(indexarray) != length(hs.sites)
         throw(ArgumentError("length of indexarray should be the number of sites"))
     end
