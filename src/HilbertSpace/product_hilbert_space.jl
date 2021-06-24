@@ -29,6 +29,7 @@ numsites(hs::ProductHilbertSpace) = sum(hs.numsites)
 bitwidth(hs::ProductHilbertSpace) = sum(hs.bitwidths)
 
 function get_site(hs::ProductHilbertSpace, isite::Integer)
+    isite > 0 || throw(BoundsError(hs, isite))
     jsite = isite
     for (isub, sub) in enumerate(hs.subspaces)
         if jsite <= hs.numsites[isub]
@@ -41,6 +42,7 @@ function get_site(hs::ProductHilbertSpace, isite::Integer)
 end
 
 function bitwidth(hs::ProductHilbertSpace, isite::Integer)
+    isite > 0 || throw(BoundsError(hs, isite))
     for (isub, sub) in enumerate(hs.subspaces)
         if isite <= hs.numsites[isub]
             return bitwidth(sub, isite)
@@ -52,6 +54,7 @@ function bitwidth(hs::ProductHilbertSpace, isite::Integer)
 end
 
 function bitoffset(hs::ProductHilbertSpace, isite::Integer)
+    isite > 0 || throw(BoundsError(hs, isite))
     offset = 0
     for (isub, sub) in enumerate(hs.subspaces)
         if isite <= hs.numsites[isub]
@@ -61,7 +64,7 @@ function bitoffset(hs::ProductHilbertSpace, isite::Integer)
         end
         offset += hs.bitwidths[isub]
     end
-    return 0
+    return offset
 end
 
 
