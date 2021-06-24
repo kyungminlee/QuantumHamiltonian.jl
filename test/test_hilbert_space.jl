@@ -90,7 +90,7 @@ end
         dn = State("Dn", (-1,))
         spin_site = Site([up, dn])
         hs = HilbertSpace([spin_site, spin_site, spin_site, spin_site])
-        hs2 = HilbertSpace{QN}([spin_site, spin_site, spin_site, spin_site])
+        hs2 = HilbertSpace{QN, QN}([spin_site, spin_site, spin_site, spin_site])
         @test hs == hs2
         
         @test numsites(hs) == 4
