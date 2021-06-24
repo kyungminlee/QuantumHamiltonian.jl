@@ -53,9 +53,19 @@ Base.length(obj::DictIndexedVector) = length(obj.elements)
 Base.size(obj::DictIndexedVector, args...) = size(obj.elements, args...)
 
 Base.hash(obj::V, h::UInt) where {V<:DictIndexedVector} = hash(V, hash(obj.elements, h))
-# Base.:(==)(lhs::DictIndexedVector, rhs::DictIndexedVector) = lhs.elements == rhs.elements
+Base.:(==)(lhs::DictIndexedVector, rhs::DictIndexedVector) = lhs.elements == rhs.elements
 # Base.:(==)(lhs::DictIndexedVector, rhs::AbstractVector) = lhs.elements == rhs
 # Base.:(==)(lhs::AbstractVector, rhs::DictIndexedVector) = lhs == rhs.elements
+
+function checkvalid(obj::DictIndexedVector)
+    for (i, x) in enumerate(obj.elements)
+        @assert obj.lookup[x] == i
+    end
+    for (x, i) in obj.lookup
+        @assert obj.elements[i] == x
+    end
+end
+
 
 """
 """
@@ -64,20 +74,16 @@ struct SortedIndexedVector{E} <: AbstractIndexedVector{E}
 
     function SortedIndexedVector{E}(elements) where E
         issorted(elements) || throw(ArgumentError("elements must be sorted"))
-        if length(elements) > 1
-            for i in 2:length(elements)
-                @inbounds elements[i-1] == elements[i] && throw(ArgumentError("elements contains duplicates $(keys[i])"))
-            end
+        for i in 2:length(elements)
+            @inbounds elements[i-1] == elements[i] && throw(ArgumentError("elements contains duplicates $(keys[i])"))
         end
         return new{E}(elements)
     end
 
     function SortedIndexedVector(elements::AbstractVector{E}) where E
         issorted(elements) || throw(ArgumentError("elements must be sorted"))
-        if length(elements) > 1
-            for i in 2:length(elements)
-                @inbounds elements[i-1] == elements[i] && throw(ArgumentError("elements contains duplicates $(keys[i])"))
-            end
+        for i in 2:length(elements)
+            @inbounds elements[i-1] == elements[i] && throw(ArgumentError("elements contains duplicates $(keys[i])"))
         end
         return new{E}(elements)
     end
@@ -101,6 +107,13 @@ Base.length(obj::SortedIndexedVector) = length(obj.elements)
 Base.size(obj::SortedIndexedVector, args...) = size(obj.elements, args...)
 
 Base.hash(obj::V, h::UInt) where {V<:SortedIndexedVector} = hash(V, hash(obj.elements, h))
-# Base.:(==)(lhs::SortedIndexedVector, rhs::SortedIndexedVector) = lhs.elements == rhs.elements
+Base.:(==)(lhs::SortedIndexedVector, rhs::SortedIndexedVector) = lhs.elements == rhs.elements
 # Base.:(==)(lhs::SortedIndexedVector, rhs::AbstractVector) = lhs.elements == rhs
 # Base.:(==)(lhs::AbstractVector, rhs::SortedIndexedVector) = lhs == rhs.elements
+
+function checkvalid(obj::SortedIndexedVector)
+    @assert issorted(obj.elements)
+    for i in 2:length(obj.elements)
+        @assert obj.elements[i-1] != obj.elements[i]
+    end
+end
