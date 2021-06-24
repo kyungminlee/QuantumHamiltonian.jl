@@ -47,10 +47,7 @@ Dimension of the Concrete Hilbert space, i.e. number of basis vectors.
 dimension(hsr::HilbertSpaceRepresentation) = length(hsr.basis)
 
 
-function Base.:(==)(
-    lhs::HilbertSpaceRepresentation{BR1, HS1, BT1},
-    rhs::HilbertSpaceRepresentation{BR2, HS2, BT2},
-) where {BR1, HS1, BT1, BR2, HS2, BT2}
+function Base.:(==)(lhs::HilbertSpaceRepresentation, rhs::HilbertSpaceRepresentation)
     return basespace(lhs) == basespace(rhs) && (lhs.basis == rhs.basis)
 end
 
@@ -95,7 +92,7 @@ end
 Make a HilbertSpaceRepresentation with all the basis vectors of the specified HilbertSpace.
 This function defaults to [`represent_array`](@ref).
 """
-function represent(hs::AbstractHilbertSpace, ::Type{BR}=UInt) where {BR <:Unsigned}
+function represent(hs::AbstractHilbertSpace, ::Type{BR}=UInt) where {BR<:Unsigned}
     return represent_array(hs, BR)
 end
 
