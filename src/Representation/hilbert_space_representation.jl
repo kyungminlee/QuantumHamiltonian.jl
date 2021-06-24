@@ -51,16 +51,16 @@ function Base.:(==)(lhs::HilbertSpaceRepresentation, rhs::HilbertSpaceRepresenta
     return basespace(lhs) == basespace(rhs) && (lhs.basis == rhs.basis)
 end
 
-@inline get_basis(hsr::HilbertSpaceRepresentation) = hsr.basis
+get_basis(hsr::HilbertSpaceRepresentation) = hsr.basis
 
-@inline get_basis_list(hsr::HilbertSpaceRepresentation) = collect(hsr.basis)
+get_basis_list(hsr::HilbertSpaceRepresentation) = collect(hsr.basis)
 
 """
     get_basis_state(hsr, index)
 
 Get the basis state representation at index.
 """
-@inline get_basis_state(hsr::HilbertSpaceRepresentation, index::Integer) = hsr.basis[index]
+get_basis_state(hsr::HilbertSpaceRepresentation, index::Integer) = hsr.basis[index]
 
 
 """
@@ -72,7 +72,7 @@ Returns (i, ⟨b|ϕᵢ⟩). For the unsymmetrized `HilbertSpaceRepresentation`, 
 1 of Int type.
 If no such basis vector exists, return (-1, 0).
 """
-@inline function get_basis_index_amplitude(hsr::HilbertSpaceRepresentation, bvec::Unsigned)
+function get_basis_index_amplitude(hsr::HilbertSpaceRepresentation, bvec::Unsigned)
     index = findindex(hsr.basis, bvec)
     return (index=index, amplitude=(index <= 0) ? 0 : 1)
 end
