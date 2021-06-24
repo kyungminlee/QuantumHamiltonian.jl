@@ -1,6 +1,10 @@
 export AbstractQuantumNumber
 export AbstractHilbertSpace
 
+export qntype, tagtype
+export get_bitmask
+export update, get_state_index, get_state
+
 ## TODO: Think about this
 AbstractQuantumNumber = Integer
 
