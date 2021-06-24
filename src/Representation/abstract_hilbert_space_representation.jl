@@ -15,10 +15,38 @@ Base.valtype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} 
 scalartype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = S
 bintype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = BR
 
-bitwidth(h::AbstractHilbertSpaceRepresentation, args...) = bitwidth(basespace(h), args...)
-bitoffset(h::AbstractHilbertSpaceRepresentation, args...) = bitoffset(basespace(h), args...)
-get_bitmask(h::AbstractHilbertSpaceRepresentation, args...) = get_bitmask(basespace(h), args...)
+# bitwidth(h::AbstractHilbertSpaceRepresentation, args...) = bitwidth(basespace(h), args...)
+# bitoffset(h::AbstractHilbertSpaceRepresentation, args...) = bitoffset(basespace(h), args...)
+# get_bitmask(h::AbstractHilbertSpaceRepresentation, args...) = get_bitmask(basespace(h), args...)
 
-extract(h::AbstractHilbertSpaceRepresentation, args...) = extract(basespace(h), args...)
-compress(h::AbstractHilbertSpaceRepresentation, args...) = compress(basespace(h), args...)
-uncompress(h::AbstractHilbertSpaceRepresentation, args...) = uncompress(basespace(h), args...)
+# extract(h::AbstractHilbertSpaceRepresentation, args...) = extract(basespace(h), args...)
+# compress(h::AbstractHilbertSpaceRepresentation, args...) = compress(basespace(h), args...)
+# uncompress(h::AbstractHilbertSpaceRepresentation, args...) = uncompress(basespace(h), args...)
+
+for fname in [
+    :basespace,
+    :numsites,
+    :get_site,
+    :bitwidth,
+    :bitoffset,
+    :get_quantum_number,
+    :get_tag,
+    :extract,
+    :compress,
+    :uncompress,
+    :update,    
+    :get_state,
+    :get_state_index,
+    :get_bitmask,
+    :qntype,
+    :tagtype,
+]
+    @eval begin
+        """
+            $($fname)(hsr::AbstractHilbertSpaceRepresentation, args...;kwargs...)
+
+        Call `$($fname)` with basespace of `hsr`.
+        """
+        @inline $fname(hsr::AbstractHilbertSpaceRepresentation, args...; kwargs...) = $fname(basespace(hsr), args...; kwargs...)
+    end
+end
