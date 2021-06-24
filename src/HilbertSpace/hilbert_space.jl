@@ -79,11 +79,9 @@ Total number of bits
 ```jldoctest
 julia> using QuantumHamiltonian
 
-julia> spin_site = Site([State("Up", +1), State("Dn", -1)])
-Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))])
+julia> spin_site = Site([State("Up", +1), State("Dn", -1)]);
 
-julia> hs = HilbertSpace([spin_site, spin_site, spin_site,])
-HilbertSpace{Tuple{Int64}}(Site{Tuple{Int64}}[Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))]), Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))]), Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))])], [1, 1, 1], [0, 1, 2, 3])
+julia> hs = HilbertSpace([spin_site, spin_site, spin_site,]);
 
 julia> bitwidth(hs)
 3
