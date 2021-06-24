@@ -9,14 +9,26 @@ using QuantumHamiltonian
     hs2 = HilbertSpace([spinonesite, spinonesite])
     phs = ProductHilbertSpace((hs1, hs2))
     @test qntype(phs) == Tuple{Int}
+    @test tagtype(phs) == Tuple{Tuple{Int}, Tuple{Int}}
     @test basespace(phs) === phs
     @test numsites(phs) == 5
+    @test_throws BoundsError get_site(phs, 0)
     @test get_site(phs, 1) == spinhalfsite
     @test get_site(phs, 4) == spinonesite
     @test_throws BoundsError get_site(phs, 100)
     @test bitwidth(phs) == 7
+    @test_throws BoundsError bitwidth(phs, 0)
     @test bitwidth(phs, 2) == 1
     @test bitwidth(phs, 4) == 2
+    @test bitwidth(phs, 100) == 0
+    @test_throws BoundsError bitoffset(phs, 0)
+    @test bitoffset(phs, 1) == 0
+    @test bitoffset(phs, 2) == 1
+    @test bitoffset(phs, 3) == 2
+    @test bitoffset(phs, 4) == 3
+    @test bitoffset(phs, 5) == 5
+    @test bitoffset(phs, 6) == 7
+    @test bitoffset(phs, 100) == 7
     @test get_bitmask(phs, 2) == 0b0000010
     @test get_bitmask(phs, 4) == 0b0011000
     @test get_quantum_numbers(phs) == [(x,) for x in -7:2:7]
