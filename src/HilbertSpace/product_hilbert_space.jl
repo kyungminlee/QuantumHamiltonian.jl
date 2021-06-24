@@ -3,7 +3,8 @@ export ProductHilbertSpace
 struct ProductHilbertSpace{
     QN<:Tuple{Vararg{AbstractQuantumNumber}},
     N,
-    S<:Tuple{Vararg{AbstractHilbertSpace{QN}, N}}
+    TagType,
+    S<:Tuple{Vararg{AbstractHilbertSpace{QN}, N}},
 }<:AbstractHilbertSpace{QN}
     subspaces::S
     numsites::NTuple{N, Int}
@@ -12,15 +13,16 @@ struct ProductHilbertSpace{
     function ProductHilbertSpace(subspaces::S) where {QN, N, S<:Tuple{Vararg{AbstractHilbertSpace{QN}, N}}}
         ns = numsites.(subspaces)
         bitwidths = bitwidth.(subspaces)
-        return new{QN, N, S}(subspaces, ns, bitwidths)
+        TagType = NTuple{N, QN}
+        return new{QN, N, TagType, S}(subspaces, ns, bitwidths)
     end
     function ProductHilbertSpace(subspaces::Vararg{AbstractHilbertSpace})
         return ProductHilbertSpace(subspaces)
     end
 end
 
-qntype(::Type{<:ProductHilbertSpace{QN, N, S}}) where {QN, N, S} = QN
-tagtype(::Type{<:ProductHilbertSpace{QN, N, S}}) where {QN, N, S} = NTuple{N, QN}
+qntype(::Type{<:ProductHilbertSpace{QN, N, TT, S}}) where {QN, N, TT, S} = QN
+tagtype(::Type{<:ProductHilbertSpace{QN, N, TT, S}}) where {QN, N, TT, S} = TT
 
 basespace(hs::ProductHilbertSpace) = hs
 
@@ -30,13 +32,13 @@ bitwidth(hs::ProductHilbertSpace) = sum(hs.bitwidths)
 function get_site(hs::ProductHilbertSpace, isite::Integer)
     jsite = isite
     for (isub, sub) in enumerate(hs.subspaces)
-        if isite <= hs.numsites[isub]
-            return get_site(sub, isite)
+        if jsite <= hs.numsites[isub]
+            return get_site(sub, jsite)
         else
-            isite -= hs.numsites[isub]
+            jsite -= hs.numsites[isub]
         end
     end
-    throw(BoundsError(hs, jsite))
+    throw(BoundsError(hs, isite))
 end
 
 function bitwidth(hs::ProductHilbertSpace, isite::Integer)
@@ -63,22 +65,22 @@ function bitoffset(hs::ProductHilbertSpace, isite::Integer)
     return 0
 end
 
-function get_bitmask(hs::ProductHilbertSpace, isite::Integer, ::Type{BR}=UInt) where {BR<:Unsigned}
-    offset = 0
-    for (isub, sub) in enumerate(hs.subspaces)
-        if isite <= hs.numsites[isub]
-            return get_bitmask(sub, isite, BR) << offset
-        else
-            isite -= hs.numsites[isub]
-        end
-        offset += hs.bitwidths[isub]
-    end
-    return 0
-end
+# function get_bitmask(hs::ProductHilbertSpace, isite::Integer, ::Type{BR}=UInt) where {BR<:Unsigned}
+#     offset = 0
+#     for (isub, sub) in enumerate(hs.subspaces)
+#         if isite <= hs.numsites[isub]
+#             return get_bitmask(sub, isite, BR) << offset
+#         else
+#             isite -= hs.numsites[isub]
+#         end
+#         offset += hs.bitwidths[isub]
+#     end
+#     return 0
+# end
 
-function get_bitmask(hs::ProductHilbertSpace, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
-    return make_bitmask(bitwidth(hs), BR)
-end
+# function get_bitmask(hs::ProductHilbertSpace, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
+#     return make_bitmask(bitwidth(hs), BR)
+# end
 
 function get_quantum_numbers(hs::ProductHilbertSpace)
     combine(x, y) = unique(sort([a .+ b for b in y for a in x]))
@@ -107,7 +109,20 @@ function extract(hs::ProductHilbertSpace, binrep::Unsigned)
     return CartesianIndex(vcat(indices...)...)
 end
 
-function arraysplit(sizes::AbstractVector{<:Integer}, array::AbstractVector{T}) where {T}
+# function arraysplit(sizes::AbstractVector{<:Integer}, array::AbstractVector{T}) where {T}
+#     if sum(sizes) != length(array)
+#         throw(ArgumentError("size mismatch"))
+#     end
+#     out = Vector{T}[]
+#     i = 1
+#     for s in sizes
+#         push!(out, array[i:i+s-1])
+#         i += s
+#     end
+#     return out
+# end
+
+function arraysplit(sizes::NTuple{N, <:Integer}, array::Vector{T}) where {N, M, T}
     if sum(sizes) != length(array)
         throw(ArgumentError("size mismatch"))
     end
@@ -117,7 +132,7 @@ function arraysplit(sizes::AbstractVector{<:Integer}, array::AbstractVector{T}) 
         push!(out, array[i:i+s-1])
         i += s
     end
-    return out
+    return tuple(out...)
 end
 
 
@@ -126,38 +141,31 @@ function compress(
     indexarray::CartesianIndex,
     ::Type{BR}=UInt
 ) where {BR<:Unsigned}
-    ns = collect(map(numsites, hs.subspaces))
+    ns = numsites.(hs.subspaces)
     splitindices = map(x -> CartesianIndex(x...), arraysplit(ns, collect(indexarray.I)))
-    bvecs = tuple([compress(x, y, BR) for (x,y) in zip(hs.subspaces, splitindices)]...)
+    bvecs = ((x,y) -> compress(x, y, BR)).(hs.subspaces, splitindices)
     return bitjoin(bitwidth.(hs.subspaces), bvecs)
 end
 
 
-@inline function update(
-    hs::ProductHilbertSpace,
-    binrep::BR,
-    isite::Integer,
-    new_state_index::Integer
-) where {BR<:Unsigned}
-    @boundscheck if !(1 <= new_state_index <= dimension(get_site(hs, isite)))
-        throw(BoundsError(1:dimension(get_site(hs, isite)), new_state_index))
-    end
-    mask = get_bitmask(hs, isite, BR)
-    offset = bitoffset(hs, isite)
-    return (binrep & (~mask)) | (BR(new_state_index-1) << offset)
-end
+# @inline function update(
+#     hs::ProductHilbertSpace,
+#     binrep::BR,
+#     isite::Integer,
+#     new_state_index::Integer
+# ) where {BR<:Unsigned}
+#     @boundscheck if !(1 <= new_state_index <= dimension(get_site(hs, isite)))
+#         throw(BoundsError(1:dimension(get_site(hs, isite)), new_state_index))
+#     end
+#     mask = get_bitmask(hs, isite, BR)
+#     offset = bitoffset(hs, isite)
+#     return (binrep & (~mask)) | (BR(new_state_index-1) << offset)
+# end
 
+# function get_state_index(hs::ProductHilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
+#     return Int((binrep >> bitoffset(hs, isite)) & make_bitmask(bitwidth(hs, isite), BR)) + 1
+# end
 
-function get_state_index(hs::ProductHilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-    return Int((binrep >> bitoffset(hs, isite)) & make_bitmask(bitwidth(hs, isite), BR)) + 1
-end
-
-
-function get_state(hs::ProductHilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-    return get_site(hs, isite).states[get_state_index(hs, binrep, isite)]
-end
-
-
-#=
-function Base.keys end
-=#
+# function get_state(hs::ProductHilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
+#     return get_site(hs, isite).states[get_state_index(hs, binrep, isite)]
+# end

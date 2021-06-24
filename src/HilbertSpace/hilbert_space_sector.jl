@@ -15,7 +15,7 @@ struct HilbertSpaceSector{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}, HS<:Abstra
     allowed_quantum_numbers::Set{QN}
 
     """
-        HilbertSpaceSector(parent::HilbertSpace{QN}) where QN
+        HilbertSpaceSector(parent::HilbertSpace)
     """
     function HilbertSpaceSector(parent::HS) where {HS<:AbstractHilbertSpace}
         QN = qntype(HS)
@@ -24,7 +24,7 @@ struct HilbertSpaceSector{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}, HS<:Abstra
     end
 
     """
-        HilbertSpaceSector(parent::HilbertSpace{QN}, allowed::Integer) where {QN<:Tuple{<:Integer}}
+        HilbertSpaceSector(parent::HilbertSpace{QN, TT}, allowed::Integer) where {QN<:Tuple{<:Integer}}
     """
     function HilbertSpaceSector(parent::HS, allowed::Integer) where {HS<:AbstractHilbertSpace{<:Tuple{<:Integer}}}
         QN = qntype(HS)
@@ -33,7 +33,7 @@ struct HilbertSpaceSector{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}, HS<:Abstra
     end
 
     """
-        HilbertSpaceSector(parent::HilbertSpace{QN}, allowed::QN) where QN
+        HilbertSpaceSector(parent::HilbertSpace{QN, TT}, allowed::QN)
     """
     function HilbertSpaceSector(parent::AbstractHilbertSpace{QN}, allowed::QN) where {QN}
         HS = typeof(parent)
@@ -42,7 +42,7 @@ struct HilbertSpaceSector{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}, HS<:Abstra
     end
 
     """
-        HilbertSpaceSector(parent::HilbertSpace{QN}, allowed::Union{AbstractSet{<:Integer}, AbstractVector{<:Integer}}) where QN
+        HilbertSpaceSector(parent::HilbertSpace{QN, TT}, allowed::Union{AbstractSet{<:Integer}, AbstractVector{<:Integer}})
     """
     function HilbertSpaceSector(
         parent::AbstractHilbertSpace{QN},
@@ -178,7 +178,7 @@ for fname in [
     :get_site,
     :bitwidth,
     :bitoffset,
-    :get_bitmask,
+    # :get_bitmask,
     :get_quantum_number,
     :get_tag,
     # :get_quantum_numbers,
@@ -186,9 +186,9 @@ for fname in [
     # :get_tags,
     :extract,
     :compress,
-    :update,
-    :get_state_index,
-    :get_state,
+    # :update,
+    # :get_state_index,
+    # :get_state,
 ]
     @eval begin
         """

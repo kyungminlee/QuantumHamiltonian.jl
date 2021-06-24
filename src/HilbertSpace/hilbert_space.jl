@@ -11,7 +11,7 @@ export basespace
 
 
 """
-    HilbertSpace{QN}
+    HilbertSpace{QN, TT}
 
 Abstract Hilbert space with quantum number type `QN`.
 
@@ -22,7 +22,7 @@ julia> using QuantumHamiltonian
 julia> spin_site = Site([State("Up", +1), State("Dn", -1)]);
 
 julia> hs = HilbertSpace([spin_site, spin_site])
-HilbertSpace{Tuple{Int64}}(Site{Tuple{Int64}}[Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))]), Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))])], [1, 1], [0, 1, 2])
+HilbertSpace{Tuple{Int64}, Tuple{Int64}}(Site{Tuple{Int64}}[Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))]), Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))])], [1, 1], [0, 1, 2])
 ```
 """
 struct HilbertSpace{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}, TagType}<:AbstractHilbertSpace{QN}
@@ -36,16 +36,16 @@ struct HilbertSpace{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}, TagType}<:Abstra
         new{QN, QN}(sites, bitwidths, bitoffsets)
     end
 
-    function HilbertSpace{QN}(sites::AbstractArray{Site{QN}, 1}) where QN
+    function HilbertSpace{QN, TT}(sites::AbstractArray{Site{QN}, 1}) where {QN, TT}
         bitwidths = map(bitwidth, sites)
         bitoffsets = Int[0, cumsum(bitwidths)...]
-        new{QN, QN}(sites, bitwidths, bitoffsets)
+        new{QN, TT}(sites, bitwidths, bitoffsets)
     end
 end
 
 
 """
-    qntype(::Type{HilbertSpace{QN}})
+    qntype(::Type{HilbertSpace{QN, TT}})
 
 Returns the quantum number type of the given hilbert space type.
 """
@@ -53,7 +53,7 @@ qntype(::Type{HilbertSpace{QN, TT}}) where {QN, TT} = QN
 
 
 """
-    tagtype(::Type{HilbertSpace{QN}})
+    tagtype(::Type{HilbertSpace{QN, TT}})
 
 Returns the tag type of the given Hilbert space type, which is its qntype.
 """
@@ -95,9 +95,7 @@ bitwidth(hs::HilbertSpace, isite::Integer) = hs.bitwidths[isite]
 
 bitoffset(hs::HilbertSpace, isite::Integer) = hs.bitoffsets[isite]
 
-function Base.:(==)(lhs::HilbertSpace, rhs::HilbertSpace)
-    return lhs.sites == rhs.sites
-end
+Base.:(==)(lhs::HilbertSpace, rhs::HilbertSpace) = lhs.sites == rhs.sites
 
 
 """
@@ -105,13 +103,14 @@ end
 
 Get the bitmask of the site `isite`, optionally in type `type`
 """
+# optimization from generic using bitoffsets
 function get_bitmask(hs::HilbertSpace, isite::Integer, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
     return make_bitmask(hs.bitoffsets[isite+1], hs.bitoffsets[isite], BR)
 end
 
-function get_bitmask(hs::HilbertSpace, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
-    return make_bitmask(bitwidth(hs), BR)
-end
+# function get_bitmask(hs::HilbertSpace, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
+#     return make_bitmask(bitwidth(hs), BR)
+# end
 
 
 """
@@ -262,48 +261,48 @@ function compress(
 end
 
 
-"""
-    update(hs, binrep, isite, new_state_index)
+# """
+#     update(hs, binrep, isite, new_state_index)
 
-Update the binary representation of a basis state
-by changing the state at site `isite` to a new local state specified by
-`new_state_index`.
-"""
-@inline function update(
-    hs::HilbertSpace,
-    binrep::BR,
-    isite::Integer,
-    new_state_index::Integer
-) where {BR<:Unsigned}
-    @boundscheck if !(1 <= new_state_index <= dimension(hs.sites[isite]))
-        throw(BoundsError(1:dimension(hs.sites[isite]), new_state_index))
-    end
-    mask = get_bitmask(hs, isite, BR)
-    return (binrep & (~mask)) | (BR(new_state_index-1) << hs.bitoffsets[isite])
-end
-
-
-"""
-    get_state_index(hs, binrep, isite)
-
-Get the *index of* the local state at site `isite` for the basis state
-represented by `binrep`.
-"""
-function get_state_index(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-    # return Int((binrep >> hs.bitoffsets[isite]) & make_bitmask(hs.bitwidths[isite], BR)) + 1
-    return Int((binrep >> bitoffset(hs, isite)) & make_bitmask(bitwidth(hs, isite), BR)) + 1
-end
+# Update the binary representation of a basis state
+# by changing the state at site `isite` to a new local state specified by
+# `new_state_index`.
+# """
+# @inline function update(
+#     hs::HilbertSpace,
+#     binrep::BR,
+#     isite::Integer,
+#     new_state_index::Integer
+# ) where {BR<:Unsigned}
+#     @boundscheck if !(1 <= new_state_index <= dimension(hs.sites[isite]))
+#         throw(BoundsError(1:dimension(hs.sites[isite]), new_state_index))
+#     end
+#     mask = get_bitmask(hs, isite, BR)
+#     return (binrep & (~mask)) | (BR(new_state_index-1) << hs.bitoffsets[isite])
+# end
 
 
-"""
-    get_state(hs, binrep, isite)
+# """
+#     get_state_index(hs, binrep, isite)
 
-Get the local state at site `isite` for the basis state
-represented by `binrep`. Returns an object of type `State`
-"""
-function get_state(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-    return get_site(hs, isite).states[get_state_index(hs, binrep, isite)]
-end
+# Get the *index of* the local state at site `isite` for the basis state
+# represented by `binrep`.
+# """
+# function get_state_index(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
+#     # return Int((binrep >> hs.bitoffsets[isite]) & make_bitmask(hs.bitwidths[isite], BR)) + 1
+#     return Int((binrep >> bitoffset(hs, isite)) & make_bitmask(bitwidth(hs, isite), BR)) + 1
+# end
+
+
+# """
+#     get_state(hs, binrep, isite)
+
+# Get the local state at site `isite` for the basis state
+# represented by `binrep`. Returns an object of type `State`
+# """
+# function get_state(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
+#     return get_site(hs, isite).states[get_state_index(hs, binrep, isite)]
+# end
 
 
 # import Base.iterate
