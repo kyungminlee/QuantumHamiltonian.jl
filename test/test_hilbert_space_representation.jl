@@ -24,6 +24,8 @@ using StaticArrays
             @test basespace(hsr1) === hilbert_space
 
             @testset "getters" begin
+                @test get_basis(hsr1) == hsr1.basis
+                @test get_basis_list(hsr1) == basis_list
                 @test get_basis_state(hsr1, 3) == 0b0110
                 let out = get_basis_index_amplitude(hsr1, 0b0110)
                     @test out.index == 3
