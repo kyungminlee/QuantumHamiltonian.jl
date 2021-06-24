@@ -68,6 +68,9 @@ using QuantumHamiltonian
                 @test get_basis_state(phsr, i) == b
             end
         end
+        @test get_basis_index_amplitude(phsr, 0b11_10_1_1_1) == (index=-1, amplitude=0)
+        @test get_basis_index_amplitude(phsr, 0xFFFFFFFFFFFFFF) == (index=-1, amplitude=0)
+        @test_throws BoundsError get_basis_state(phsr, -10)
     end
 
     @testset "nontrivial" begin
@@ -93,5 +96,8 @@ using QuantumHamiltonian
                 @test get_basis_state(phsr, i) == b
             end
         end
+        @test get_basis_index_amplitude(phsr, 0b10_10_0_0_0) == (index=-1, amplitude=0)
+        @test get_basis_index_amplitude(phsr, 0xFFFFFFFFFFFFFF) == (index=-1, amplitude=0)
+        @test_throws BoundsError get_basis_state(phsr, -10)
     end
 end
