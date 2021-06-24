@@ -13,8 +13,7 @@ struct ProductHilbertSpace{
     function ProductHilbertSpace(subspaces::S) where {QN, N, S<:Tuple{Vararg{AbstractHilbertSpace{QN}, N}}}
         ns = numsites.(subspaces)
         bitwidths = bitwidth.(subspaces)
-        TagType = NTuple{N, QN}
-        return new{QN, N, TagType, S}(subspaces, ns, bitwidths)
+        return new{QN, N, NTuple{N, QN}, S}(subspaces, ns, bitwidths)
     end
     function ProductHilbertSpace(subspaces::Vararg{AbstractHilbertSpace})
         return ProductHilbertSpace(subspaces)
@@ -77,12 +76,12 @@ function get_quantum_number(hs::ProductHilbertSpace, binrep::Unsigned)
     return mapreduce(identity, (x,y) -> x .+ y, qns)
 end
 
-function get_tags(hs::ProductHilbertSpace)
+function get_tags(hs::ProductHilbertSpace{QN, N, NTuple{N, QN}, S}) where {QN, N, S}
     qns = vcat(collect(Iterators.product(get_tags.(hs.subspaces)...))...)
     return sort(qns, by=reverse)
 end
 
-function get_tag(hs::ProductHilbertSpace, binrep::Unsigned)
+function get_tag(hs::ProductHilbertSpace{QN, N, NTuple{N, QN}, S}, binrep::Unsigned) where {QN, N, S}
     bvecs = bitsplit(bitwidth.(hs.subspaces), binrep)
     return get_tag.(hs.subspaces, bvecs)
 end
@@ -94,7 +93,7 @@ function extract(hs::ProductHilbertSpace, binrep::Unsigned)
 end
 
 
-function arraysplit(sizes::NTuple{N, <:Integer}, array::Vector{T}) where {N, M, T}
+function _arraysplit(sizes::NTuple{N, <:Integer}, array::Vector{T}) where {N, M, T}
     if sum(sizes) != length(array)
         throw(ArgumentError("size mismatch"))
     end
@@ -114,7 +113,7 @@ function compress(
     ::Type{BR}=UInt
 ) where {BR<:Unsigned}
     ns = numsites.(hs.subspaces)
-    splitindices = map(x -> CartesianIndex(x...), arraysplit(ns, collect(indexarray.I)))
+    splitindices = map(x -> CartesianIndex(x...), _arraysplit(ns, collect(indexarray.I)))
     bvecs = ((x,y) -> compress(x, y, BR)).(hs.subspaces, splitindices)
     return bitjoin(bitwidth.(hs.subspaces), bvecs)
 end
