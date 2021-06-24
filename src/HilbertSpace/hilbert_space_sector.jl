@@ -178,17 +178,10 @@ for fname in [
     :get_site,
     :bitwidth,
     :bitoffset,
-    # :get_bitmask,
     :get_quantum_number,
     :get_tag,
-    # :get_quantum_numbers,
-    # :quantum_number_sectors,
-    # :get_tags,
     :extract,
     :compress,
-    # :update,
-    # :get_state_index,
-    # :get_state,
 ]
     @eval begin
         """
