@@ -6,7 +6,7 @@ export simplify
 
 Simplify the given operator.
 """
-simplify(op::NullOperator; tol::Real=0.0) = op
+simplify(op::NullOperator; tol::Real=0) = op
 
 
 function simplify(op::PureOperator{S, BR}; tol::Real=Base.rtoldefault(S)) where {S<:Real, BR}
