@@ -61,8 +61,8 @@ using QuantumHamiltonian
                 @test get_basis_state(dhsr, i) == b
             end
         end
-        @test_throws BoundsError get_basis_index_amplitude(dhsr, 0b11_10_1_1_1)
-        @test_throws BoundsError get_basis_index_amplitude(dhsr, 0xFFFFFFFFFFFFFF)
+        @test get_basis_index_amplitude(dhsr, 0b11_10_1_1_1) == (index=-1, amplitude=0)
+        @test get_basis_index_amplitude(dhsr, 0xFFFFFFFFFFFFFF) == (index=-1, amplitude=0)
         @test_throws BoundsError get_basis_state(dhsr, -10)
     end
 
@@ -84,8 +84,8 @@ using QuantumHamiltonian
                 @test get_tag(dhsr, b) == (0,)
             end
         end
-        @test_throws BoundsError get_basis_index_amplitude(dhsr, 0b11_10_1_1_1)
-        @test_throws BoundsError get_basis_index_amplitude(dhsr, 0xFFFFFFFFFFFFFF)
+        @test get_basis_index_amplitude(dhsr, 0b10_10_0_0_0) == (index=-1, amplitude=0)
+        @test get_basis_index_amplitude(dhsr, 0xFFFFFFFFFFFFFF) == (index=-1, amplitude=0)
         @test_throws BoundsError get_basis_state(dhsr, -10)
     end
 end
