@@ -10,7 +10,11 @@ export bitwidth
 
 Hilbert space sector.
 """
-struct HilbertSpaceSector{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}, HS<:AbstractHilbertSpace{QN}}<:AbstractHilbertSpace{QN}
+struct HilbertSpaceSector{
+    QN<:Tuple{Vararg{<:AbstractQuantumNumber}},
+    HS<:AbstractHilbertSpace{QN}
+}<:AbstractHilbertSpace{QN}
+
     parent::HS
     allowed_quantum_numbers::Set{QN}
 
@@ -85,7 +89,7 @@ end
 
 Generate a basis for the `HilbertSpaceSector`.
 """
-function hs_get_basis_list(hss::HilbertSpaceSector{QN, HS}, binary_type::Type{BR}=UInt)::Vector{BR} where {QN, HS, BR<:Unsigned}
+function hs_get_basis_list(hss::HilbertSpaceSector{QN, HS}, ::Type{BR}=UInt)::Vector{BR} where {QN, HS, BR<:Unsigned}
     hs = hss.parent
     if sizeof(BR) * 8 <= bitwidth(hs)
         throw(ArgumentError("type $(BR) not enough to represent the hilbert space (need $(bitwidth(hs)) bits)"))
