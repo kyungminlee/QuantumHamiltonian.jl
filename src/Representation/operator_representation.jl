@@ -64,15 +64,13 @@ Each element is represented as (icol, amplitude).
 Invalid elements are represented as (-1, amplitude).
 """
 function get_row_iterator(
-    opr::OperatorRepresentation{HSR, S, O},
+    opr::OperatorRepresentation,
     irow::Integer
-) where {HSR, S, O}
+)
     hsr = opr.hilbert_space_representation
     brow = hsr.basis[irow]
-    # basis_lookup = hsr.basis_lookup
     operator = opr.operator
     iter = (
-        # get(basis_lookup, bcol, -1) => amplitude
         findindex(hsr.basis, bcol) => amplitude
             for (bcol, amplitude) in get_row_iterator(operator, brow)
     )
@@ -89,15 +87,13 @@ Each element is represented as (irow, amplitude).
 Invalid elements are represented as (-1, amplitude).
 """
 function get_column_iterator(
-    opr::OperatorRepresentation{HSR, S, O},
+    opr::OperatorRepresentation,
     icol::Integer
-) where {HSR, S, O}
+)
     hsr = opr.hilbert_space_representation
     bcol = hsr.basis[icol]
-    # basis_lookup = hsr.basis_lookup
     operator = opr.operator
     iter = (
-        # get(basis_lookup, brow, -1) => amplitude
         findindex(hsr.basis, brow) => amplitude
             for (brow, amplitude) in get_column_iterator(operator, bcol)
     )
@@ -108,7 +104,7 @@ end
 """
     get_element(opr, irow, icol)
 """
-function get_element(opr::OperatorRepresentation{HSR, S, O}, irow::Integer, icol::Integer) where {HSR, S, O}
+function get_element(opr::OperatorRepresentation, irow::Integer, icol::Integer)
     hsr = opr.hilbert_space_representation
     @boundscheck let dim = length(hsr.basis)
         if irow <= 0 || irow > dim || icol <= 0 || icol > dim
