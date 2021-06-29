@@ -24,7 +24,7 @@ bintype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = BR
 # uncompress(h::AbstractHilbertSpaceRepresentation, args...) = uncompress(basespace(h), args...)
 
 for fname in [
-    :basespace,
+    # :basespace,
     :numsites,
     :get_site,
     :bitwidth,
