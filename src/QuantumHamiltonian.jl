@@ -8,6 +8,7 @@ import LatticeTools.dimension
 
 include("util.jl")
 include("frozensortedarray.jl")
+include("indexedvector.jl")
 
 include("HilbertSpace.jl")
 include("Operator.jl")

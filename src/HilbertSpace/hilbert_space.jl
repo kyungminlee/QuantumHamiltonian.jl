@@ -1,14 +1,17 @@
 export HilbertSpace
-export quantum_number_sectors, get_quantum_number, extract, uncompress, compress, update, get_state, get_state_index
+import LatticeTools.numsites
+export numsites, get_site
+export quantum_number_sectors, get_quantum_numbers, get_quantum_number
+export extract, uncompress, compress, update, get_state, get_state_index
 export get_bitmask
+export get_tag, get_tags
 export bitwidth, bitoffset
-export scalartype
-export qntype
+export scalartype, qntype
 export basespace
 
 
 """
-    HilbertSpace{QN}
+    HilbertSpace{QN, TT}
 
 Abstract Hilbert space with quantum number type `QN`.
 
@@ -19,10 +22,10 @@ julia> using QuantumHamiltonian
 julia> spin_site = Site([State("Up", +1), State("Dn", -1)]);
 
 julia> hs = HilbertSpace([spin_site, spin_site])
-HilbertSpace{Tuple{Int64}}(Site{Tuple{Int64}}[Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))]), Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))])], [1, 1], [0, 1, 2])
+HilbertSpace{Tuple{Int64}, Tuple{Int64}}(Site{Tuple{Int64}}[Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))]), Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))])], [1, 1], [0, 1, 2])
 ```
 """
-struct HilbertSpace{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}}<:AbstractHilbertSpace{QN}
+struct HilbertSpace{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}, TagType}<:AbstractHilbertSpace{QN}
     sites::Vector{Site{QN}}
     bitwidths::Vector{Int}
     bitoffsets::Vector{Int}
@@ -30,43 +33,31 @@ struct HilbertSpace{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}}<:AbstractHilbert
     function HilbertSpace(sites::AbstractArray{Site{QN}, 1}) where QN
         bitwidths = map(bitwidth, sites)
         bitoffsets = Int[0, cumsum(bitwidths)...]
-        new{QN}(sites, bitwidths, bitoffsets)
+        new{QN, QN}(sites, bitwidths, bitoffsets)
     end
 
-    function HilbertSpace{QN}(sites::AbstractArray{Site{QN}, 1}) where QN
+    function HilbertSpace{QN, TT}(sites::AbstractArray{Site{QN}, 1}) where {QN, TT}
         bitwidths = map(bitwidth, sites)
         bitoffsets = Int[0, cumsum(bitwidths)...]
-        new{QN}(sites, bitwidths, bitoffsets)
+        new{QN, TT}(sites, bitwidths, bitoffsets)
     end
 end
 
 
 """
-    scalartype(::Type{HilbertSpace{QN}})
-
-Returns the scalar type of the given hilbert space type.
-For HilbertSpace{QN}, it is always `Bool`.
-"""
-scalartype(::Type{<:HilbertSpace}) = Bool
-scalartype(::HilbertSpace) = Bool
-
-
-"""
-    valtype(::Type{HilbertSpace{QN}})
-
-Returns the `valtype` (scalar type) of the given hilbert space type.
-"""
-Base.valtype(::Type{<:HilbertSpace}) = Bool
-Base.valtype(::HilbertSpace) = Bool
-
-
-"""
-    qntype(::Type{HilbertSpace{QN}})
+    qntype(::Type{HilbertSpace{QN, TT}})
 
 Returns the quantum number type of the given hilbert space type.
 """
-qntype(::Type{HilbertSpace{QN}}) where QN = QN
-qntype(::HilbertSpace{QN}) where QN = QN
+qntype(::Type{HilbertSpace{QN, TT}}) where {QN, TT} = QN
+
+
+"""
+    tagtype(::Type{HilbertSpace{QN, TT}})
+
+Returns the tag type of the given Hilbert space type, which is its qntype.
+"""
+tagtype(::Type{HilbertSpace{QN, TT}}) where {QN, TT} = TT
 
 
 """
@@ -76,6 +67,10 @@ Get the base space of the HilbertSpace `hs`, which is itself.
 """
 basespace(hs::HilbertSpace) = hs
 
+numsites(hs::HilbertSpace) = length(hs.sites)
+
+get_site(hs::HilbertSpace, i::Integer) = hs.sites[i]
+
 
 """
     bitwidth(hs, [isite])
@@ -84,11 +79,9 @@ Total number of bits
 ```jldoctest
 julia> using QuantumHamiltonian
 
-julia> spin_site = Site([State("Up", +1), State("Dn", -1)])
-Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))])
+julia> spin_site = Site([State("Up", +1), State("Dn", -1)]);
 
-julia> hs = HilbertSpace([spin_site, spin_site, spin_site,])
-HilbertSpace{Tuple{Int64}}(Site{Tuple{Int64}}[Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))]), Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))]), Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))])], [1, 1, 1], [0, 1, 2, 3])
+julia> hs = HilbertSpace([spin_site, spin_site, spin_site,]);
 
 julia> bitwidth(hs)
 3
@@ -100,9 +93,7 @@ bitwidth(hs::HilbertSpace, isite::Integer) = hs.bitwidths[isite]
 
 bitoffset(hs::HilbertSpace, isite::Integer) = hs.bitoffsets[isite]
 
-function Base.:(==)(lhs::HilbertSpace{Q1}, rhs::HilbertSpace{Q2}) where {Q1, Q2}
-    return lhs.sites == rhs.sites
-end
+Base.:(==)(lhs::HilbertSpace, rhs::HilbertSpace) = lhs.sites == rhs.sites
 
 
 """
@@ -110,21 +101,22 @@ end
 
 Get the bitmask of the site `isite`, optionally in type `type`
 """
+# optimization from generic using bitoffsets
 function get_bitmask(hs::HilbertSpace, isite::Integer, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
     return make_bitmask(hs.bitoffsets[isite+1], hs.bitoffsets[isite], BR)
 end
 
-function get_bitmask(hs::HilbertSpace, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
-    return make_bitmask(bitwidth(hs), BR)
-end
+# function get_bitmask(hs::HilbertSpace, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
+#     return make_bitmask(bitwidth(hs), BR)
+# end
 
 
 """
-    quantum_number_sectors(hs)
+    get_quantum_numbers(hs)
 
 Return a sorted list of quantum numbers of the hilbert space `hs`.
 """
-function quantum_number_sectors(hs::HilbertSpace{QN})::Vector{QN} where QN
+function get_quantum_numbers(hs::HilbertSpace{QN, TT})::Vector{QN} where {QN, TT}
     qns = Set{QN}([tuplezero(QN)])
     for site in hs.sites
         qns_next = Set{QN}()
@@ -136,13 +128,14 @@ function quantum_number_sectors(hs::HilbertSpace{QN})::Vector{QN} where QN
     return sort(collect(qns))
 end
 
+quantum_number_sectors(hs::HilbertSpace) = get_quantum_numbers(hs)
 
 """
     get_quantum_number(hs, rep)
 
 Get the quantum number of `rep`, which is either a binary representation, or a `CartesianIndex`.
 """
-function get_quantum_number(hs::HilbertSpace{QN}, binrep::BR) where {QN, BR}
+function get_quantum_number(hs::HilbertSpace, binrep::Unsigned)
     return mapreduce(
         identity,
         tupleadd,
@@ -153,7 +146,7 @@ function get_quantum_number(hs::HilbertSpace{QN}, binrep::BR) where {QN, BR}
     )
 end
 
-function get_quantum_number(hs::HilbertSpace{QN}, indexarray::AbstractArray{I, 1}) where {QN, I<:Integer}
+function get_quantum_number(hs::HilbertSpace, indexarray::AbstractVector{<:Integer})
     return mapreduce(
         identity,
         tupleadd,
@@ -162,6 +155,9 @@ function get_quantum_number(hs::HilbertSpace{QN}, indexarray::AbstractArray{I, 1
     )
 end
 
+# TODO: introduce TagStrategy template argument for HilbertSpace
+get_tag(hs::HilbertSpace, binrep::Unsigned) = get_quantum_number(hs, binrep)
+get_tags(hs::HilbertSpace) = quantum_number_sectors(hs)
 
 """
     extract(hs, binrep)
@@ -180,7 +176,7 @@ julia> extract(hs, 0x03)
 CartesianIndex(2, 2)
 ```
 """
-function extract(hs::HilbertSpace{QN}, binrep::BR)::CartesianIndex where {QN, BR<:Unsigned}
+function extract(hs::HilbertSpace, binrep::BR)::CartesianIndex where {BR<:Unsigned}
     out = Int[]
     for (isite, site) in enumerate(hs.sites)
         @inbounds mask = make_bitmask(hs.bitwidths[isite], BR)
@@ -212,7 +208,7 @@ julia> extract(hs, 0x03)
 CartesianIndex(2, 2)
 ```
 """
-function uncompress(hs::HilbertSpace{QN}, binrep::BR)::CartesianIndex where {QN, BR<:Unsigned}
+function uncompress(hs::HilbertSpace, binrep::BR)::CartesianIndex where {BR<:Unsigned}
     out = Int[]
     for (isite, site) in enumerate(hs.sites)
         @inbounds mask = make_bitmask(hs.bitwidths[isite], BR)
@@ -245,10 +241,10 @@ julia> compress(hs, CartesianIndex(2,2))
 ```
 """
 function compress(
-    hs::HilbertSpace{QN},
+    hs::HilbertSpace,
     indexarray::CartesianIndex,
     ::Type{BR}=UInt
-) where {QN, BR<:Unsigned}
+) where {BR<:Unsigned}
     if length(indexarray) != length(hs.sites)
         throw(ArgumentError("length of indexarray should be the number of sites"))
     end
@@ -263,47 +259,48 @@ function compress(
 end
 
 
-"""
-    update(hs, binrep, isite, new_state_index)
+# """
+#     update(hs, binrep, isite, new_state_index)
 
-Update the binary representation of a basis state
-by changing the state at site `isite` to a new local state specified by
-`new_state_index`.
-"""
-@inline function update(
-    hs::HilbertSpace,
-    binrep::BR,
-    isite::Integer,
-    new_state_index::Integer
-) where {BR<:Unsigned}
-    @boundscheck if !(1 <= new_state_index <= dimension(hs.sites[isite]))
-        throw(BoundsError(1:dimension(hs.sites[isite]), new_state_index))
-    end
-    mask = make_bitmask(hs.bitoffsets[isite+1], hs.bitoffsets[isite], BR)
-    return (binrep & (~mask)) | (BR(new_state_index-1) << hs.bitoffsets[isite])
-end
-
-
-"""
-    get_state_index(hs, binrep, isite)
-
-Get the *index of* the local state at site `isite` for the basis state
-represented by `binrep`.
-"""
-function get_state_index(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-    return Int((binrep >> hs.bitoffsets[isite]) & make_bitmask(hs.bitwidths[isite], BR)) + 1
-end
+# Update the binary representation of a basis state
+# by changing the state at site `isite` to a new local state specified by
+# `new_state_index`.
+# """
+# @inline function update(
+#     hs::HilbertSpace,
+#     binrep::BR,
+#     isite::Integer,
+#     new_state_index::Integer
+# ) where {BR<:Unsigned}
+#     @boundscheck if !(1 <= new_state_index <= dimension(hs.sites[isite]))
+#         throw(BoundsError(1:dimension(hs.sites[isite]), new_state_index))
+#     end
+#     mask = get_bitmask(hs, isite, BR)
+#     return (binrep & (~mask)) | (BR(new_state_index-1) << hs.bitoffsets[isite])
+# end
 
 
-"""
-    get_state(hs, binrep, isite)
+# """
+#     get_state_index(hs, binrep, isite)
 
-Get the local state at site `isite` for the basis state
-represented by `binrep`. Returns an object of type `State`
-"""
-function get_state(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-    return hs.sites[isite].states[get_state_index(hs, binrep, isite)]
-end
+# Get the *index of* the local state at site `isite` for the basis state
+# represented by `binrep`.
+# """
+# function get_state_index(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
+#     # return Int((binrep >> hs.bitoffsets[isite]) & make_bitmask(hs.bitwidths[isite], BR)) + 1
+#     return Int((binrep >> bitoffset(hs, isite)) & make_bitmask(bitwidth(hs, isite), BR)) + 1
+# end
+
+
+# """
+#     get_state(hs, binrep, isite)
+
+# Get the local state at site `isite` for the basis state
+# represented by `binrep`. Returns an object of type `State`
+# """
+# function get_state(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
+#     return get_site(hs, isite).states[get_state_index(hs, binrep, isite)]
+# end
 
 
 # import Base.iterate
@@ -325,6 +322,106 @@ end
 # end
 
 
-function Base.keys(hs::HilbertSpace{QN}) where QN
+function Base.keys(hs::HilbertSpace)
     return CartesianIndices(((1:length(site.states) for site in hs.sites)...,))
+end
+
+
+function hs_get_basis_list(hs::HilbertSpace, ::Type{BR}=UInt)::Vector{BR} where {BR<:Unsigned}
+    if sizeof(BR) * 8 <= bitwidth(hs)
+        throw(ArgumentError("type $(BR) not enough to represent the hilbert space (need $(bitwidth(hs)) bits)"))
+    end
+    basis_list = BR[]
+    for indexarray in keys(hs)
+        push!(basis_list, compress(hs, indexarray, BR))
+    end
+    sort!(basis_list)
+    return basis_list
+end
+
+
+
+"""
+    hs_get_basis_list(hs, allowed_quantum_numbers, binary_type=UInt)
+
+Generate a basis for the `HilbertSpaceSector`.
+"""
+function hs_get_basis_list(hs::HilbertSpace{QN, TT}, allowed_quantum_numbers::AbstractVector{QN}, ::Type{BR}=UInt)::Vector{BR} where {QN, TT, BR<:Unsigned}
+    if sizeof(BR) * 8 <= bitwidth(hs)
+        throw(ArgumentError("type $(BR) not enough to represent the hilbert space (need $(bitwidth(hs)) bits)"))
+    end
+    if isempty(intersect(Set(allowed_quantum_numbers), quantum_number_sectors(hs)))
+        return BR[]
+    end
+
+    quantum_numbers = Vector{QN}[QN[state.quantum_number for state in site.states] for site in hs.sites]
+
+    n_sites = length(hs.sites)
+
+    # `qn_possible[i]` contains all possible quantum numbers in the subspace
+    # spanned by sites 1 ⊗ 2 ⊗ ... ⊗ (i-1).
+    # `qn_requested[i]` contains quantum numbers that are requested in the subspace
+    # spanned by sites 1 ⊗ 2 ⊗ ... ⊗ (i-1).
+    # `qn_schedule` is the intersection of these two, and are the ones we need to
+    # generate the basis.
+    qn_possible::Vector{Vector{QN}} = let qn_possible = Vector{Vector{QN}}(undef, n_sites+1)
+        qn_possible[1] = [tuplezero(QN)]
+        for i in eachindex(hs.sites)
+            a = Set{QN}()
+            for qi in quantum_numbers[i], qa in qn_possible[i]
+                push!(a, qa .+ qi)
+            end
+            qn_possible[i+1] = sort(collect(a))
+        end
+        qn_possible
+    end
+
+    qn_requested::Vector{Vector{QN}} = let qn_requested = Vector{Vector{QN}}(undef, n_sites+1)
+        qn_requested[n_sites+1] = sort(allowed_quantum_numbers)
+        for i in n_sites:-1:1
+            a = Set{QN}()
+            for qi in quantum_numbers[i], qa in qn_requested[i+1]
+                push!(a, qa .- qi)
+            end
+            qn_requested[i] = sort(collect(a))
+        end
+        qn_requested
+    end
+
+    qn_schedule = [intersect(x,y) for (x, y) in zip(qn_requested, qn_possible)]
+
+    sector_basis_list = Dict{QN, Vector{BR}}(tuplezero(QN) => BR[BR(0x0)])
+    new_sector_basis_list = Dict{QN, Vector{BR}}()
+
+    #sl = Threads.SpinLock()
+    for i in 1:n_sites
+        empty!(new_sector_basis_list)
+        # @threads
+        for q in qn_schedule[i+1]
+            new_sector_basis_list_q = BR[]
+            for (i_state, q_curr) in enumerate(quantum_numbers[i])
+                q_prev::QN = q .- q_curr
+                if haskey(sector_basis_list, q_prev)
+                    append!(
+                        new_sector_basis_list_q,
+                        (s | (represent(hs.sites[i], i_state, BR) << hs.bitoffsets[i])) for s in sector_basis_list[q_prev]
+                    )
+                end
+            end
+            #lock(sl)
+            new_sector_basis_list[q] = new_sector_basis_list_q
+            #unlock(sl)
+        end
+        sector_basis_list, new_sector_basis_list = new_sector_basis_list, sector_basis_list
+    end
+
+    basis_list = BR[]
+    qs = collect(keys(sector_basis_list))
+    for q in qs
+        states = pop!(sector_basis_list, q)
+        basis_list = merge_vec(basis_list, states)
+        GC.gc()
+    end
+    @assert issorted(basis_list)
+    return basis_list
 end

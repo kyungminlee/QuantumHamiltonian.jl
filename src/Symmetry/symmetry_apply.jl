@@ -103,12 +103,11 @@ end
 ## Permutation
 ### Binary Representation
 function symmetry_apply(
-    hs::HilbertSpace{QN},
+    hs::HilbertSpace,
     permutation::SitePermutation,
     bitrep::BR,
     amplitude::S=one(Int)
-    # TODO: bitmask::BR,
-) where {QN, BR<:Unsigned, S<:Number}
+) where {BR<:Unsigned, S<:Number}
     out = zero(BR)
     for (i, j) in enumerate(permutation.permutation.map)
         out |= ( (bitrep >> hs.bitoffsets[i]) & make_bitmask(hs.bitwidths[i]) ) << hs.bitoffsets[j]
@@ -147,10 +146,10 @@ end
 
 ### Operator
 function symmetry_apply(
-    hs::HilbertSpace{QN},
+    hs::HilbertSpace,
     permutation::SitePermutation,
     op::PureOperator{S, BR}
-) where {QN, S<:Number, BR<:Unsigned}
+) where {S<:Number, BR<:Unsigned}
     bm, _ = symmetry_apply(hs, permutation, op.bitmask)
     br, _ = symmetry_apply(hs, permutation, op.bitrow)
     bc, _ = symmetry_apply(hs, permutation, op.bitcol)

@@ -49,9 +49,9 @@ end
 
 
 function product_state(
-    hsr::HilbertSpaceRepresentation{HS, BR, DT},
+    hsr::HilbertSpaceRepresentation{BR, HS, DT},
     local_states::Tuple{Vararg{<:AbstractVector{<:Number}}}
-) where {HS, BR, DT}
+) where {BR, HS, DT}
     hs = basespace(hsr)
     n_sites = length(hs.sites)
     if length(local_states) != n_sites
@@ -75,7 +75,7 @@ function product_state(
     )...,)
     for indexarray in index_iterator
         bvec = compress(hs, CartesianIndex(indexarray), BR)
-        idx = get(hsr.basis_lookup, bvec, -1)
+        idx = findindex(hsr.basis, bvec)
         idx <= 0 && continue
         coeff = prod(local_states[i_site][indexarray[i_site]] for i_site in Base.OneTo(n_sites))
         out[idx] = coeff

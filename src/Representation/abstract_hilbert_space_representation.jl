@@ -3,14 +3,41 @@ export scalartype, bintype
 
 
 """
-    AbstractHilbertSpaceRepresentation{S}
+    AbstractHilbertSpaceRepresentation{BR, S}
 """
-abstract type AbstractHilbertSpaceRepresentation{S<:Number} end
+abstract type AbstractHilbertSpaceRepresentation{BR<:Unsigned, S<:Number} end
 
+Base.valtype(::T) where {T<:AbstractHilbertSpaceRepresentation} = valtype(T)
+scalartype(::T) where {T<:AbstractHilbertSpaceRepresentation} = scalartype(T)
+bintype(::T) where {T<:AbstractHilbertSpaceRepresentation} = bintype(T)
 
-scalartype(::AbstractHilbertSpaceRepresentation{S}) where S = S
-Base.valtype(::AbstractHilbertSpaceRepresentation{S}) where S = S
-bintype(lhs::AbstractHilbertSpaceRepresentation{S}) where S = bintype(typeof(lhs))
+Base.valtype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = S
+scalartype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = S
+bintype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = BR
 
+for fname in [
+    :numsites,
+    :get_site,
+    :bitwidth,
+    :bitoffset,
+    :get_quantum_number,
+    :get_tag,
+    :extract,
+    :compress,
+    :uncompress,
+    :update,    
+    :get_state,
+    :get_state_index,
+    :get_bitmask,
+    :qntype,
+    :tagtype,
+]
+    @eval begin
+        """
+            $($fname)(hsr::AbstractHilbertSpaceRepresentation, args...;kwargs...)
 
-bitwidth(lhs::AbstractHilbertSpaceRepresentation) = bitwidth(basespace(lhs))
+        Call `$($fname)` with basespace of `hsr`.
+        """
+        @inline $fname(hsr::AbstractHilbertSpaceRepresentation, args...; kwargs...) = $fname(basespace(hsr), args...; kwargs...)
+    end
+end

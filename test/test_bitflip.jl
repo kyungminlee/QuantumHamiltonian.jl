@@ -38,7 +38,7 @@ using QuantumHamiltonian
         end
 
         hsr = represent(hs)
-        for bvec in hsr.basis_list
+        for bvec in hsr.basis
             bvec_p, sgn_p = symmetry_apply(hs, p, bvec)
             bvec_p_b0, sgn_p_b0 = symmetry_apply(hs, b0, bvec_p)
             bvec_p_b1, sgn_p_b1 = symmetry_apply(hs, b1, bvec_p)

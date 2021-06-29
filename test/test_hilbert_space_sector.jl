@@ -23,11 +23,6 @@ using StaticArrays
             @test HilbertSpaceSector(hs, Set([0, 2])) == HilbertSpaceSector(hs, [(0,), (2,)])
             
             hss = HilbertSpaceSector(hs, (0,))
-            @test scalartype(hss) === Bool
-            @test scalartype(typeof(hss)) === Bool
-            @test valtype(hss) === Bool
-            @test valtype(typeof(hss)) === Bool
-            @test qntype(typeof(hss)) === Tuple{Int}
             
             @test basespace(hss) != hss
             @test basespace(hss) == hs
@@ -35,11 +30,12 @@ using StaticArrays
         end
         @test qntype(hs) === Tuple{Int}
         @test qntype(typeof(hs)) === Tuple{Int}
-        @test scalartype(hs) === Bool
-        @test scalartype(typeof(hs)) === Bool
-        @test valtype(hs) === Bool
-        @test valtype(typeof(hs)) === Bool
-        
+        @test get_quantum_numbers(hs) == [(0,)]
+
+        @test tagtype(hs) === Tuple{Int}
+        @test tagtype(typeof(hs)) === Tuple{Int}
+        @test get_tags(hs) == [(0,)]
+    
         @test bitwidth(hs) == 4
         
         @test get_bitmask(hs, 1) == 0b0001
@@ -49,7 +45,7 @@ using StaticArrays
         @test_throws BoundsError get_bitmask(hs, 5)
         @test_throws BoundsError get_bitmask(hs,-1)
         
-        @test quantum_number_sectors(hs) == [(-4,), (-2,), (0,), (2,), (4,)]
+        @test quantum_number_sectors(hs) == [(0,)]
         @test get_quantum_number(hs, 0b0000) == (4,)
         @test get_quantum_number(hs, 0b0001) == (2,)
         @test get_quantum_number(hs, 0b0010) == (2,)
@@ -78,14 +74,9 @@ using StaticArrays
         site = Site([em, up, dn])
         hs = HilbertSpace([site, site, spin_site, site])
         
-        @test qntype(hs) === QN
-        @test scalartype(hs) === Bool
-        @test valtype(hs) === Bool
-        
+        @test qntype(hs) === QN        
         @test qntype(typeof(hs)) === QN
-        @test scalartype(typeof(hs)) === Bool
-        @test valtype(typeof(hs)) === Bool
-        
+
         @test basespace(hs) === hs
         
         @test hs.bitoffsets[end] == 2 + 2 + 1 + 2

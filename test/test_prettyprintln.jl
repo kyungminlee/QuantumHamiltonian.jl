@@ -87,7 +87,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
         result = @capture_out prettyprintln(rhsr)
         @test result == """
             ReducedHilbertSpaceRepresentation
-            | basis_list
+            | basis
             | | 0000
             | | 0001
             | | 0011

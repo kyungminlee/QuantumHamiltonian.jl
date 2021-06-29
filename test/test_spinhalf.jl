@@ -35,8 +35,8 @@ using QuantumHamiltonian
     # Test HilbertSpaceRepresentation
     hsr = represent(hs, UInt64)
     @test dimension(hsr) == 2^n
-    @test hsr.basis_list == collect(UInt64(0):UInt64(2^n-1))
-    @test all(hsr.basis_lookup[basis] == ibasis for (ibasis, basis) in enumerate(hsr.basis_list))
+    @test hsr.basis == collect(UInt64(0):UInt64(2^n-1))
+    @test all(findindex(hsr.basis, basis) == ibasis for (ibasis, basis) in enumerate(hsr.basis))
 
     sector_bases = Dict{Int, Vector{UInt}}(
     +4 => [0b0000],

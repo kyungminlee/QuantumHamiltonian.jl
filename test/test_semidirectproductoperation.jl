@@ -30,7 +30,7 @@ using LatticeTools
     qψ = SemidirectProductOperation(q, ψ)
     ipϕ = inv(pϕ)
     pϕqψ = pϕ * qψ
-    for b in hsr.basis_list
+    for b in hsr.basis
         let
             b1, a1 = b, 1
             b2, a2 = symmetry_apply(hs, ϕ, b1, a1)
