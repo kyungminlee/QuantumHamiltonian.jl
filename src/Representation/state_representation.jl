@@ -6,7 +6,6 @@ function represent(
     err_sq = zero(real(S))
     out = zeros(S, dimension(hsrep))
     for (bvec, amplitude) in state
-        # i = get(hsrep.basis_lookup, BR(bvec), -1)
         i = findindex(hsrep.basis, BR(bvec))
         if i > 0
             out[i] = amplitude
