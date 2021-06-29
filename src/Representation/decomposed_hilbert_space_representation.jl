@@ -18,7 +18,7 @@ struct DecomposedHilbertSpaceRepresentation{
     TagType,
 }<:AbstractHilbertSpaceRepresentation{BR, S}
     hilbertspace::HS
-    tags::Vector{TagType}
+    tags::DictIndexedVector{TagType}
     components::Vector{HSR}
     offsets::Vector{Int}
 
@@ -39,7 +39,7 @@ struct DecomposedHilbertSpaceRepresentation{
                 tag_basis_list[tag] = [b]
             end
         end
-        tags = unique(sort(collect(keys(tag_basis_list))))
+        tags = DictIndexedVector(unique(sort(collect(keys(tag_basis_list)))))
         components = Vector{HSR}(undef, length(tags))
         offsets = Vector{Int}(undef, length(tags)+1)
         offsets[1] = 0
@@ -98,12 +98,17 @@ end
 
 
 function get_basis_index_amplitude(hsr::DecomposedHilbertSpaceRepresentation{BR, S, HS, HSR, TT}, bvec::Unsigned) where {BR, S, HS, HSR, TT}
-    tag = get_tag(hsr, bvec)
-    icompo = searchsortedfirst(hsr.tags, tag)
-    hsr.tags[icompo] == tag || return (index=-1, amplitude=zero(S))
-    (i, a) = get_basis_index_amplitude(hsr.components[icompo], bvec)
-    i > 0 || return (index=-1, amplitude=zero(S))
-    return (index=hsr.offsets[icompo] + i, amplitude=a)
+    try
+        tag = get_tag(hsr, bvec)
+        icompo = findindex(hsr.tags, tag)
+        icompo > 0 || return (index=-1, amplitude=zero(S))
+        # hsr.tags[icompo] == tag || return (index=-1, amplitude=zero(S))
+        (i, a) = get_basis_index_amplitude(hsr.components[icompo], bvec)
+        i > 0 || return (index=-1, amplitude=zero(S))
+        return (index=hsr.offsets[icompo] + i, amplitude=a)
+    catch BoundsError
+        return (index=-1, amplitude=zero(S))
+    end
 end
 
 
