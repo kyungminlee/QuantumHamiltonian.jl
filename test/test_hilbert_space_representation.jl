@@ -79,8 +79,9 @@ using StaticArrays
         @test sectors == QN[(2, -2), (2, 0), (2, 2), (3, -3), (3, -1), (3, 1), (3, 3)]
         
         @testset "represent" begin
-            for represent in [represent_array, represent_dict]
-                hsr_all = represent(hs)
+            # for represent in [represent_array, represent_dict]
+            for BT in [SortedIndexedVector, DictIndexedVector]
+                hsr_all = represent(hs, UInt, BT)
                 @test collect(hsr_all.basis) == UInt[
                     0b0000, 0b0001, 0b0010,
                     0b0100, 0b0101, 0b0110,
@@ -89,10 +90,10 @@ using StaticArrays
                 ]
                 @test all(ibasis == findindex(hsr_all.basis, basis) for (ibasis, basis) in enumerate(hsr_all.basis))
                 @test dimension(hsr_all) == length(hsr_all.basis)
-                @test hsr_all == represent(HilbertSpaceSector(hs, sectors))
+                @test hsr_all == represent(HilbertSpaceSector(hs, sectors), UInt, BT)
                 
                 # empty QN
-                @test isempty(represent(HilbertSpaceSector(hs, QN[])).basis)
+                @test isempty(represent(HilbertSpaceSector(hs, QN[]), UInt, BT).basis)
                 
                 qn_basis = Dict{QN, Vector{UInt}}(
                     ( 2,-2) => [0b1100],
@@ -106,25 +107,25 @@ using StaticArrays
                 
                 # Test each sector explicitly
                 for (qn, basis_list) in qn_basis
-                    hsr = represent(HilbertSpaceSector(hs, qn))
+                    hsr = represent(HilbertSpaceSector(hs, qn), UInt, BT)
                     @test collect(hsr.basis) == basis_list
                     @test all(ib == findindex(hsr.basis, b) for (ib, b) in enumerate(hsr.basis))
                     @test dimension(hsr) == length(hsr.basis)
-                    hsr2 = represent(hs, basis_list)
+                    hsr2 = represent(hs, basis_list, BT)
                     @test hsr == hsr2
                 end
                 
                 for qn in sectors
-                    hsr = represent(HilbertSpaceSector(hs, qn))
+                    hsr = represent(HilbertSpaceSector(hs, qn), UInt, BT)
                     @test hsr_all != hsr
                     @test all(ibasis == findindex(hsr.basis, basis) for (ibasis, basis) in enumerate(hsr.basis))
                     @test dimension(hsr) == length(hsr.basis)
                     @test hsr == represent(hs, hsr.basis)
                 end
                 
-                @test represent(HilbertSpaceSector(hs, QN[( 3, 3), ( 3, 1)])).basis == [0b0001, 0b0010, 0b0101, 0b1001]
-                @test represent(HilbertSpaceSector(hs, Set{QN}([( 3, 3), ( 3, 1)]))).basis == [0b0001, 0b0010, 0b0101, 0b1001]
-                @test represent(hs, UInt[0b0001, 0b0010, 0b0101, 0b1001]).basis == UInt[0b0001, 0b0010, 0b0101, 0b1001]
+                @test represent(HilbertSpaceSector(hs, QN[( 3, 3), ( 3, 1)]), UInt, BT).basis == [0b0001, 0b0010, 0b0101, 0b1001]
+                @test represent(HilbertSpaceSector(hs, Set{QN}([( 3, 3), ( 3, 1)])), UInt, BT).basis == [0b0001, 0b0010, 0b0101, 0b1001]
+                @test represent(hs, UInt[0b0001, 0b0010, 0b0101, 0b1001], BT).basis == UInt[0b0001, 0b0010, 0b0101, 0b1001]
                 # order
                 # @test represent(hs, UInt[0b0101, 0b0001, 0b0010,0b1001]).basis != UInt[0b0001, 0b0010, 0b0101, 0b1001]
             end
