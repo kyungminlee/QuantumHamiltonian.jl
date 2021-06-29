@@ -102,13 +102,39 @@ function represent(hs::AbstractHilbertSpace, ::Type{BR}=UInt, ::Type{BT}=SortedI
 end
 
 
+function represent(
+    hs::AbstractHilbertSpace{QN},
+    allowed_quantum_numbers::AbstractVector{QN},
+    ::Type{BR}=UInt,
+    ::Type{BT}=SortedIndexedVector
+) where {QN, BR, BT}
+    basis_list = hs_get_basis_list(hs, allowed_quantum_numbers, BR)
+    basis = BT(basis_list)
+    return HilbertSpaceRepresentation(basespace(hs), basis)
+end
+
+
+function represent(
+    hs::AbstractHilbertSpace{Tuple{I}},
+    allowed_quantum_numbers::AbstractVector{I},
+    ::Type{BR}=UInt,
+    ::Type{BT}=SortedIndexedVector
+) where {I<:AbstractQuantumNumber, BR, BT}
+    return represent(hs, [(x,) for x in allowed_quantum_numbers], BR, BT)
+end
+
+
 """
     represent(hs, basis_list, basis_type=SortedIndexedVector)
 
 Make a HilbertSpaceRepresentation with the provided list of basis vectors.
 This defaults to [`represent_array`](@ref).
 """
-function represent(hs::AbstractHilbertSpace, basis_list::AbstractVector{BR}, ::Type{BT}=SortedIndexedVector) where {BR<:Unsigned, BT<:AbstractIndexedVector}
+function represent(
+    hs::AbstractHilbertSpace,
+    basis_list::AbstractVector{BR},
+    ::Type{BT}=SortedIndexedVector
+) where {BR<:Unsigned, BT<:AbstractIndexedVector}
     basis = BT(basis_list)
     return HilbertSpaceRepresentation(basespace(hs), basis)
 end
