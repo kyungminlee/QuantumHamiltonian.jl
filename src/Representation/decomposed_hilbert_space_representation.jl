@@ -2,6 +2,7 @@ export DecomposedHilbertSpaceRepresentation
 export represent_decompose_dict
 export dimension
 export get_basis_list, get_basis_state, get_basis_index_amplitude
+export sectorslice
 
 
 """
@@ -21,6 +22,22 @@ struct DecomposedHilbertSpaceRepresentation{
     tags::DictIndexedVector{TagType}
     components::Vector{HSR}
     offsets::Vector{Int}
+
+    function DecomposedHilbertSpaceRepresentation(
+        hs::HS,
+        tags::AbstractVector{TT},
+        components::AbstractVector{HSR}
+    ) where {HS<:AbstractHilbertSpace, TT, S, BR, HSR<:AbstractHilbertSpaceRepresentation{BR, S}}
+        if length(tags) != length(components)
+            throw(ArgumentError("number of tags should match number of components"))
+        end
+        offsets = Vector{Int}(undef, length(components)+1)
+        offsets[1] = 0
+        for (icompo, compo) in enumerate(components)
+            offsets[icompo+1] = offsets[icompo] + dimension(compo)
+        end
+        return new{BR, S, HS, HSR, TT}(hs, DictIndexedVector(tags), components, offsets)
+    end
 
     function DecomposedHilbertSpaceRepresentation(
         hsr::HilbertSpaceRepresentation{BR, HS, BT},
@@ -84,6 +101,8 @@ end
 dimension(hsr::DecomposedHilbertSpaceRepresentation) = hsr.offsets[end] #mapreduce(length, +, hsr.components)
 
 
+get_tags(hsr::DecomposedHilbertSpaceRepresentation) = sort(collect(hsr.tags))
+
 get_basis_list(hsr::DecomposedHilbertSpaceRepresentation) = vcat(get_basis_list.(hsr.components)...)
 
 
@@ -113,3 +132,32 @@ end
 
 
 basespace(hsr::DecomposedHilbertSpaceRepresentation) = hsr.hilbertspace
+
+
+"""
+    Predicate on the tags
+"""
+function sectorslice(
+    hsr::DecomposedHilbertSpaceRepresentation{BR, S, HS, HSR, TT},
+    predicate::Function
+) where {BR, S, HS, HSR, TT}
+
+    indices = findall(predicate, hsr.tags)
+    tags = hsr.tags[indices]
+    components = hsr.components[indices]
+    DecomposedHilbertSpaceRepresentation(hsr.hilbertspace, tags, components)
+end
+
+
+"""
+    Predicate on the tags
+"""
+function sectorslice(
+    hsr::DecomposedHilbertSpaceRepresentation{BR, S, HS, HSR, TT},
+    tags::AbstractVector{TT}
+) where {BR, S, HS, HSR, TT}
+    indices = findall(x -> x in tags, hsr.tags)
+    tags_sel = tags[indices]
+    components = hsr.components[indices]
+    DecomposedHilbertSpaceRepresentation(hsr.hilbertspace, tags_sel, components)
+end
