@@ -18,9 +18,13 @@ using QuantumHamiltonian
         phsr = ProductHilbertSpaceRepresentation(hsr1, hsr2)
 
         @testset "from hilbert space" begin
+            @test valtype(phsr) == Bool
+            @test scalartype(phsr) == Bool
+            @test bintype(phsr) == UInt
             @test qntype(phsr) == Tuple{Int}
             @test tagtype(phsr, Val(:QuantumNumberAsTag)) == Tuple{Tuple{Int}, Tuple{Int}}
             @test basespace(phsr) == phs
+            @test basespace(typeof(phsr)) == typeof(basespace(phsr))
             @test numsites(phsr) == 5
             @test_throws BoundsError get_site(phsr, 0)
             @test get_site(phsr, 1) == spinhalfsite
