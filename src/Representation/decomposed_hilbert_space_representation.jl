@@ -70,38 +70,37 @@ struct DecomposedHilbertSpaceRepresentation{
 end
 
 
-function represent_decompose_dict(hs::HilbertSpace{QN, TT}, ::Type{BR}=UInt) where {QN, TT, BR<:Unsigned}
-    S = Bool
-    HS = HilbertSpace{QN, TT}
-    HSR = HilbertSpaceRepresentation{BR, HS, DictIndexedVector{BR}}
-    TagType = TT
+# function represent_decompose_dict(hs::HilbertSpace{QN, TT}, ::Type{BR}=UInt) where {QN, TT, BR<:Unsigned}
+#     S = Bool
+#     HS = HilbertSpace{QN, TT}
+#     HSR = HilbertSpaceRepresentation{BR, HS, DictIndexedVector{BR}}
+#     TagType = TT
     
-    tag_basis_list = Dict{TagType, Vector{BR}}()
-    for b in QuantumHamiltonian.hs_get_basis_list(hs)
-        tag = get_tag(hs, b)
-        if haskey(tag_basis_list, tag)
-            push!(tag_basis_list[tag], b)
-        else
-            tag_basis_list[tag] = [b]
-        end
-    end
-    tags = unique(sort(collect(keys(tag_basis_list))))
-    components = Vector{HSR}(undef, length(tags))
-    offsets = Vector{Int}(undef, length(tags)+1)
-    offsets[1] = 0
-    for (itag, tag) in enumerate(tags)
-        blist = represent_dict(hs,tag_basis_list[tag])
-        components[itag] = blist
-        offsets[itag+1] = offsets[itag] + dimension(blist)
-    end
-    return DecomposedHilbertSpaceRepresentation{BR, S, HS, HSR, TagType}(hs, tags, components, offsets)
-end
+#     tag_basis_list = Dict{TagType, Vector{BR}}()
+#     for b in QuantumHamiltonian.hs_get_basis_list(hs)
+#         tag = get_tag(hs, b)
+#         if haskey(tag_basis_list, tag)
+#             push!(tag_basis_list[tag], b)
+#         else
+#             tag_basis_list[tag] = [b]
+#         end
+#     end
+#     tags = unique(sort(collect(keys(tag_basis_list))))
+#     components = Vector{HSR}(undef, length(tags))
+#     offsets = Vector{Int}(undef, length(tags)+1)
+#     offsets[1] = 0
+#     for (itag, tag) in enumerate(tags)
+#         blist = represent_dict(hs,tag_basis_list[tag])
+#         components[itag] = blist
+#         offsets[itag+1] = offsets[itag] + dimension(blist)
+#     end
+#     return DecomposedHilbertSpaceRepresentation{BR, S, HS, HSR, TagType}(hs, tags, components, offsets)
+# end
 
 
 dimension(hsr::DecomposedHilbertSpaceRepresentation) = hsr.offsets[end] #mapreduce(length, +, hsr.components)
 
-
-get_tags(hsr::DecomposedHilbertSpaceRepresentation) = sort(collect(hsr.tags))
+# get_tags(hsr::DecomposedHilbertSpaceRepresentation) = sort(collect(hsr.tags))
 
 get_basis_list(hsr::DecomposedHilbertSpaceRepresentation) = vcat(get_basis_list.(hsr.components)...)
 
