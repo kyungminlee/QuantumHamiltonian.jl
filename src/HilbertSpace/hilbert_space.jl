@@ -6,7 +6,7 @@ export extract, uncompress, compress, update, get_state, get_state_index
 export get_bitmask
 export get_tag, get_tags
 export bitwidth, bitoffset
-export scalartype, qntype
+export scalartype, qntype, tagtype
 export basespace
 
 
