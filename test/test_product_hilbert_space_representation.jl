@@ -22,6 +22,7 @@ using QuantumHamiltonian
             @test scalartype(phsr) == Bool
             @test bintype(phsr) == UInt
             @test qntype(phsr) == Tuple{Int}
+            @test qntype(typeof(phsr)) == Tuple{Int}
             @test tagtype(phsr, Val(:QuantumNumberAsTag)) == Tuple{Tuple{Int}, Tuple{Int}}
             @test basespace(phsr) == phs
             @test basespace(typeof(phsr)) == typeof(basespace(phsr))

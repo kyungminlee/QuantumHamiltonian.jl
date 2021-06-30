@@ -46,7 +46,7 @@ Base.valtype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) whe
 scalartype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, QN, N, HS, HSR} = S
 bintype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, QN, N, HS, HSR} = BR
 
-qntype(::Type{ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, N, HS, HSR} = qntype(HS)
+qntype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, N, HS, HSR} = qntype(HS)
 
 basespace(hsr::ProductHilbertSpaceRepresentation) = hsr.hilbertspace
 basespace(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, N, HS, HSR} = HS
