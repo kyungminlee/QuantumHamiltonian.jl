@@ -259,75 +259,15 @@ function compress(
 end
 
 
-# """
-#     update(hs, binrep, isite, new_state_index)
-
-# Update the binary representation of a basis state
-# by changing the state at site `isite` to a new local state specified by
-# `new_state_index`.
-# """
-# @inline function update(
-#     hs::HilbertSpace,
-#     binrep::BR,
-#     isite::Integer,
-#     new_state_index::Integer
-# ) where {BR<:Unsigned}
-#     @boundscheck if !(1 <= new_state_index <= dimension(hs.sites[isite]))
-#         throw(BoundsError(1:dimension(hs.sites[isite]), new_state_index))
-#     end
-#     mask = get_bitmask(hs, isite, BR)
-#     return (binrep & (~mask)) | (BR(new_state_index-1) << hs.bitoffsets[isite])
-# end
-
-
-# """
-#     get_state_index(hs, binrep, isite)
-
-# Get the *index of* the local state at site `isite` for the basis state
-# represented by `binrep`.
-# """
-# function get_state_index(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-#     # return Int((binrep >> hs.bitoffsets[isite]) & make_bitmask(hs.bitwidths[isite], BR)) + 1
-#     return Int((binrep >> bitoffset(hs, isite)) & make_bitmask(bitwidth(hs, isite), BR)) + 1
-# end
-
-
-# """
-#     get_state(hs, binrep, isite)
-
-# Get the local state at site `isite` for the basis state
-# represented by `binrep`. Returns an object of type `State`
-# """
-# function get_state(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-#     return get_site(hs, isite).states[get_state_index(hs, binrep, isite)]
-# end
-
-
-# import Base.iterate
-# @inline function iterate(hs::HilbertSpace{QN}) where {QN}
-#   subiterator = Iterators.product((1:length(site.states) for site in hs.sites)...)
-#   next = Base.iterate(subiterator)
-#   next === nothing && return nothing
-#   value, next_substate = next
-#   return (Int[value...], (subiterator, next_substate))
-# end
-#
-# import Base.iterate
-# @inline function iterate(hs::HilbertSpace{QN}, state) where {QN}
-#   (subiterator, substate) = state
-#   next = Base.iterate(subiterator, substate)
-#   next === nothing && return nothing
-#   value, next_substate = next
-#   return (Int[value...], (subiterator, next_substate))
-# end
-
-
 function Base.keys(hs::HilbertSpace)
     return CartesianIndices(((1:length(site.states) for site in hs.sites)...,))
 end
 
 
-function hs_get_basis_list(hs::HilbertSpace, ::Type{BR}=UInt)::Vector{BR} where {BR<:Unsigned}
+function hs_get_basis_list(
+    hs::HilbertSpace,
+    ::Type{BR}=UInt
+)::Vector{BR} where {BR<:Unsigned}
     if sizeof(BR) * 8 <= bitwidth(hs)
         throw(ArgumentError("type $(BR) not enough to represent the hilbert space (need $(bitwidth(hs)) bits)"))
     end
@@ -340,13 +280,16 @@ function hs_get_basis_list(hs::HilbertSpace, ::Type{BR}=UInt)::Vector{BR} where 
 end
 
 
-
 """
     hs_get_basis_list(hs, allowed_quantum_numbers, binary_type=UInt)
 
 Generate a basis for the `HilbertSpaceSector`.
 """
-function hs_get_basis_list(hs::HilbertSpace{QN, TT}, allowed_quantum_numbers::AbstractVector{QN}, ::Type{BR}=UInt)::Vector{BR} where {QN, TT, BR<:Unsigned}
+function hs_get_basis_list(
+    hs::HilbertSpace{QN, TT},
+    allowed_quantum_numbers::AbstractVector{QN},
+    ::Type{BR}=UInt
+)::Vector{BR} where {QN, TT, BR<:Unsigned}
     if sizeof(BR) * 8 <= bitwidth(hs)
         throw(ArgumentError("type $(BR) not enough to represent the hilbert space (need $(bitwidth(hs)) bits)"))
     end
