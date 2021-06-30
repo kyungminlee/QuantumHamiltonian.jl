@@ -73,8 +73,8 @@ end
 
 Returns the quantum number type of the given hilbert space sector type.
 """
-qntype(::Type{HilbertSpaceSector{QN, HS}}) where {QN, HS} = QN
-tagtype(::Type{HilbertSpaceSector{QN, HS}}) where {QN, HS} = QN
+qntype(::Type{<:HilbertSpaceSector{QN, HS}}) where {QN, HS} = QN
+tagtype(::Type{<:HilbertSpaceSector{QN, HS}}) where {QN, HS} = QN
 
 function Base.:(==)(lhs::HilbertSpaceSector{QN, HS}, rhs::HilbertSpaceSector{QN, HS}) where {QN, HS}
     return (

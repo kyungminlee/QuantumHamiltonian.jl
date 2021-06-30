@@ -95,7 +95,11 @@ end
 Make a HilbertSpaceRepresentation with all the basis vectors of the specified HilbertSpace.
 This function defaults to [`represent_array`](@ref).
 """
-function represent(hs::AbstractHilbertSpace, ::Type{BR}=UInt, ::Type{BT}=SortedIndexedVector) where {BR<:Unsigned, BT<:AbstractIndexedVector}
+function represent(
+    hs::AbstractHilbertSpace,
+    ::Type{BR}=UInt,
+    ::Type{BT}=SortedIndexedVector
+) where {BR<:Unsigned, BT<:AbstractIndexedVector}
     basis_list = hs_get_basis_list(hs, BR)
     basis = BT(basis_list)
     return HilbertSpaceRepresentation(basespace(hs), basis)
