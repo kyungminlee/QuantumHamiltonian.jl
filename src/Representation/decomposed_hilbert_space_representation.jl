@@ -76,6 +76,45 @@ struct DecomposedHilbertSpaceRepresentation{
 end
 
 
+# specializations
+function tagtype(
+    ::Type{<:DecomposedHilbertSpaceRepresentation{BR, S, HS, HSR, TS, TT}},
+    ::Val{TS2}=Val(TS)
+) where {BR, S, HS, HSR, TS, TT, TS2}
+    TS == TS2 || throw(ArgumentError("tag strategies do not match ($TS != $TS2)"))
+    return TT
+end
+
+
+function tagtype(
+    ::DecomposedHilbertSpaceRepresentation{BR, S, HS, HSR, TS, TT},
+    ::Val{TS2}=Val(TS)
+) where {BR, S, HS, HSR, TS, TT, TS2}
+    TS == TS2 || throw(ArgumentError("tag strategies do not match ($TS != $TS2)"))
+    return TT
+end
+
+
+function get_tag(
+    hsr::DecomposedHilbertSpaceRepresentation{BR, S, HS, HSR, TS, TT},
+    binrep::Unsigned,
+    ::Val{TS2}=Val(TS),
+) where {BR, S, HS, HSR, TS, TT, TS2}
+    TS == TS2 || throw(ArgumentError("tag strategies do not match ($TS != $TS2)"))
+    return get_tag(hsr.hilbertspace, binrep, Val(TS))
+end
+
+
+function checkvalid(dhsr::DecomposedHilbertSpaceRepresentation{BR, S, HS, HSR, TS, TT}) where {BR, S, HS, HSR, TS, TT}
+    for (tag, compo) in zip(dhsr.tags, dhsr.components)
+        bl = get_basis_list(compo)
+        for b in bl
+            @assert tag == get_tag(dhsr.hilbertspace, b, Val(TS))
+        end
+    end
+end
+
+
 # function represent_decompose_dict(hs::HilbertSpace{QN, TT}, ::Type{BR}=UInt) where {QN, TT, BR<:Unsigned}
 #     S = Bool
 #     HS = HilbertSpace{QN, TT}

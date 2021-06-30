@@ -37,6 +37,7 @@ end
 
 
 basespace(lhs::HilbertSpaceRepresentation) = lhs.hilbert_space
+basespace(::Type{<:HilbertSpaceRepresentation{BR, HS, BT}}) where {BR, HS, BT} = HS
 
 
 """

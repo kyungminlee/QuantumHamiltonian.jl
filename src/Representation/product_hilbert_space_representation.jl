@@ -49,6 +49,7 @@ bintype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {B
 qntype(::Type{ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, N, HS, HSR} = qntype(HS)
 
 basespace(hsr::ProductHilbertSpaceRepresentation) = hsr.hilbertspace
+basespace(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, N, HS, HSR} = HS
 
 dimension(p::ProductHilbertSpaceRepresentation) = mapreduce(dimension, *, p.subrepresentations)
 
