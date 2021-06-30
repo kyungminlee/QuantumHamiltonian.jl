@@ -8,7 +8,7 @@ using QuantumHamiltonian
     @testset "trivial case" begin
         hs = HilbertSpace([spinhalfsite, spinhalfsite, spinhalfsite, spinonesite, spinonesite])
         hsr = represent(hs)
-        dhsr = DecomposedHilbertSpaceRepresentation(hsr, Val(:QuantumNumberAsTag))
+        dhsr = decompose(hsr, Val(:QuantumNumberAsTag))
         QuantumHamiltonian.checkvalid(dhsr)
 
         @testset "from hilbert space" begin

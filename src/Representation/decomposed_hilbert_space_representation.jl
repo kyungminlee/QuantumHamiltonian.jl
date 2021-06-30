@@ -1,5 +1,5 @@
 export DecomposedHilbertSpaceRepresentation
-export represent_decompose_dict
+export decompose
 export dimension
 export get_basis_list, get_basis_state, get_basis_index_amplitude
 export sectorslice
@@ -44,36 +44,35 @@ struct DecomposedHilbertSpaceRepresentation{
         return new{BR, S, HS, HSR, TS, TT}(hs, DictIndexedVector(tags), components, offsets)
     end
 
-    function DecomposedHilbertSpaceRepresentation(
-        hsr::HilbertSpaceRepresentation{BR, HS, BT},
-        tagstrategy::Val{TS}=Val(:QuantumNumberAsTag)
-    ) where {BR, HS, BT, TS}
-        S = Bool
-        HSR = HilbertSpaceRepresentation{BR, HS, BT}
-        TT = tagtype(HS, tagstrategy)
-
-        hs = basespace(hsr)
-        tag_basis_list = Dict{TT, Vector{BR}}()
-        for b in get_basis_list(hsr)
-            tag = get_tag(hs, b, tagstrategy)
-            if haskey(tag_basis_list, tag)
-                push!(tag_basis_list[tag], b)
-            else
-                tag_basis_list[tag] = [b]
-            end
-        end
-        tags = DictIndexedVector(unique(sort(collect(keys(tag_basis_list)))))
-        components = Vector{HSR}(undef, length(tags))
-        offsets = Vector{Int}(undef, length(tags)+1)
-        offsets[1] = 0
-        for (itag, tag) in enumerate(tags)
-            blist = HilbertSpaceRepresentation(hs, BT(tag_basis_list[tag]))
-            components[itag] = blist
-            offsets[itag+1] = offsets[itag] + dimension(blist)
-        end
-        return new{BR, S, HS, HSR, TS, TT}(hs, tags, components, offsets)
-    end
 end
+
+
+function decompose(
+    hsr::HilbertSpaceRepresentation{BR, HS, BT},
+    tagstrategy::Val{TS}=Val(:QuantumNumberAsTag)
+) where {BR, HS, BT, TS}
+    HSR = HilbertSpaceRepresentation{BR, HS, BT}
+    TT = tagtype(HSR, tagstrategy)
+    
+    hs = basespace(hsr)
+    tag_basis_list = Dict{TT, Vector{BR}}()
+    for b in get_basis_list(hsr)
+        tag = get_tag(hs, b, tagstrategy)
+        if haskey(tag_basis_list, tag)
+            push!(tag_basis_list[tag], b)
+        else
+            tag_basis_list[tag] = [b]
+        end
+    end
+    tags = DictIndexedVector(unique(sort(collect(keys(tag_basis_list)))))
+    components = Vector{HSR}(undef, length(tags))
+    for (itag, tag) in enumerate(tags)
+        blist = HilbertSpaceRepresentation(hs, BT(tag_basis_list[tag]))
+        components[itag] = blist
+    end
+    return DecomposedHilbertSpaceRepresentation(hs, tags, components, tagstrategy)
+end
+
 
 
 # specializations
