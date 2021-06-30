@@ -29,6 +29,7 @@ include("test_reduced_representation.jl")
 
 include("test_bitflip.jl")
 include("test_lgp.jl")
+include("test_productoperation.jl")
 include("test_semidirectproductoperation.jl")
 
 include("test_prettyprintln.jl")
