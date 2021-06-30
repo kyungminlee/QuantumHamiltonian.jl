@@ -7,8 +7,7 @@ using LatticeTools
     site = Site([State("up", 0), State("dn", 1)])
     nsites = 4
     hs = HilbertSpace([site for i in 1:nsites])
-    hss = HilbertSpaceSector(hs, 1)
-    hsr = represent(hss)
+    hsr = represent(hs, [(1,)])
 
     p = SitePermutation([2,3,4,1])
     ϕ = LocalGeneralizedPermutation([
