@@ -66,9 +66,9 @@ end
 function symmetry_apply(
     hs::AbstractHilbertSpace,
     dop::DirectProductOperation,
-    bitrep::BR,
-    amplitude::S=one(Int)
-) where {BR<:Unsigned, S<:Number}
+    bitrep::Unsigned,
+    amplitude::Number=one(Int)
+)
     # assumption is that the operations commute.
     for op in reverse(dop.operations)  # (ABC)(ψ) = A(B(C(ψ)))
         bitrep, amplitude = symmetry_apply(hs, op, bitrep, amplitude)
@@ -106,8 +106,8 @@ function symmetry_apply(
     hs::HilbertSpace,
     permutation::SitePermutation,
     bitrep::BR,
-    amplitude::S=one(Int)
-) where {BR<:Unsigned, S<:Number}
+    amplitude::Number=one(Int)
+) where {BR<:Unsigned}
     out = zero(BR)
     for (i, j) in enumerate(permutation.permutation.map)
         out |= ( (bitrep >> hs.bitoffsets[i]) & make_bitmask(hs.bitwidths[i]) ) << hs.bitoffsets[j]
@@ -115,13 +115,22 @@ function symmetry_apply(
     return (out, amplitude)
 end
 
+function symmetry_apply(
+    ::AbstractHilbertSpace,
+    phase::Phase,
+    bitrep::Unsigned,
+    amplitude::Number=one(Int)
+)
+    return (bitrep, phase(amplitude))
+end
+
 
 function symmetry_apply(
     hs::AbstractHilbertSpace,
     perm::LocalGeneralizedPermutation{A},
-    bitrep::BR,
-    amplitude::S=one(Int)
-) where {A, BR<:Unsigned, S<:Number}
+    bitrep::Unsigned,
+    amplitude::Number=one(Int)
+) where {A}
     @boundscheck let
         if length(hs.sites) != length(perm.operations)
             throw(ArgumentError("number of sites should match"))
