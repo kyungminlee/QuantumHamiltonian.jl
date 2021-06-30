@@ -5,6 +5,24 @@ using QuantumHamiltonian
     spinhalfsite = Site([State("Up", +1), State("Dn", -1)])
     spinonesite = Site([State("S=1", +2), State("S=0", 0), State("S=-1", -2)])
 
+    @testset "constructor" begin
+        hs = HilbertSpace([spinhalfsite, spinhalfsite, spinhalfsite, spinonesite, spinonesite])
+        hsr = represent(hs)
+        # number of tags != number of components
+        @test_throws ArgumentError DecomposedHilbertSpaceRepresentation(
+            hs,
+            [(0,),],
+            [hsr, hsr],
+            Val(:QuantumNumberAsTag)
+        )
+        # tagtype mismatch
+        @test_throws ArgumentError DecomposedHilbertSpaceRepresentation(
+            hs,
+            [(0,1,2,),],
+            [hsr],
+            Val(:QuantumNumberAsTag)
+        )
+    end
     @testset "trivial case" begin
         hs = HilbertSpace([spinhalfsite, spinhalfsite, spinhalfsite, spinonesite, spinonesite])
         hsr = represent(hs)
