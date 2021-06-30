@@ -145,6 +145,8 @@ function represent(
 end
 
 
+# COV_EXCL_START
+
 """
     represent_array(hs, binary_type=UInt)
 
@@ -196,3 +198,5 @@ function represent_dict(hs::AbstractHilbertSpace, basis_list::AbstractVector{BR}
     basis = DictIndexedVector(basis_list)
     return HilbertSpaceRepresentation(basespace(hs), basis)
 end
+
+# COV_EXCL_STOP
