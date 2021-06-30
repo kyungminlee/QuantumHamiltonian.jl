@@ -47,6 +47,8 @@ using StaticArrays
             @test_throws ArgumentError represent(hilbert_space, UInt8)
             @test_throws ArgumentError HilbertSpaceRepresentation(HilbertSpaceSector(hilbert_space, 0), basis)
             @test_throws ArgumentError represent(HilbertSpaceSector(hilbert_space, 0), UInt8)
+            @test_throws ArgumentError represent(hilbert_space, [(0,)], UInt8)
+            @test dimension(represent(hilbert_space, [(999999999,)])) == 0
         end
         
         @testset "typetraits" begin
