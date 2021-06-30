@@ -24,4 +24,12 @@ using QuantumHamiltonian
     @test hash(lgp1, h) != hash(lgp2, h)
 
     @test inv(lgp1) == LocalGeneralizedPermutation([inv(gp0), inv(gp1)])
+
+    @testset "symmetry_apply" begin
+        site = Site([State("Up", +1), State("Dn", -1)])
+        hs = HilbertSpace([site, site])
+        @test_throws ArgumentError symmetry_apply(hs, LocalGeneralizedPermutation([gp1, gp1, gp1]), 0b0)
+        @test_throws ArgumentError symmetry_apply(hs, LocalGeneralizedPermutation([gp0, gp0]), 0b0)
+        @test (symmetry_apply(hs, LocalGeneralizedPermutation([gp1, gp1]), 0b0); true)
+    end
 end
