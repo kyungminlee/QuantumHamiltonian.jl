@@ -15,7 +15,7 @@ struct ProductHilbertSpace{
         bitwidths = bitwidth.(subspaces)
         return new{QN, N, NTuple{N, QN}, S}(subspaces, ns, bitwidths)
     end
-    function ProductHilbertSpace(subspaces::Vararg{AbstractHilbertSpace})
+    function ProductHilbertSpace(subspaces::AbstractHilbertSpace...)
         return ProductHilbertSpace(subspaces)
     end
 end
@@ -96,6 +96,7 @@ function extract(hs::ProductHilbertSpace, binrep::Unsigned)
 end
 
 
+# COV_EXCL_START
 function _arraysplit(sizes::NTuple{N, <:Integer}, array::Vector{T}) where {N, M, T}
     if sum(sizes) != length(array)
         throw(ArgumentError("size mismatch"))
@@ -108,6 +109,7 @@ function _arraysplit(sizes::NTuple{N, <:Integer}, array::Vector{T}) where {N, M,
     end
     return tuple(out...)
 end
+# COV_EXCL_STOP
 
 
 function compress(
