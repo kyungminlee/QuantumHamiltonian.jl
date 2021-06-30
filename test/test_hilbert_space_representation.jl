@@ -15,7 +15,8 @@ using StaticArrays
             basis = DictIndexedVector(basis_list)
             
             hsr1 = represent(hilbert_space, basis_list)
-            hsr2 = represent(HilbertSpaceSector(hilbert_space, 0))
+            # hsr2 = represent(HilbertSpaceSector(hilbert_space, 0))
+            hsr2 = represent(hilbert_space, [0])
             hsr3 = HilbertSpaceRepresentation(hilbert_space, basis)
             hsr4 = HilbertSpaceRepresentation(HilbertSpaceSector(hilbert_space, 0), basis)
             @test hsr1 == hsr2
