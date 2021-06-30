@@ -64,28 +64,28 @@ using QuantumHamiltonian
         @test get_basis_index_amplitude(dhsr, 0b11_10_1_1_1) == (index=-1, amplitude=0)
         @test get_basis_index_amplitude(dhsr, 0xFFFFFFFFFFFFFF) == (index=-1, amplitude=0)
         @test_throws BoundsError get_basis_state(dhsr, -10)
-    end
 
-    @testset "nontrivial" begin
-        hs = HilbertSpace([spinhalfsite, spinhalfsite, spinhalfsite, spinonesite, spinonesite])
-        hss = HilbertSpaceSector(hs, 0)
-        hsr = represent(hss)
+        dhsr0 = dhsr
 
-        dhsr = DecomposedHilbertSpaceRepresentation(hsr)
-        @test dimension(dhsr) == dimension(hsr)
+        @testset "nontrivial" begin
+            hs = HilbertSpace([spinhalfsite, spinhalfsite, spinhalfsite, spinonesite, spinonesite])
+            hsr = represent(hs, [(1,)])
+            dhsr = sectorslice(dhsr0, x-> x == (1,)) 
+            @test dimension(dhsr) == dimension(hsr)
 
-        let bl1 = get_basis_list(hsr),
-            bl2 = get_basis_list(dhsr)
-            @test length(bl1) == dimension(dhsr)
-            @test length(bl2) == dimension(dhsr)
-            for (i, b) in enumerate(bl1)
-                @test get_basis_index_amplitude(dhsr, b) == (index=i, amplitude=1)
-                @test get_basis_state(dhsr, i) == b
-                @test get_tag(dhsr, b) == (0,)
+            let bl1 = get_basis_list(hsr),
+                bl2 = get_basis_list(dhsr)
+                @test length(bl1) == dimension(dhsr)
+                @test length(bl2) == dimension(dhsr)
+                for (i, b) in enumerate(bl1)
+                    @test get_basis_index_amplitude(dhsr, b) == (index=i, amplitude=1)
+                    @test get_basis_state(dhsr, i) == b
+                    @test get_tag(dhsr, b) == (1,)
+                end
             end
+            @test get_basis_index_amplitude(dhsr, 0b10_10_0_0_0) == (index=-1, amplitude=0)
+            @test get_basis_index_amplitude(dhsr, 0xFFFFFFFFFFFFFF) == (index=-1, amplitude=0)
+            @test_throws BoundsError get_basis_state(dhsr, -10)
         end
-        @test get_basis_index_amplitude(dhsr, 0b10_10_0_0_0) == (index=-1, amplitude=0)
-        @test get_basis_index_amplitude(dhsr, 0xFFFFFFFFFFFFFF) == (index=-1, amplitude=0)
-        @test_throws BoundsError get_basis_state(dhsr, -10)
     end
 end
