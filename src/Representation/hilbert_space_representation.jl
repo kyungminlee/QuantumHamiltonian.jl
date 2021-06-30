@@ -82,14 +82,6 @@ function get_basis_index_amplitude(hsr::HilbertSpaceRepresentation, bvec::Unsign
 end
 
 
-function checkvalidbasis(hsr::HilbertSpaceRepresentation)
-    for (ivec, bvec) in enumerate(hsr.basis)
-        ivec2 = findindex(hsr.basis, bvec)
-        @assert ivec == ivec2
-    end
-end
-
-
 """
     represent(hs, binary_type=UInt, basis_type=SortedIndexedVector)
 
