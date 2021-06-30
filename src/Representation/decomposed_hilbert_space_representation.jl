@@ -137,7 +137,6 @@ function get_basis_index_amplitude(hsr::DecomposedHilbertSpaceRepresentation{BR,
         tag = get_tag(hsr, bvec, Val(TS))
         icompo = findindex(hsr.tags, tag)
         icompo > 0 || return (index=-1, amplitude=zero(S))
-        # hsr.tags[icompo] == tag || return (index=-1, amplitude=zero(S))
         (i, a) = get_basis_index_amplitude(hsr.components[icompo], bvec)
         i > 0 || return (index=-1, amplitude=zero(S))
         return (index=hsr.offsets[icompo] + i, amplitude=a)
@@ -145,7 +144,7 @@ function get_basis_index_amplitude(hsr::DecomposedHilbertSpaceRepresentation{BR,
         if isa(e, BoundsError)
             return (index=-1, amplitude=zero(S))
         else
-            rethrow()
+            rethrow() # COV_EXCL_LINE
         end
     end
 end
