@@ -8,6 +8,16 @@ using QuantumHamiltonian
     hs1 = HilbertSpace([spinhalfsite, spinhalfsite, spinhalfsite])
     hs2 = HilbertSpace([spinonesite, spinonesite])
     phs = ProductHilbertSpace((hs1, hs2))
+    @testset "equality" begin
+        phs2 = ProductHilbertSpace((hs1, hs2))
+        phs3 = ProductHilbertSpace(hs1, hs2)
+        phs4 = ProductHilbertSpace(hs1)
+        phs5 = ProductHilbertSpace((hs1, hs1))
+        @test phs == phs2
+        @test phs == phs3
+        @test phs != phs4
+        @test phs != phs5
+    end
     @test qntype(phs) == Tuple{Int}
     @test tagtype(phs, Val(:QuantumNumberAsTag)) == Tuple{Tuple{Int}, Tuple{Int}}
     @test basespace(phs) === phs

@@ -25,6 +25,9 @@ end
 tagtype(::Type{<:ProductHilbertSpace{QN, N, S}}, x::Val) where {QN, N, S}= Tuple{tagtype.(S.parameters, x)...}
 
 
+Base.:(==)(lhs::T, rhs::T) where {T<:ProductHilbertSpace} = lhs.subspaces == rhs.subspaces
+
+
 basespace(hs::ProductHilbertSpace) = hs
 
 numsites(hs::ProductHilbertSpace) = sum(hs.numsites)
