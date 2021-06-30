@@ -25,10 +25,24 @@ for fname in [
     :extract,
     :compress,
     :uncompress,
-    :update,    
+    :update,
     :get_state,
     :get_state_index,
     :get_bitmask,
+]
+    @eval begin
+        """
+            $($fname)(hsr::AbstractHilbertSpaceRepresentation, args...;kwargs...)
+
+        Call `$($fname)` with basespace of `hsr`.
+        """
+        @inline $fname(hsr::AbstractHilbertSpaceRepresentation, args...; kwargs...) = $fname(basespace(hsr), args...; kwargs...)
+        
+    end
+end
+
+
+for fname in [
     :qntype,
     :tagtype,
 ]
@@ -39,5 +53,7 @@ for fname in [
         Call `$($fname)` with basespace of `hsr`.
         """
         @inline $fname(hsr::AbstractHilbertSpaceRepresentation, args...; kwargs...) = $fname(basespace(hsr), args...; kwargs...)
+        
+        @inline $fname(::Type{HSR}, args...; kwargs...) where {HSR<:AbstractHilbertSpaceRepresentation} = $fname(basespace(HSR), args...; kwargs...)
     end
 end
