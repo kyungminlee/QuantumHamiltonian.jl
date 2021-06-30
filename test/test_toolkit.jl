@@ -150,4 +150,27 @@ using QuantumHamiltonian
             @test isapprox(psi1, psi2; atol=1E-8)
         end
     end
+
+    @testset "statistics" begin
+        @testset "small" begin
+            n_sites = 4
+            (hs, pauli) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
+            hsr = represent(hs, [(0,)])
+            σx1 = represent(hsr, sum(pauli(i, :+)*pauli(mod(i, n_sites)+1, :-) for i in 1:n_sites))
+            d = sum( .! iszero.(Matrix(σx1))) / length(σx1)
+            d2 = QuantumHamiltonian.Toolkit.estimate_density(σx1; nsample=10)
+            # @test isapprox(d, d2[1]; atol=max(Base.rtoldefault(Float64), d2[2]*2))
+            @test d == d2[1] && iszero(d2[2])
+        end
+
+        @testset "large" begin
+            n_sites = 10
+            (hs, pauli) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
+            hsr = represent(hs, [(0,)])
+            σx1 = represent(hsr, sum(pauli(i, :+)*pauli(mod(i, n_sites)+1, :-) for i in 1:n_sites))
+            d = sum( .! iszero.(Matrix(σx1))) / length(σx1)
+            d2 = QuantumHamiltonian.Toolkit.estimate_density(σx1; nsample=10)
+            @test isapprox(d, d2[1]; atol=max(Base.rtoldefault(Float64), d2[2]*2))
+        end
+    end
 end
