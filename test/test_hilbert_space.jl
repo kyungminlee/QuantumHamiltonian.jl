@@ -90,16 +90,14 @@ end
         dn = State("Dn", (-1,))
         spin_site = Site([up, dn])
         hs = HilbertSpace([spin_site, spin_site, spin_site, spin_site])
-        hs2 = HilbertSpace{QN, QN}([spin_site, spin_site, spin_site, spin_site])
-        @test hs == hs2
         
         @test numsites(hs) == 4
         @test get_site(hs, 2) == spin_site
         @test_throws BoundsError get_site(hs, 100)
         @test qntype(hs) === Tuple{Int}
         @test qntype(typeof(hs)) === Tuple{Int}
-        @test tagtype(hs) === Tuple{Int}
-        @test tagtype(typeof(hs)) === Tuple{Int}
+        @test tagtype(hs, Val(:QuantumNumberAsTag)) === Tuple{Int}
+        @test tagtype(typeof(hs), Val(:QuantumNumberAsTag)) === Tuple{Int}
         @test basespace(hs) === hs
         
         @test get_bitmask(hs, 1) == 0b0001
@@ -146,7 +144,7 @@ end
         @test qntype(typeof(hs)) === QN
         @test basespace(hs) === hs
                 
-        @test hs.bitoffsets[end] == 2 + 2 + 1 + 2
+        # @test hs.bitoffsets[end] == 2 + 2 + 1 + 2
         @test bitwidth(hs) == 2 + 2 + 1 + 2
         @test bitwidth(hs, 1) == 2
         @test bitwidth(hs, 2) == 2
@@ -164,10 +162,12 @@ end
         @test_throws BoundsError get_bitmask(hs, 5)
         @test_throws BoundsError get_bitmask(hs,-1)
         
-        sectors = [( 1, -1), ( 1,  1),
-        ( 2, -2), ( 2,  0), ( 2, 2),
-        ( 3, -3), ( 3, -1), ( 3, 1), ( 3, 3),
-        ( 4, -4), ( 4, -2), ( 4, 0), ( 4, 2), ( 4, 4)]
+        sectors = [
+            ( 1, -1), ( 1,  1),
+            ( 2, -2), ( 2,  0), ( 2, 2),
+            ( 3, -3), ( 3, -1), ( 3, 1), ( 3, 3),
+            ( 4, -4), ( 4, -2), ( 4, 0), ( 4, 2), ( 4, 4)
+        ]
         @test quantum_number_sectors(hs) == sectors
         
         @test get_state_index(hs, 0b0000000, 1) == 1
@@ -184,7 +184,6 @@ end
         @test get_state_index(hs, 0b0010000, 3) == 2
         @test get_state_index(hs, 0b1101111, 3) == 1
         @test get_state_index(hs, 0b1111111, 3) == 2
-        
         
         @test get_state(hs, 0b0000000, 1) == em
         @test get_state(hs, 0b0000001, 1) == up

@@ -11,7 +11,7 @@ export basespace
 
 
 """
-    HilbertSpace{QN, TT}
+    HilbertSpace{QN, TS}
 
 Abstract Hilbert space with quantum number type `QN`.
 
@@ -25,39 +25,33 @@ julia> hs = HilbertSpace([spin_site, spin_site])
 HilbertSpace{Tuple{Int64}, Tuple{Int64}}(Site{Tuple{Int64}}[Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))]), Site{Tuple{Int64}}(State{Tuple{Int64}}[State{Tuple{Int64}}("Up", (1,)), State{Tuple{Int64}}("Dn", (-1,))])], [1, 1], [0, 1, 2])
 ```
 """
-struct HilbertSpace{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}, TagType}<:AbstractHilbertSpace{QN}
+struct HilbertSpace{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}}<:AbstractHilbertSpace{QN}
     sites::Vector{Site{QN}}
     bitwidths::Vector{Int}
     bitoffsets::Vector{Int}
 
-    function HilbertSpace(sites::AbstractArray{Site{QN}, 1}) where QN
+    function HilbertSpace(sites::AbstractVector{Site{QN}}) where {QN}
         bitwidths = map(bitwidth, sites)
         bitoffsets = Int[0, cumsum(bitwidths)...]
-        new{QN, QN}(sites, bitwidths, bitoffsets)
-    end
-
-    function HilbertSpace{QN, TT}(sites::AbstractArray{Site{QN}, 1}) where {QN, TT}
-        bitwidths = map(bitwidth, sites)
-        bitoffsets = Int[0, cumsum(bitwidths)...]
-        new{QN, TT}(sites, bitwidths, bitoffsets)
+        new{QN}(sites, bitwidths, bitoffsets)
     end
 end
 
 
-"""
-    qntype(::Type{HilbertSpace{QN, TT}})
+# """
+#     qntype(::Type{HilbertSpace{QN}})
 
-Returns the quantum number type of the given hilbert space type.
-"""
-qntype(::Type{HilbertSpace{QN, TT}}) where {QN, TT} = QN
+# Returns the quantum number type of the given hilbert space type.
+# """
+# qntype(::Type{HilbertSpace{QN}}) where {QN, TS} = QN
 
 
-"""
-    tagtype(::Type{HilbertSpace{QN, TT}})
+# """
+#     tagtype(::Type{HilbertSpace{QN}})
 
-Returns the tag type of the given Hilbert space type, which is its qntype.
-"""
-tagtype(::Type{HilbertSpace{QN, TT}}) where {QN, TT} = TT
+# Returns the tag type of the given Hilbert space type, which is its qntype.
+# """
+tagtype(::Type{<:HilbertSpace{QN}}, ::Val{:QuantumNumberAsTag}) where {QN} = QN
 
 
 """
@@ -116,7 +110,7 @@ end
 
 Return a sorted list of quantum numbers of the hilbert space `hs`.
 """
-function get_quantum_numbers(hs::HilbertSpace{QN, TT})::Vector{QN} where {QN, TT}
+function get_quantum_numbers(hs::HilbertSpace{QN})::Vector{QN} where {QN}
     qns = Set{QN}([tuplezero(QN)])
     for site in hs.sites
         qns_next = Set{QN}()
@@ -155,9 +149,10 @@ function get_quantum_number(hs::HilbertSpace, indexarray::AbstractVector{<:Integ
     )
 end
 
-# TODO: introduce TagStrategy template argument for HilbertSpace
-get_tag(hs::HilbertSpace, binrep::Unsigned) = get_quantum_number(hs, binrep)
-get_tags(hs::HilbertSpace) = quantum_number_sectors(hs)
+
+get_tag(hs::HilbertSpace{QN}, binrep::Unsigned, ::Val{:QuantumNumberAsTag}) where {QN} = get_quantum_number(hs, binrep)
+get_tags(hs::HilbertSpace{QN}, ::Val{:QuantumNumberAsTag}) where {QN} = quantum_number_sectors(hs)
+
 
 """
     extract(hs, binrep)
@@ -286,10 +281,10 @@ end
 Generate a basis for the `HilbertSpaceSector`.
 """
 function hs_get_basis_list(
-    hs::HilbertSpace{QN, TT},
+    hs::HilbertSpace{QN},
     allowed_quantum_numbers::AbstractVector{QN},
     ::Type{BR}=UInt
-)::Vector{BR} where {QN, TT, BR<:Unsigned}
+)::Vector{BR} where {QN, BR<:Unsigned}
     if sizeof(BR) * 8 <= bitwidth(hs)
         throw(ArgumentError("type $(BR) not enough to represent the hilbert space (need $(bitwidth(hs)) bits)"))
     end

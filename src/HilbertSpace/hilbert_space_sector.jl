@@ -74,7 +74,7 @@ end
 Returns the quantum number type of the given hilbert space sector type.
 """
 qntype(::Type{<:HilbertSpaceSector{QN, HS}}) where {QN, HS} = QN
-tagtype(::Type{<:HilbertSpaceSector{QN, HS}}) where {QN, HS} = QN
+tagtype(::Type{<:HilbertSpaceSector{QN, HS}}, strategy::Val) where {QN, HS} = tagtype(HS, strategy)
 
 function Base.:(==)(lhs::HilbertSpaceSector{QN, HS}, rhs::HilbertSpaceSector{QN, HS}) where {QN, HS}
     return (
@@ -172,7 +172,7 @@ end
 
 
 get_quantum_numbers(hss::HilbertSpaceSector) = sort(collect(hss.allowed_quantum_numbers))
-get_tags(hss::HilbertSpaceSector) = get_quantum_numbers(hss)
+get_tags(hss::HilbertSpaceSector, ::Val{:QuantumNumberAsTag}) = get_quantum_numbers(hss)
 quantum_number_sectors(hss::HilbertSpaceSector) = get_quantum_numbers(hss)
 
 

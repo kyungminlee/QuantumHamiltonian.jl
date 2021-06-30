@@ -51,7 +51,7 @@ end
 
 Returns the quantum number type of the given state type.
 """
-qntype(::Type{State{QN}}) where QN = QN
+qntype(::Type{<:State{QN}}) where QN = QN
 
 
 """
@@ -72,17 +72,15 @@ struct Site{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}}<:AbstractHilbertSpace{QN
 end
 
 
-"""
-    qntype(::Type{Site{QN}})
+# """
+#     qntype(::Type{Site{QN}})
 
-Returns the quantum number type of the given site type.
-"""
-qntype(::Type{Site{QN}}) where QN = QN
+# Returns the quantum number type of the given site type.
+# """
+# qntype(::Type{Site{QN}}) where QN = QN
 
 
-function Base.:(==)(lhs::Site{Q1}, rhs::Site{Q2}) where {Q1, Q2}
-    return lhs.states == rhs.states
-end
+Base.:(==)(lhs::Site{Q1}, rhs::Site{Q2}) where {Q1, Q2} = lhs.states == rhs.states
 
 
 """
@@ -117,7 +115,7 @@ end
 Get binary representation of the state specified by `state_index`.
 Check bounds `1 <= state_index <= dimension(site)`, and returns binary representation of `state_index-1`.
 """
-@inline function compress(site::Site, state_index::Integer, binary_type::Type{BR}=UInt) where {BR<:Unsigned}
+@inline function compress(site::Site, state_index::Integer, ::Type{BR}=UInt) where {BR<:Unsigned}
     @boundscheck if !(1 <= state_index <= dimension(site))
         throw(BoundsError("attempt to access a $(dimension(site))-state site at index $state_index"))
     end
@@ -144,7 +142,7 @@ end
 
 Gets a list of possible quantum numbers as a sorted vector of QN.
 """
-function quantum_number_sectors(site::Site{QN})::Vector{QN} where QN
+function quantum_number_sectors(site::Site{QN})::Vector{QN} where {QN}
     return sort(collect(Set([state.quantum_number for state in site.states])))
 end
 
@@ -154,7 +152,7 @@ end
 
 Gets the quantum number of state specified by state_index.
 """
-function get_quantum_number(site::Site{QN}, state_index::Integer)::QN where QN
+function get_quantum_number(site::Site{QN}, state_index::Integer)::QN where {QN}
     return site.states[state_index].quantum_number
 end
 

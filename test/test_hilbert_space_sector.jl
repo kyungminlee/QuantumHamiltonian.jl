@@ -32,9 +32,9 @@ using StaticArrays
         @test qntype(typeof(hs)) === Tuple{Int}
         @test get_quantum_numbers(hs) == [(0,)]
 
-        @test tagtype(hs) === Tuple{Int}
-        @test tagtype(typeof(hs)) === Tuple{Int}
-        @test get_tags(hs) == [(0,)]
+        @test tagtype(hs, Val(:QuantumNumberAsTag)) === Tuple{Int}
+        @test tagtype(typeof(hs), Val(:QuantumNumberAsTag)) === Tuple{Int}
+        @test get_tags(hs, Val(:QuantumNumberAsTag)) == [(0,)]
     
         @test bitwidth(hs) == 4
         

@@ -12,7 +12,7 @@ export get_basis, get_basis_list, get_basis_state, get_basis_index_amplitude
 struct HilbertSpaceRepresentation{
     BR<:Unsigned,
     HS<:AbstractHilbertSpace,
-    BasisType<:AbstractIndexedVector{BR}
+    BasisType<:AbstractIndexedVector{BR},
 }<:AbstractHilbertSpaceRepresentation{BR, Bool}
 
     hilbert_space::HS

@@ -6,7 +6,7 @@ struct ProductHilbertSpaceRepresentation{
     S<:Number,
     N,
     HS<:ProductHilbertSpace{<:Any, N, <:Any},
-    HSR<:Tuple{Vararg{AbstractHilbertSpaceRepresentation, N}}
+    HSR<:Tuple{Vararg{AbstractHilbertSpaceRepresentation, N}},
 }<:AbstractHilbertSpaceRepresentation{BR, S}
     hilbertspace::HS
     subrepresentations::HSR
