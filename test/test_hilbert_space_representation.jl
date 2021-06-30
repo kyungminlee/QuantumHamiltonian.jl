@@ -23,7 +23,14 @@ using StaticArrays
             @test hsr1 == hsr3
             @test hsr1 == hsr4
             @test basespace(hsr1) === hilbert_space
+            @test basespace(typeof(hsr1)) == typeof(basespace(hsr1))
 
+            @testset "types" begin
+                @test qntype(hilbert_space) == qntype(hsr1)
+                @test qntype(hilbert_space) == qntype(typeof(hsr1))
+                @test tagtype(hilbert_space, Val(:QuantumNumberAsTag)) == tagtype(hsr1, Val(:QuantumNumberAsTag))
+                @test tagtype(hilbert_space, Val(:QuantumNumberAsTag)) == tagtype(typeof(hsr1), Val(:QuantumNumberAsTag))
+            end
             @testset "getters" begin
                 @test get_basis(hsr1) == hsr1.basis
                 @test get_basis_list(hsr1) == basis_list
