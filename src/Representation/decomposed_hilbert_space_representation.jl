@@ -1,5 +1,4 @@
 export DecomposedHilbertSpaceRepresentation
-export decompose
 export dimension
 export get_basis_list, get_basis_state, get_basis_index_amplitude
 export sectorslice
@@ -46,32 +45,6 @@ struct DecomposedHilbertSpaceRepresentation{
 
 end
 
-
-function decompose(
-    hsr::HilbertSpaceRepresentation{BR, HS, BT},
-    tagstrategy::Val{TS}=Val(:QuantumNumberAsTag)
-) where {BR, HS, BT, TS}
-    HSR = HilbertSpaceRepresentation{BR, HS, BT}
-    TT = tagtype(HSR, tagstrategy)
-    
-    hs = basespace(hsr)
-    tag_basis_list = Dict{TT, Vector{BR}}()
-    for b in get_basis_list(hsr)
-        tag = get_tag(hs, b, tagstrategy)
-        if haskey(tag_basis_list, tag)
-            push!(tag_basis_list[tag], b)
-        else
-            tag_basis_list[tag] = [b]
-        end
-    end
-    tags = DictIndexedVector(unique(sort(collect(keys(tag_basis_list)))))
-    components = Vector{HSR}(undef, length(tags))
-    for (itag, tag) in enumerate(tags)
-        blist = HilbertSpaceRepresentation(hs, BT(tag_basis_list[tag]))
-        components[itag] = blist
-    end
-    return DecomposedHilbertSpaceRepresentation(hs, tags, components, tagstrategy)
-end
 
 
 
@@ -205,5 +178,5 @@ function sectorslice(
     indices = findall(x -> x in tags, hsr.tags)
     tags_sel = tags[indices]
     components = hsr.components[indices]
-    DecomposedHilbertSpaceRepresentation(hsr.hilbertspace, tags_sel, components)
+    DecomposedHilbertSpaceRepresentation(hsr.hilbertspace, tags_sel, components, Val(TS))
 end
