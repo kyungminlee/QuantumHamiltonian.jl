@@ -117,7 +117,7 @@ Check bounds `1 <= state_index <= dimension(site)`, and returns binary represent
 """
 @inline function compress(site::Site, state_index::Integer, ::Type{BR}=UInt) where {BR<:Unsigned}
     @boundscheck if !(1 <= state_index <= dimension(site))
-        throw(BoundsError("attempt to access a $(dimension(site))-state site at index $state_index"))
+        throw(BoundsError(site.states, state_index))
     end
     return BR(state_index-1)
 end
@@ -131,7 +131,7 @@ Gets the state index of the binary representation. Returns `Int(binrep+1)`.
 @inline function get_state_index(site::Site, binrep::U) where {U<:Unsigned}
     i = Int(binrep+1)
     @boundscheck if !(1 <= i <= dimension(site))
-        throw(BoundsError("attempt to access a $(dimension(site))-state site at index $i"))
+        throw(BoundsError(site.states, i))
     end
     return i
 end
