@@ -260,7 +260,7 @@ end
 
 
 function hs_get_basis_list(
-    hs::HilbertSpace,
+    hs::AbstractHilbertSpace,
     ::Type{BR}=UInt
 )::Vector{BR} where {BR<:Unsigned}
     if sizeof(BR) * 8 <= bitwidth(hs)
@@ -281,7 +281,7 @@ end
 Generate a basis for the `HilbertSpaceSector`.
 """
 function hs_get_basis_list(
-    hs::HilbertSpace{QN},
+    hs::AbstractHilbertSpace{QN},
     allowed_quantum_numbers::AbstractVector{QN},
     ::Type{BR}=UInt
 )::Vector{BR} where {QN, BR<:Unsigned}
