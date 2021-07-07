@@ -170,7 +170,7 @@ using QuantumHamiltonian
             σx1 = represent(hsr, sum(pauli(i, :+)*pauli(mod(i, n_sites)+1, :-) for i in 1:n_sites))
             d = sum( .! iszero.(Matrix(σx1))) / length(σx1)
             d2 = QuantumHamiltonian.Toolkit.estimate_density(σx1; nsample=10)
-            @test isapprox(d, d2[1]; atol=max(Base.rtoldefault(Float64), d2[2]*2))
+            @test isapprox(d, d2[1]; atol=max(Base.rtoldefault(Float64), d2[2]*5))
         end
     end
 end
