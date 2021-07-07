@@ -209,3 +209,19 @@ function pure_operator(
     bc = BR(istate_col - 1) << hilbert_space.bitoffsets[isite]
     return PureOperator(bm, br, bc, amplitude)
 end
+
+
+function pure_operator(
+    hilbert_space::AbstractHilbertSpace,
+    isite::Integer,
+    istate_row::Integer,
+    istate_col::Integer,
+    amplitude::S=1,
+    ::Type{BR}=UInt,
+) where {S<:Number, BR<:Unsigned}
+    site = get_site(hilbert_space, isite)
+    bm = get_bitmask(hilbert_space, isite, BR)
+    br = compress(site, istate_row, BR) << bitoffset(hilbert_space, isite)
+    bc = compress(site, istate_col, BR) << bitoffset(hilbert_space, isite)
+    return PureOperator(bm, br, bc, amplitude)
+end
