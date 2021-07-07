@@ -32,9 +32,19 @@ function hs_get_basis_list(
         return BR[]
     end
 
-    quantum_numbers = Vector{QN}[QN[state.quantum_number for state in site.states] for site in hs.sites]
+    n_sites = numsites(hs)
 
-    n_sites = length(hs.sites)
+    quantum_numbers = Vector{QN}[
+        let site = get_site(hs, isite)
+            QN[
+                # state.quantum_number
+                #     for state in site.states
+                get_quantum_number(site, istate)
+                    for istate in 1:dimension(site)
+            ]
+        end
+            for isite in 1:n_sites
+    ]
 
     # `qn_possible[i]` contains all possible quantum numbers in the subspace
     # spanned by sites 1 ⊗ 2 ⊗ ... ⊗ (i-1).
@@ -44,7 +54,7 @@ function hs_get_basis_list(
     # generate the basis.
     qn_possible::Vector{Vector{QN}} = let qn_possible = Vector{Vector{QN}}(undef, n_sites+1)
         qn_possible[1] = [tuplezero(QN)]
-        for i in eachindex(hs.sites)
+        for i in 1:n_sites
             a = Set{QN}()
             for qi in quantum_numbers[i], qa in qn_possible[i]
                 push!(a, qa .+ qi)
@@ -82,7 +92,8 @@ function hs_get_basis_list(
                 if haskey(sector_basis_list, q_prev)
                     append!(
                         new_sector_basis_list_q,
-                        (s | (represent(hs.sites[i], i_state, BR) << hs.bitoffsets[i])) for s in sector_basis_list[q_prev]
+                        # (s | (represent(hs.sites[i], i_state, BR) << hs.bitoffsets[i])) for s in sector_basis_list[q_prev]
+                        (s | (represent( get_site(hs, i), i_state, BR) << bitoffset(hs, i))) for s in sector_basis_list[q_prev]
                     )
                 end
             end
