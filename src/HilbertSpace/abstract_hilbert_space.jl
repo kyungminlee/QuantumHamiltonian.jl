@@ -49,7 +49,6 @@ by changing the state at site `isite` to a new local state specified by
 end
 
 
-
 """
     get_state_index(hs, binrep, isite)
 
@@ -57,7 +56,8 @@ Get the *index of* the local state at site `isite` for the basis state
 represented by `binrep`.
 """
 function get_state_index(hs::AbstractHilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-    return Int((binrep >> bitoffset(hs, isite)) & make_bitmask(bitwidth(hs, isite), BR)) + 1
+    sitebinrep = (binrep >> bitoffset(hs, isite)) & make_bitmask(bitwidth(hs, isite), BR)
+    return get_state_index(get_site(hs, isite), sitebinrep)
 end
 
 
@@ -68,5 +68,11 @@ Get the local state at site `isite` for the basis state
 represented by `binrep`. Returns an object of type `State`
 """
 function get_state(hs::AbstractHilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
-    return get_site(hs, isite).states[get_state_index(hs, binrep, isite)]
+    sitebinrep = (binrep >> bitoffset(hs, isite)) & make_bitmask(bitwidth(hs, isite), BR)
+    return get_state(get_site(hs, isite), sitebinrep)
+end
+
+function Base.keys(hs::AbstractHilbertSpace)
+    dims = (dimension(get_site(hs, isite)) for isite in 1:numsites(hs))
+    return CartesianIndices((dims...,))
 end

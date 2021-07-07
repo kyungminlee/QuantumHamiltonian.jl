@@ -90,21 +90,6 @@ Base.:(==)(lhs::HilbertSpace, rhs::HilbertSpace) = lhs.sites == rhs.sites
 
 
 """
-    get_bitmask(hs, [isite, [type]])
-
-Get the bitmask of the site `isite`, optionally in type `type`
-"""
-# optimization from generic using bitoffsets
-function get_bitmask(hs::HilbertSpace, isite::Integer, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
-    return make_bitmask(hs.bitoffsets[isite+1], hs.bitoffsets[isite], BR)
-end
-
-# function get_bitmask(hs::HilbertSpace, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
-#     return make_bitmask(bitwidth(hs), BR)
-# end
-
-
-"""
     get_quantum_numbers(hs)
 
 Return a sorted list of quantum numbers of the hilbert space `hs`.
@@ -253,7 +238,33 @@ function compress(
 end
 
 
+# == performance specializations ==
+
+
+"""
+    get_state_index(hs, binrep, isite)
+
+Get the *index of* the local state at site `isite` for the basis state
+represented by `binrep`.
+"""
+# performance specialization
+function get_state_index(hs::HilbertSpace, binrep::BR, isite::Integer) where {BR<:Unsigned}
+    sitebinrep = (binrep >> bitoffset(hs, isite)) & make_bitmask(bitwidth(hs, isite), BR)
+    return Int(sitebinrep) + 1
+end
+
+"""
+    get_bitmask(hs, [isite, [type]])
+
+Get the bitmask of the site `isite`, optionally in type `type`
+"""
+# performance specialization
+function get_bitmask(hs::HilbertSpace, isite::Integer, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
+    return make_bitmask(hs.bitoffsets[isite+1], hs.bitoffsets[isite], BR)
+end
+
+# performance specialization
 function Base.keys(hs::HilbertSpace)
-    return CartesianIndices(((1:length(site.states) for site in hs.sites)...,))
+    return CartesianIndices(((length(site.states) for site in hs.sites)...,))
 end
 

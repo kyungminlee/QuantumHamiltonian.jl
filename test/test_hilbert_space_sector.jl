@@ -97,18 +97,17 @@ using StaticArrays
         @test get_state_index(hs, 0b0000000, 1) == 1
         @test get_state_index(hs, 0b0000001, 1) == 2
         @test get_state_index(hs, 0b0000010, 1) == 3
-        @test get_state_index(hs, 0b0000011, 1) == 4 # No exception thrown here
+        @test get_state_index(hs, 0b0000011, 1) == 4 # no exception thrown here because of specialization
         
         @test get_state_index(hs, 0b0000011, 2) == 1
         @test get_state_index(hs, 0b0000111, 2) == 2
         @test get_state_index(hs, 0b0001011, 2) == 3
-        @test get_state_index(hs, 0b0001111, 2) == 4
+        @test get_state_index(hs, 0b0001111, 2) == 4 # no exception thrown here because of specialization
         
         @test get_state_index(hs, 0b0000000, 3) == 1
         @test get_state_index(hs, 0b0010000, 3) == 2
         @test get_state_index(hs, 0b1101111, 3) == 1
         @test get_state_index(hs, 0b1111111, 3) == 2
-        
         
         @test get_state(hs, 0b0000000, 1) == em
         @test get_state(hs, 0b0000001, 1) == up
