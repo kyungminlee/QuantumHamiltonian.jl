@@ -31,7 +31,6 @@ using QuantumHamiltonian
             @test bintype(pauli2(1, :x)) == UInt128
         end
     end
-    
     @testset "SpinSystem" begin
         using QuantumHamiltonian.Toolkit: spin_system
         @testset "Constructor" begin
@@ -100,54 +99,78 @@ using QuantumHamiltonian
             for S in [1//2, 1, 1//1, 3//2, 2//1, 2]
                 n = 4
                 (hs, spin) = QuantumHamiltonian.Toolkit.spin_system(n, S)
-                @test all(let
-                op1 = simplify(spin(i, μ) * spin(j, ν) - spin(j, ν) * spin(i, μ))
-                if i == j
-                    op2 = im * sum( levi_civita[iμ, iν, iρ] * spin(i, ρ) for (iρ, ρ) in enumerate([:x, :y, :z]) )
-                else
-                    op2 = NullOperator()
-                end
-                simplify(op1 - op2) == NullOperator()
-            end
-            for i in 1:n for j in i:n
-                for (iμ, μ) in enumerate([:x, :y, :z]), (iν, ν) in enumerate([:x, :y, :z]))
-                end # for S
-            end # testset MultipleSite
-        end # testset SpinSystem
+                @test all(
+                    let
+                        op1 = simplify(spin(i, μ) * spin(j, ν) - spin(j, ν) * spin(i, μ))
+                        if i == j
+                            op2 = im * sum( levi_civita[iμ, iν, iρ] * spin(i, ρ) for (iρ, ρ) in enumerate([:x, :y, :z]) )
+                        else
+                            op2 = NullOperator()
+                        end
+                        simplify(op1 - op2) == NullOperator()
+                    end
+                        for i in 1:n for j in i:n
+                        for (iμ, μ) in enumerate([:x, :y, :z]), (iν, ν) in enumerate([:x, :y, :z])
+                )
+            end # for S
+        end # testset MultipleSite
+    end # testset SpinSystem
         
-        @testset "product_state" begin
-            (hs, pauli) = QuantumHamiltonian.Toolkit.spin_half_system(4)
-            @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hs, [[1.0, 0.0], [0.0, 0.0]]) # too few
-            @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hs, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0]]) # too many
-            @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hs, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0, 0.0], [0.0, 1.0]])
+    @testset "product_state" begin
+        (hs, pauli) = QuantumHamiltonian.Toolkit.spin_half_system(4)
+        @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hs, [[1.0, 0.0], [0.0, 0.0]]) # too few
+        @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hs, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0]]) # too many
+        @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hs, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0, 0.0], [0.0, 1.0]])
+        
+        local_states = [[1.0, 0.0], [1.0 + 10.0im, 2.0], [1.0, 0.0], [0.0, 1.0]]
+        @testset "HilbertSpace" begin
+            psi1 = QuantumHamiltonian.Toolkit.product_state(hs, local_states)
+            psi2 = SparseState{ComplexF64, UInt}(0b1000 => 1.0 + 10.0im, 0b1010 => 2.0)
+            @test isapprox(psi1, psi2; atol=1E-8)
+        end
+        
+        @testset "HilbertSpaceRepresentation" begin
+            hsr = represent(hs)
+            psi1 = QuantumHamiltonian.Toolkit.product_state(hsr, local_states)
+            psi2 = zeros(ComplexF64, 16)
+            psi2[9] = 1.0 + 10.0im
+            psi2[11] = 2.0
+            @test isapprox(psi1, psi2; atol=1E-8)
             
-            local_states = [[1.0, 0.0], [1.0 + 10.0im, 2.0], [1.0, 0.0], [0.0, 1.0]]
-            @testset "HilbertSpace" begin
-                psi1 = QuantumHamiltonian.Toolkit.product_state(hs, local_states)
-                psi2 = SparseState{ComplexF64, UInt}(0b1000 => 1.0 + 10.0im, 0b1010 => 2.0)
-                @test isapprox(psi1, psi2; atol=1E-8)
-            end
-            
-            @testset "HilbertSpaceRepresentation" begin
-                hsr = represent(hs)
-                psi1 = QuantumHamiltonian.Toolkit.product_state(hsr, local_states)
-                psi2 = zeros(ComplexF64, 16)
-                psi2[9] = 1.0 + 10.0im
-                psi2[11] = 2.0
-                @test isapprox(psi1, psi2; atol=1E-8)
-                
-                @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hsr, [[1.0, 0.0], [0.0, 0.0]]) # too few
-                @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hsr, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0]]) # too many
-                @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hsr, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0, 0.0], [0.0, 1.0]])
-            end
-            @testset "sector-rep" begin
-                hssr = represent(HilbertSpaceSector(hs, 0))
-                # 0011, 0101, 0110, 1001, 1010, 1100
-                psi1 = QuantumHamiltonian.Toolkit.product_state(hssr, local_states)
-                psi2 = zeros(ComplexF64, 6)
-                psi2[5] = 2.0
-                @test isapprox(psi1, psi2; atol=1E-8)
-            end
+            @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hsr, [[1.0, 0.0], [0.0, 0.0]]) # too few
+            @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hsr, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0]]) # too many
+            @test_throws ArgumentError QuantumHamiltonian.Toolkit.product_state(hsr, [[1.0, 0.0], [0.0, 1.0], [0.0, 1.0, 0.0], [0.0, 1.0]])
+        end
+        @testset "sector-rep" begin
+            hssr = represent(HilbertSpaceSector(hs, 0))
+            # 0011, 0101, 0110, 1001, 1010, 1100
+            psi1 = QuantumHamiltonian.Toolkit.product_state(hssr, local_states)
+            psi2 = zeros(ComplexF64, 6)
+            psi2[5] = 2.0
+            @test isapprox(psi1, psi2; atol=1E-8)
         end
     end
-    
+
+    @testset "statistics" begin
+        @testset "small" begin
+            n_sites = 4
+            (hs, pauli) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
+            hsr = represent(hs, [(0,)])
+            σx1 = represent(hsr, sum(pauli(i, :+)*pauli(mod(i, n_sites)+1, :-) for i in 1:n_sites))
+            d = sum( .! iszero.(Matrix(σx1))) / length(σx1)
+            d2 = QuantumHamiltonian.Toolkit.estimate_density(σx1; nsample=10)
+            # @test isapprox(d, d2[1]; atol=max(Base.rtoldefault(Float64), d2[2]*2))
+            @test d == d2[1] && iszero(d2[2])
+        end
+
+        @testset "large" begin
+            n_sites = 10
+            (hs, pauli) = QuantumHamiltonian.Toolkit.spin_half_system(n_sites)
+            hsr = represent(hs, [(0,)])
+            σx1 = represent(hsr, sum(pauli(i, :+)*pauli(mod(i, n_sites)+1, :-) for i in 1:n_sites))
+            d = sum( .! iszero.(Matrix(σx1))) / length(σx1)
+            d2 = QuantumHamiltonian.Toolkit.estimate_density(σx1; nsample=10)
+            @test isapprox(d, d2[1]; atol=max(Base.rtoldefault(Float64), d2[2]*5))
+        end
+    end
+end

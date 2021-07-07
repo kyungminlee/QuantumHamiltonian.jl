@@ -3,7 +3,6 @@ export ProductHilbertSpace
 struct ProductHilbertSpace{
     QN<:Tuple{Vararg{AbstractQuantumNumber}},
     N,
-    TagType,
     S<:Tuple{Vararg{AbstractHilbertSpace{QN}, N}},
 }<:AbstractHilbertSpace{QN}
     subspaces::S
@@ -13,15 +12,21 @@ struct ProductHilbertSpace{
     function ProductHilbertSpace(subspaces::S) where {QN, N, S<:Tuple{Vararg{AbstractHilbertSpace{QN}, N}}}
         ns = numsites.(subspaces)
         bitwidths = bitwidth.(subspaces)
-        return new{QN, N, NTuple{N, QN}, S}(subspaces, ns, bitwidths)
+        return new{QN, N, S}(subspaces, ns, bitwidths)
     end
-    function ProductHilbertSpace(subspaces::Vararg{AbstractHilbertSpace})
+    function ProductHilbertSpace(subspaces::AbstractHilbertSpace...)
         return ProductHilbertSpace(subspaces)
     end
 end
 
-qntype(::Type{<:ProductHilbertSpace{QN, N, TT, S}}) where {QN, N, TT, S} = QN
-tagtype(::Type{<:ProductHilbertSpace{QN, N, TT, S}}) where {QN, N, TT, S} = TT
+# qntype(::Type{<:ProductHilbertSpace{QN, N, TS, S, TT}}) where {QN, N, TS, S, TT} = QN
+# tagtype(::Type{<:ProductHilbertSpace{QN, N, TS, S, TT}}) where {QN, N, S, TT} = NTuple{N, QN}
+
+tagtype(::Type{<:ProductHilbertSpace{QN, N, S}}, x::Val) where {QN, N, S}= Tuple{tagtype.(S.parameters, x)...}
+
+
+Base.:(==)(lhs::T, rhs::T) where {T<:ProductHilbertSpace} = lhs.subspaces == rhs.subspaces
+
 
 basespace(hs::ProductHilbertSpace) = hs
 
@@ -79,14 +84,14 @@ function get_quantum_number(hs::ProductHilbertSpace, binrep::Unsigned)
     return mapreduce(identity, (x,y) -> x .+ y, qns)
 end
 
-function get_tags(hs::ProductHilbertSpace{QN, N, NTuple{N, QN}, S}) where {QN, N, S}
-    qns = vcat(collect(Iterators.product(get_tags.(hs.subspaces)...))...)
+function get_tags(hs::ProductHilbertSpace{QN, N, S}, ::Val{:QuantumNumberAsTag}) where {QN, N, S}
+    qns = vcat(collect(Iterators.product(get_tags.(hs.subspaces, Val(:QuantumNumberAsTag))...))...)
     return sort(qns, by=reverse)
 end
 
-function get_tag(hs::ProductHilbertSpace{QN, N, NTuple{N, QN}, S}, binrep::Unsigned) where {QN, N, S}
+function get_tag(hs::ProductHilbertSpace{QN, N, S}, binrep::Unsigned, ::Val{:QuantumNumberAsTag}) where {QN, N, S}
     bvecs = bitsplit(bitwidth.(hs.subspaces), binrep)
-    return get_tag.(hs.subspaces, bvecs)
+    return get_tag.(hs.subspaces, bvecs, Val(:QuantumNumberAsTag))
 end
 
 function extract(hs::ProductHilbertSpace, binrep::Unsigned)
@@ -96,7 +101,8 @@ function extract(hs::ProductHilbertSpace, binrep::Unsigned)
 end
 
 
-function _arraysplit(sizes::NTuple{N, <:Integer}, array::Vector{T}) where {N, M, T}
+# COV_EXCL_START
+function _arraysplit(sizes::NTuple{N, <:Integer}, array::Vector{T}) where {N, T}
     if sum(sizes) != length(array)
         throw(ArgumentError("size mismatch"))
     end
@@ -108,6 +114,7 @@ function _arraysplit(sizes::NTuple{N, <:Integer}, array::Vector{T}) where {N, M,
     end
     return tuple(out...)
 end
+# COV_EXCL_STOP
 
 
 function compress(

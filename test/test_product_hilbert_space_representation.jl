@@ -18,9 +18,14 @@ using QuantumHamiltonian
         phsr = ProductHilbertSpaceRepresentation(hsr1, hsr2)
 
         @testset "from hilbert space" begin
+            @test valtype(phsr) == Bool
+            @test scalartype(phsr) == Bool
+            @test bintype(phsr) == UInt
             @test qntype(phsr) == Tuple{Int}
-            @test tagtype(phsr) == Tuple{Tuple{Int}, Tuple{Int}}
+            @test qntype(typeof(phsr)) == Tuple{Int}
+            @test tagtype(phsr, Val(:QuantumNumberAsTag)) == Tuple{Tuple{Int}, Tuple{Int}}
             @test basespace(phsr) == phs
+            @test basespace(typeof(phsr)) == typeof(basespace(phsr))
             @test numsites(phsr) == 5
             @test_throws BoundsError get_site(phsr, 0)
             @test get_site(phsr, 1) == spinhalfsite
@@ -45,8 +50,8 @@ using QuantumHamiltonian
             @test get_quantum_number(phsr, 0b00_00_0_0_0) == (7,)
             @test get_quantum_number(phsr, 0b00_10_1_0_0) == (1,)
             # @test get_tags(phsr) == [((x,), (y,)) for y in -4:2:4 for x in -3:2:3]
-            @test get_tag(phsr, 0b00_00_0_0_0) == ((3,), (4,))
-            @test get_tag(phsr, 0b00_10_1_0_0) == ((1,), (0,))
+            @test get_tag(phsr, 0b00_00_0_0_0, Val(:QuantumNumberAsTag)) == ((3,), (4,))
+            @test get_tag(phsr, 0b00_10_1_0_0, Val(:QuantumNumberAsTag)) == ((1,), (0,))
             @test extract(phsr, 0b00_00_0_0_0) == CartesianIndex(1,1,1,1,1)
             @test extract(phsr, 0b00_10_1_0_0) == CartesianIndex(1,1,2,3,1)
             @test compress(phsr, CartesianIndex(1,1,1,1,1)) == 0b00_00_0_0_0

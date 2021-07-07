@@ -18,6 +18,7 @@ include("test_operator_application.jl")
 include("test_hilbert_space_representation.jl")
 include("test_product_hilbert_space_representation.jl")
 include("test_decomposed_hilbert_space_representation.jl")
+include("test_decompose.jl")
 
 include("test_operator_representation.jl")
 include("test_state_representation.jl")
@@ -28,6 +29,7 @@ include("test_reduced_representation.jl")
 
 include("test_bitflip.jl")
 include("test_lgp.jl")
+include("test_productoperation.jl")
 include("test_semidirectproductoperation.jl")
 
 include("test_prettyprintln.jl")

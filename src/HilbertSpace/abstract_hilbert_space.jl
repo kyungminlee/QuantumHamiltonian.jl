@@ -11,8 +11,10 @@ AbstractQuantumNumber = Integer
 abstract type AbstractHilbertSpace{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}} end
 
 qntype(::T) where {T<:AbstractHilbertSpace} = qntype(T)
-tagtype(::T) where {T<:AbstractHilbertSpace} = tagtype(T)
+tagtype(::T, strategy::Val) where {T<:AbstractHilbertSpace} = tagtype(T, strategy)
 
+qntype(::Type{<:AbstractHilbertSpace{QN}}) where {QN} = QN
+# tagtype(::Type{<:AbstractHilbertSpace{QN}}) where {QN}
 
 function get_bitmask(hs::AbstractHilbertSpace, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
     return make_bitmask(bitwidth(hs), BR)

@@ -6,7 +6,7 @@ struct ProductHilbertSpaceRepresentation{
     S<:Number,
     N,
     HS<:ProductHilbertSpace{<:Any, N, <:Any},
-    HSR<:Tuple{Vararg{AbstractHilbertSpaceRepresentation, N}}
+    HSR<:Tuple{Vararg{AbstractHilbertSpaceRepresentation, N}},
 }<:AbstractHilbertSpaceRepresentation{BR, S}
     hilbertspace::HS
     subrepresentations::HSR
@@ -46,9 +46,10 @@ Base.valtype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) whe
 scalartype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, QN, N, HS, HSR} = S
 bintype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, QN, N, HS, HSR} = BR
 
-qntype(::Type{ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, N, HS, HSR} = qntype(HS)
+qntype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, N, HS, HSR} = qntype(HS)
 
 basespace(hsr::ProductHilbertSpaceRepresentation) = hsr.hilbertspace
+basespace(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, N, HS, HSR} = HS
 
 dimension(p::ProductHilbertSpaceRepresentation) = mapreduce(dimension, *, p.subrepresentations)
 
