@@ -40,11 +40,11 @@ end
 
 spacetype(::Type{OperatorRepresentation{HSR, S, O}}) where {HSR, S, O} = HSR
 operatortype(::Type{OperatorRepresentation{HSR, S, O}}) where {HSR, S, O} = O
-function get_space(lhs::OperatorRepresentation{HSR, S, O})::HSR where {HSR, S, O}
-    return lhs.hilbert_space_representation
+function get_space(arg::OperatorRepresentation{HSR, S, O})::HSR where {HSR, S, O}
+    return arg.hilbert_space_representation
 end
-function get_operator(lhs::OperatorRepresentation{HSR, S, O})::O where {HSR, S, O}
-    return lhs.operator
+function get_operator(arg::OperatorRepresentation{HSR, S, O})::O where {HSR, S, O}
+    return arg.operator
 end
 
 

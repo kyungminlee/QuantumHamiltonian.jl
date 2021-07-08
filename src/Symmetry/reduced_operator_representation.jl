@@ -32,9 +32,8 @@ end
 
 spacetype(::Type{ReducedOperatorRepresentation{RHSR, O, S, BR}}) where {RHSR, O, S, BR} = RHSR
 operatortype(::Type{ReducedOperatorRepresentation{RHSR, O, S, BR}}) where {RHSR, O, S, BR} = O
-function get_space(lhs::ReducedOperatorRepresentation{RHSR, O, S, BR})::RHSR where {RHSR, O, S, BR}
-    return lhs.reduced_hilbert_space_representation
-end
+get_space(arg::ReducedOperatorRepresentation) = arg.reduced_hilbert_space_representation
+get_operator(arg::ReducedOperatorRepresentation) = arg.operator
 
 
 function represent(rhsr::RHSR, op::O) where {RHSR<:ReducedHilbertSpaceRepresentation, O<:AbstractOperator}
