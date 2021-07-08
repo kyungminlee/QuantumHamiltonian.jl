@@ -36,12 +36,7 @@ function hs_get_basis_list(
 
     quantum_numbers = Vector{QN}[
         let site = get_site(hs, isite)
-            [
-                # state.quantum_number
-                #     for state in site.states
-                get_quantum_number(site, istate)
-                    for istate in 1:dimension(site)
-            ]
+            [get_quantum_number(site, istate) for istate in 1:dimension(site)]
         end
             for isite in 1:n_sites
     ]
@@ -92,7 +87,6 @@ function hs_get_basis_list(
                 if haskey(sector_basis_list, q_prev)
                     append!(
                         new_sector_basis_list_q,
-                        # (s | (represent(hs.sites[i], i_state, BR) << hs.bitoffsets[i])) for s in sector_basis_list[q_prev]
                         (s | (compress(get_site(hs, i), i_state, BR) << bitoffset(hs, i))) for s in sector_basis_list[q_prev]
                     )
                 end
