@@ -80,7 +80,7 @@ function Base.size(arg::AbstractOperatorRepresentation{T})::Tuple{Int, Int} wher
 end
 
 function Base.size(arg::AbstractOperatorRepresentation{T}, i::Integer) where T
-    dim = dimension(get_space(args))
+    dim = dimension(get_space(arg))
     if 1 <= i <= 2
         return dim
     else
