@@ -1,5 +1,4 @@
 export ProductHilbertSpaceRepresentation
-# export tensor_product
 
 struct ProductHilbertSpaceRepresentation{
     BR<:Unsigned,
@@ -36,11 +35,6 @@ struct ProductHilbertSpaceRepresentation{
         return ProductHilbertSpaceRepresentation(space, hsr_list)
     end
 end
-
-# function tensor_product(hsr_list::AbstractHilbertSpaceRepresentation...)
-#     space = ProductHilbertSpace(basespace.(hsr_list))
-#     return ProductHilbertSpaceRepresentation(space, hsr_list)
-# end
 
 Base.valtype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, QN, N, HS, HSR} = S
 scalartype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, QN, N, HS, HSR} = S
