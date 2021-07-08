@@ -1,4 +1,5 @@
 export ProductHilbertSpaceRepresentation
+export get_basis, get_basis_list, get_basis_iterator, get_basis_state, get_basis_index_amplitude
 
 struct ProductHilbertSpaceRepresentation{
     BR<:Unsigned,
@@ -62,6 +63,14 @@ function get_basis_list(hsr::ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR
         out[i] = bitjoin(hsr.bitwidths, x)
     end
     return out
+end
+
+function get_basis_iterator(hsr::ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}) where {BR, S, N, HS, HSR}
+    return Iterators.flatten(
+        bitjoin(hsr.bitwidths, x)
+        for x in Iterators.product(get_basis_list.(hsr.subrepresentations)...)
+            # for x in Iterators.product( (get_basis_list(z) for z in hsr.subrepresentations)...)
+    )
 end
 
 
