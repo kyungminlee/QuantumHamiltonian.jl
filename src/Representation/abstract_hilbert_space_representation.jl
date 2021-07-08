@@ -1,5 +1,5 @@
 export AbstractHilbertSpaceRepresentation
-export scalartype, bintype
+export scalartype, bintype, basespace
 
 
 """
@@ -14,6 +14,24 @@ bintype(::T) where {T<:AbstractHilbertSpaceRepresentation} = bintype(T)
 Base.valtype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = S
 scalartype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = S
 bintype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = BR
+
+
+"""
+    basespace(x::AbstractHilbertSpaceRepresentation)
+
+Return the underlying Hilbert space of the Hilbert space representation.
+Subtypes of AbstractHilbertSpace must implement this method.
+"""
+function basespace end
+
+"""
+    basespace(x::Type{T}) where {T<:AbstractHilbertSpaceRepresentation}
+
+Return the type of the underlying Hilbert space of the Hilbert space representation type.
+Subtypes of AbstractHilbertSpace must implement this method.
+"""
+function basespace end
+
 
 for fname in [
     :numsites,
