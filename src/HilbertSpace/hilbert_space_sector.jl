@@ -22,6 +22,7 @@ struct HilbertSpaceSector{
         HilbertSpaceSector(parent::HilbertSpace)
     """
     function HilbertSpaceSector(parent::HS) where {HS<:AbstractHilbertSpace}
+        @warn "Use of HilbertSpaceSector deprecated" maxlog=1
         QN = qntype(HS)
         sectors = quantum_number_sectors(parent)
         return new{QN, HS}(parent, Set(sectors))
@@ -31,6 +32,7 @@ struct HilbertSpaceSector{
         HilbertSpaceSector(parent::HilbertSpace{QN, TT}, allowed::Integer) where {QN<:Tuple{<:Integer}}
     """
     function HilbertSpaceSector(parent::HS, allowed::Integer) where {HS<:AbstractHilbertSpace{<:Tuple{<:Integer}}}
+        @warn "Use of HilbertSpaceSector deprecated" maxlog=1
         QN = qntype(HS)
         sectors = Set{QN}(quantum_number_sectors(parent))
         return new{QN, HS}(parent, intersect(sectors, Set([(allowed,)])))
@@ -40,6 +42,7 @@ struct HilbertSpaceSector{
         HilbertSpaceSector(parent::HilbertSpace{QN, TT}, allowed::QN)
     """
     function HilbertSpaceSector(parent::AbstractHilbertSpace{QN}, allowed::QN) where {QN}
+        @warn "Use of HilbertSpaceSector deprecated" maxlog=1
         HS = typeof(parent)
         sectors = Set{QN}(quantum_number_sectors(parent))
         return new{QN, HS}(parent, intersect(sectors, Set([allowed])))
@@ -52,6 +55,7 @@ struct HilbertSpaceSector{
         parent::AbstractHilbertSpace{QN},
         allowed::Union{AbstractSet{<:Integer}, AbstractVector{<:Integer}}
     ) where {QN}
+        @warn "Use of HilbertSpaceSector deprecated" maxlog=1
         HS = typeof(parent)
         sectors = Set{QN}(quantum_number_sectors(parent))
         return new{QN, HS}(parent, intersect(sectors, Set((x,) for x in allowed)))
@@ -61,6 +65,7 @@ struct HilbertSpaceSector{
         parent::AbstractHilbertSpace{QN},
         allowed::Union{AbstractSet{QN}, AbstractVector{QN}}
     ) where QN
+        @warn "Use of HilbertSpaceSector deprecated" maxlog=1
         HS = typeof(parent)
         sectors = Set{QN}(quantum_number_sectors(parent))
         return new{QN, HS}(parent, intersect(sectors, Set(allowed)))
