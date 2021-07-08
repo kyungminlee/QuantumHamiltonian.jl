@@ -77,6 +77,8 @@ using QuantumHamiltonian
         @test dimension(dhsr) == 3*3*2*2*2
 
         let bl = get_basis_list(dhsr)
+            @test typeof(bl) == Vector{UInt}
+            @test bl == collect(get_basis_iterator(dhsr))
             @test length(bl) == 3*3*2*2*2
             @test Set(bl) == Set(get_basis_list(hsr))
             for (i, b) in enumerate(bl)
