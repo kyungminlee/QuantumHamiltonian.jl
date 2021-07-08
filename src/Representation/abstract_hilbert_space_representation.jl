@@ -1,6 +1,7 @@
 export AbstractHilbertSpaceRepresentation
 export scalartype, bintype, basespace
 
+export get_basis_list, get_basis_iterator, get_basis_state, get_basis_index_amplitude
 
 """
     AbstractHilbertSpaceRepresentation{BR, S}
@@ -31,6 +32,44 @@ Return the type of the underlying Hilbert space of the Hilbert space representat
 Subtypes of AbstractHilbertSpace must implement this method.
 """
 function basespace end
+
+
+"""
+    get_basis_list(hsr::AbstractHilbertSpaceRepresentation)
+
+Return a Vector of the list of basis binaries.
+Subtypes of AbstractHilbertSpaceRepresentation must implement this method.
+"""
+function get_basis_list end
+
+
+"""
+    get_basis_iterator(hsr::AbstractHilbertSpaceRepresentation)
+
+Return an iterator of the list of basis binaries.
+Subtypes of AbstractHilbertSpaceRepresentation must implement this method.
+"""
+function get_basis_iterator end
+
+
+"""
+    get_basis_state(hsr::AbstractHilbertSpaceRepresentation, index::Integer)
+
+Return the state at index `index`.
+Subtypes of AbstractHilbertSpaceRepresentation must implement this method.
+"""
+function get_basis_state end
+
+
+"""
+    get_basis_index_amplitude(hsr::AbstractHilbertSpaceRepresentation, bin::Unsigned)
+
+Return a tuple `(index=index, amplitude=amplitude)` that corresponds to the binary `bin`,
+i.e., the index of the basis state that overlaps with `bin` and the value of the overlap ⟨b|ϕᵢ⟩.
+Return `(index=-1, amplitude=0)` if `bin` is not in the representation.
+Subtypes of AbstractHilbertSpaceRepresentation must implement this method.
+"""
+function get_basis_index_amplitude end
 
 
 for fname in [
