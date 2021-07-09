@@ -11,7 +11,7 @@ Currently only supports Translation group (i.e. Abelian group).
 ```
 """
 struct ReducedHilbertSpaceRepresentation{
-    HSR<:HilbertSpaceRepresentation,
+    HSR<:AbstractHilbertSpaceRepresentation,
     BR<:Unsigned,
     C<:Number,
     IV<:AbstractIndexedVector{BR}
@@ -26,7 +26,7 @@ struct ReducedHilbertSpaceRepresentation{
         basis::IV,
         basis_mapping_index::Vector{Int},
         basis_mapping_amplitude::Vector{C}
-    ) where {HSR<:HilbertSpaceRepresentation, BR<:Unsigned, C<:Number, IV<:AbstractIndexedVector{BR}}
+    ) where {HSR<:AbstractHilbertSpaceRepresentation, BR<:Unsigned, C<:Number, IV<:AbstractIndexedVector{BR}}
         return new{HSR, BR, C, IV}(hsr, basis, basis_mapping_index, basis_mapping_amplitude)
     end
 end
