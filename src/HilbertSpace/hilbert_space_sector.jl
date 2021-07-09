@@ -115,3 +115,4 @@ for fname in [
     end
 end
 
+Base.keys(hs::HilbertSpaceSector) = error("Base.keys unsupported for HilbertSpaceSector") # COV_EXCL_LINE
