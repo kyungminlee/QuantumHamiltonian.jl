@@ -74,12 +74,12 @@ dimension(lhs::AbstractOperatorRepresentation{S}) where S = dimension(get_space(
 bitwidth(lhs::AbstractOperatorRepresentation{S}) where S = bitwidth(get_space(lhs))
 
 
-function Base.size(arg::AbstractOperatorRepresentation{T})::Tuple{Int, Int} where T
+function Base.size(arg::AbstractOperatorRepresentation)::Tuple{Int, Int}
     dim = dimension(get_space(arg))
     return (dim, dim)
 end
 
-function Base.size(arg::AbstractOperatorRepresentation{T}, i::Integer) where T
+function Base.size(arg::AbstractOperatorRepresentation, i::Integer)
     dim = dimension(get_space(arg))
     if 1 <= i <= 2
         return dim
@@ -89,16 +89,16 @@ function Base.size(arg::AbstractOperatorRepresentation{T}, i::Integer) where T
 end
 
 function Base.:(==)(
-    lhs::AbstractOperatorRepresentation{T1},
-    rhs::AbstractOperatorRepresentation{T2}
-) where {T1, T2}
+    lhs::AbstractOperatorRepresentation,
+    rhs::AbstractOperatorRepresentation
+)
     return ((get_space(lhs) == get_space(rhs)) && (get_operator(lhs) == get_operator(rhs)))
 end
 
 
 for uniop in [:+, :-]
     @eval begin
-        function Base.$uniop(lhs::AbstractOperatorRepresentation{T}) where T
+        function Base.$uniop(lhs::AbstractOperatorRepresentation)
             return represent(get_space(lhs), ($uniop)(lhs.operator))
         end
     end
@@ -107,9 +107,9 @@ end
 for binop in [:+, :-, :*]
     @eval begin
         function Base.$binop(
-            lhs::AbstractOperatorRepresentation{T1},
-            rhs::AbstractOperatorRepresentation{T2}
-        ) where {T1, T2}
+            lhs::AbstractOperatorRepresentation,
+            rhs::AbstractOperatorRepresentation
+        )
             @boundscheck if (get_space(lhs) != get_space(rhs))
                 throw(ArgumentError("The two OperatorRepresentation's do not have the same HilbertSpaceRepresentation"))
             end

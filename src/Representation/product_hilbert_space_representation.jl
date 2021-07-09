@@ -37,9 +37,9 @@ struct ProductHilbertSpaceRepresentation{
     end
 end
 
-Base.valtype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, QN, N, HS, HSR} = S
-scalartype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, QN, N, HS, HSR} = S
-bintype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, QN, N, HS, HSR} = BR
+Base.valtype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, N, HS, HSR} = S
+scalartype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, N, HS, HSR} = S
+bintype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, N, HS, HSR} = BR
 
 qntype(::Type{<:ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}}) where {BR, S, N, HS, HSR} = qntype(HS)
 
@@ -68,8 +68,8 @@ end
 function get_basis_iterator(hsr::ProductHilbertSpaceRepresentation{BR, S, N, HS, HSR}) where {BR, S, N, HS, HSR}
     return Iterators.flatten(
         bitjoin(hsr.bitwidths, x)
-        for x in Iterators.product(get_basis_list.(hsr.subrepresentations)...)
-            # for x in Iterators.product( (get_basis_list(z) for z in hsr.subrepresentations)...)
+            # for x in Iterators.product(get_basis_list.(hsr.subrepresentations)...)
+            for x in Iterators.product( (get_basis_list(z) for z in hsr.subrepresentations)...)
     )
 end
 

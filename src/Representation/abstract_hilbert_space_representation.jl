@@ -19,16 +19,10 @@ bintype(::Type{<:AbstractHilbertSpaceRepresentation{BR, S}}) where {BR, S} = BR
 
 """
     basespace(x::AbstractHilbertSpaceRepresentation)
-
-Return the underlying Hilbert space of the Hilbert space representation.
-Subtypes of AbstractHilbertSpace must implement this method.
-"""
-function basespace end
-
-"""
     basespace(x::Type{T}) where {T<:AbstractHilbertSpaceRepresentation}
 
-Return the type of the underlying Hilbert space of the Hilbert space representation type.
+If the argument is an instance of `AbstractHilbertSpaceRepresentation`, return the underlying Hilbert space of the Hilbert space representation.
+If the argument is a subtype of `AbstractHilbertSpaceRepresentation`, return the type of the underlying Hilbert space.
 Subtypes of AbstractHilbertSpace must implement this method.
 """
 function basespace end

@@ -46,8 +46,6 @@ struct DecomposedHilbertSpaceRepresentation{
 end
 
 
-
-
 # specializations
 function tagtype(
     ::Type{<:DecomposedHilbertSpaceRepresentation{BR, S, HS, HSR, TS, TT}},
