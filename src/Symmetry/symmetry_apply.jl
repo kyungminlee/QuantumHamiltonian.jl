@@ -156,3 +156,7 @@ function isinvariant(
         all(isinvariant(hs, g, op) for g in generator_elements(symbed.rest))
     )
 end
+
+
+symmetry_apply(hsr::AbstractHilbertSpaceRepresentation, args...; kwargs...) = symmetry_apply(basespace(hsr), args...; kwargs...)
+isinvariant(hsr::AbstractHilbertSpaceRepresentation, args...; kwargs...) = isinvariant(basespace(hsr), args...; kwargs...)
