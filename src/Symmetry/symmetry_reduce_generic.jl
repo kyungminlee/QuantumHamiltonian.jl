@@ -4,6 +4,46 @@ export make_symmetrizer
 using LatticeTools
 
 
+"""
+    symmetry_reduce(hsr, symops, amplitudes, bvec; tol=√ϵ)
+
+Returns bᵢ => ⟨B|ϕᵢ⟩, i.e., the basis state (represented by bᵢ, and the amount of that basis
+state that overlaps with the input.
+Returns the same amplitude as the `get_basis_index_amplitude` of the reduced Hilbert space representation
+
+Basis states: |ϕᵢ⟩ with a representative bᵢ
+input       : |B⟩
+"""
+function symmetry_reduce(
+    hs::AbstractHilbertSpace,
+    symops::AbstractArray{O},
+    amplitudes::AbstractArray{SI},
+    bvec::BR,
+    ::Type{S}=float(SI);
+    tol::Real=Base.rtoldefault(float(real(S)))
+) where {BR<:Unsigned, O, SI<:Number, S<:Number}
+    min_bvec = BR(bvec)
+    min_amplitude = one(S)
+    subgroup_size = length(symops)
+    multiplicity = 1
+    for i in 2:subgroup_size
+        symop, ampl = symops[i], amplitudes[i]
+        bvec_prime, ampl_prime = symmetry_apply(hs, symop, bvec, conj(ampl))
+        if bvec_prime < min_bvec
+            min_bvec = BR(bvec_prime)
+            min_amplitude = S(ampl_prime)
+        elseif bvec_prime == bvec
+            if !isapprox(ampl_prime, one(S); atol=tol)
+                return (representative=typemax(BR), amplitude=zero(S))
+            else
+                multiplicity += 1
+            end
+        end
+    end
+    @assert mod(subgroup_size, multiplicity) == 0
+    return (representative=min_bvec, amplitude=conj(min_amplitude) / sqrt(subgroup_size / multiplicity))
+end
+
 
 function symmetry_reduce(
     hsr::AbstractHilbertSpaceRepresentation,
