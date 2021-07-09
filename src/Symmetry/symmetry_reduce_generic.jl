@@ -70,7 +70,7 @@ function symmetry_reduce_serial(
         throw(ArgumentError("length of symops cannot be less than 1"))
     end
     if !all(isapprox(abs(y), one(abs(y)); atol=tol) || isapprox(abs(y), zero(abs(y)); atol=tol) for y in amplitudes)
-        throw(ArgumentError("all amplitudes need to have norm 1 or 0"))
+        throw(ArgumentError("all amplitudes need to have norm 1 or 0 (monomial representation)"))
     elseif !isapprox(amplitudes[1], one(amplitudes[1]); atol=tol)
         throw(ArgumentError("amplitude of first element (identity) needs to be one"))
     end
@@ -180,7 +180,7 @@ function symmetry_reduce_parallel(
         throw(ArgumentError("length of symops cannot be less than 1"))
     end
     if !all(isapprox(abs(y), one(abs(y)); atol=tol) || isapprox(abs(y), zero(abs(y)); atol=tol) for y in amplitudes)
-        throw(ArgumentError("all amplitudes need to have norm 1"))
+        throw(ArgumentError("all amplitudes need to have norm 1 or 0 (monomial representation)"))
     elseif !isapprox(amplitudes[1], one(amplitudes[1]); atol=tol)
         throw(ArgumentError("amplitude of first element (identity) needs to be one"))
     end
