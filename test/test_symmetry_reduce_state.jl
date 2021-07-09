@@ -39,19 +39,17 @@ using Test
             (i2p, x) = get_basis_index_amplitude(rphsr, b2p)
             @test imag(x) ≈ 0
 
-            b3p = b1p
-            a3p = a1p
             (i3p, x) = get_basis_index_amplitude(rdhsr, b1p)
             @test imag(x) ≈ 0
 
             @test i1 == i2 == i3 == i1p == i2p == i3p
-            @test a1 ≈ a2 ≈ a3 ≈ a1p ≈ a2p ≈ a3p
+            @test a1 ≈ a2 ≈ a3 ≈ a1p ≈ a2p
 
             if i1 > 0
                 b1 = get_basis_state(rhsr, i1)
-                @test b1 == b1p == b2p == b3p
+                @test b1 == b1p == b2p
             else
-                @test a1 ≈ 0
+                @test a1 ≈ a2 ≈ a3 ≈ 0
             end
             
         end
