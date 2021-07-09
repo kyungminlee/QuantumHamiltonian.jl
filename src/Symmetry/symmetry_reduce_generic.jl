@@ -115,16 +115,16 @@ function symmetry_reduce_serial(
         compatible = true
         for i in 2:subgroup_size
             symop, ampl = symops[i], amplitudes[i]
-            bvec_prime, sgn = symmetry_apply(hsr, symop, bvec)
+            bvec_prime, ampl_prime = symmetry_apply(hsr, symop, bvec, conj(ampl))
             if bvec_prime < bvec
                 compatible = false
                 break
-            elseif bvec_prime == bvec && !isapprox(conj(ampl) * sgn, one(ScalarType); atol=tol)
+            elseif bvec_prime == bvec && !isapprox(ampl_prime, one(ScalarType); atol=tol)
                 compatible = false
                 break
             end
             basis_states[i] = bvec_prime
-            basis_phases[i] = conj(ampl) * sgn
+            basis_phases[i] = ampl_prime
         end # for i
         (!compatible) && continue
         basis_states[1] = bvec
@@ -260,16 +260,16 @@ function symmetry_reduce_parallel(
         compatible = true
         for i in 2:subgroup_size
             symop, ampl = symops[i], amplitudes[i]
-            bvec_prime, sgn = symmetry_apply(hsr, symop, bvec)
+            bvec_prime, ampl_prime = symmetry_apply(hsr, symop, bvec, conj(ampl))
             if bvec_prime < bvec
                 compatible = false
                 break
-            elseif bvec_prime == bvec && !isapprox(conj(ampl) * sgn, one(ScalarType); atol=tol)
+            elseif bvec_prime == bvec && !isapprox(ampl_prime, one(ScalarType); atol=tol)
                 compatible = false
                 break
             end
             local_basis_states[id, i] = bvec_prime
-            local_basis_phases[id, i] = conj(ampl) * sgn
+            local_basis_phases[id, i] = ampl_prime
         end # for i
         (!compatible) && continue
         local_basis_states[id, 1] = bvec
