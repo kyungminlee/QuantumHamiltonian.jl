@@ -7,44 +7,6 @@ import LatticeTools.SymmetryEmbedding
 
 ## AbstractSpaceSymmetryOperationEmbedding
 
-### HilbertSpaceSector
-function symmetry_apply(
-    hss::HilbertSpaceSector,
-    symop::AbstractSymmetryOperation,
-    args...;
-    kwargs...
-)
-    return symmetry_apply(hss.parent, symop, args...; kwargs...)
-end
-
-function isinvariant(
-    hss::HilbertSpaceSector,
-    symop::AbstractSymmetryOperation,
-    args...;
-    kwargs...
-)
-    return isinvariant(hss.parent, symop, args...; kwargs...)
-end
-
-function isinvariant(
-    hss::HilbertSpaceSector,
-    symbed::SymmetryEmbedding,
-    args...;
-    kwargs...
-)
-    return isinvariant(hss.parent, symbed, args...; kwargs...)
-end
-
-function isinvariant(
-    hss::HilbertSpaceSector,
-    symbed::SymmorphicSymmetryEmbedding,
-    args...;
-    kwargs...
-)
-    return isinvariant(hss.parent, symbed, args...; kwargs...)
-end
-
-
 ### generic symmetry operations for NullOperator and SumOperator
 function symmetry_apply(
     hs::AbstractHilbertSpace,
@@ -103,14 +65,14 @@ end
 ## Permutation
 ### Binary Representation
 function symmetry_apply(
-    hs::HilbertSpace,
+    hs::AbstractHilbertSpace,
     permutation::SitePermutation,
     bitrep::BR,
     amplitude::Number=one(Int)
 ) where {BR<:Unsigned}
     out = zero(BR)
     for (i, j) in enumerate(permutation.permutation.map)
-        out |= ( (bitrep >> hs.bitoffsets[i]) & make_bitmask(hs.bitwidths[i]) ) << hs.bitoffsets[j]
+        out |= ( (bitrep >> bitoffset(hs, i)) & make_bitmask(bitwidth(hs, i)) ) << bitoffset(hs, j)
     end
     return (out, amplitude)
 end
@@ -155,7 +117,7 @@ end
 
 ### Operator
 function symmetry_apply(
-    hs::HilbertSpace,
+    hs::AbstractHilbertSpace,
     permutation::SitePermutation,
     op::PureOperator{S, BR}
 ) where {S<:Number, BR<:Unsigned}
@@ -169,7 +131,7 @@ end
 
 ## isinvariant
 function isinvariant(
-    hs::HilbertSpace,
+    hs::AbstractHilbertSpace,
     symop::AbstractSymmetryOperation,
     op::AbstractOperator
 )
@@ -177,7 +139,7 @@ function isinvariant(
 end
 
 function isinvariant(
-    hs::HilbertSpace,
+    hs::AbstractHilbertSpace,
     symbed::SymmetryEmbedding,
     op::AbstractOperator
 )
@@ -185,7 +147,7 @@ function isinvariant(
 end
 
 function isinvariant(
-    hs::HilbertSpace,
+    hs::AbstractHilbertSpace,
     symbed::SymmorphicSymmetryEmbedding,
     op::AbstractOperator
 )
