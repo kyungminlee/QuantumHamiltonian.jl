@@ -1,6 +1,8 @@
 export OperatorRepresentation
 export represent
-export apply!, apply_serial!, apply_parallel!
+export spacetype, operatortype
+export get_space
+export get_row_iterator, get_column_iterator, get_element
 
 import LinearAlgebra
 
@@ -38,9 +40,8 @@ end
 
 spacetype(::Type{OperatorRepresentation{HSR, S, O}}) where {HSR, S, O} = HSR
 operatortype(::Type{OperatorRepresentation{HSR, S, O}}) where {HSR, S, O} = O
-function get_space(lhs::OperatorRepresentation{HSR, S, O})::HSR where {HSR, S, O}
-    return lhs.hilbert_space_representation
-end
+get_space(arg::OperatorRepresentation) = arg.hilbert_space_representation
+get_operator(arg::OperatorRepresentation) = arg.operator
 
 
 function LinearAlgebra.issymmetric(arg::OperatorRepresentation)

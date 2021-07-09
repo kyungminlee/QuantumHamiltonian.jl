@@ -1,9 +1,10 @@
 export HilbertSpaceRepresentation
+export basespace
 export dimension
+export get_basis, get_basis_list, get_basis_iterator, get_basis_state, get_basis_index_amplitude
 export represent, represent_array, represent_dict
-export get_basis, get_basis_list, get_basis_state, get_basis_index_amplitude
 
-@inline represent(::Site, istate::Integer, ::Type{BR}=UInt) where {BR} = BR(istate-1)
+# @inline represent(::Site, istate::Integer, ::Type{BR}=UInt) where {BR} = BR(istate-1)
 
 """
     HilbertSpaceRepresentation{BR, HS, BasisType}
@@ -57,6 +58,7 @@ get_basis(hsr::HilbertSpaceRepresentation) = hsr.basis
 
 
 get_basis_list(hsr::HilbertSpaceRepresentation) = collect(hsr.basis)
+get_basis_iterator(hsr::HilbertSpaceRepresentation) = (x for x in hsr.basis)
 
 
 """

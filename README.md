@@ -2,7 +2,7 @@
 
 | **Documentation** | **Build Status** | **Code Coverage** |
 |:-----------------:|:----------------:|:-----------------:|
-| [![**STABLE**][docs-stable-img]][docs-stable-url] [![**DEV**][docs-dev-img]][docs-dev-url] | [![Build][githubaction-img]][githubaction-url] | [![Code Coverage][codecov-main-img]][codecov-url] [![Code Coverage][codecov-dev-img]][codecov-url] |
+| [![**STABLE**][docs-stable-img]][docs-stable-url] [![**DEV**][docs-dev-img]][docs-dev-url] | [![Build][githubaction-img]][githubaction-url] | [![Code Coverage][codecov-main-img]][codecov-main-url] [![Code Coverage][codecov-dev-img]][codecov-dev-url] |
 
 `QuantumHamiltonian.jl` is a library for constructing quantum many-body Hamiltonians. It aims to provide
 - convenient and efficient representation of a generic lattice Hamiltonian and wave function
@@ -26,4 +26,5 @@ pkg> add QuantumHamiltonian
 
 [codecov-main-img]: https://codecov.io/gh/kyungminlee/QuantumHamiltonian.jl/branch/main/graph/badge.svg?token=JJ2CEJKWO5
 [codecov-dev-img]: https://codecov.io/gh/kyungminlee/QuantumHamiltonian.jl/branch/dev/graph/badge.svg?token=JJ2CEJKWO5
-[codecov-url]: https://codecov.io/gh/kyungminlee/QuantumHamiltonian.jl
+[codecov-main-url]: https://app.codecov.io/gh/kyungminlee/QuantumHamiltonian.jl/branch/main
+[codecov-dev-url]: https://app.codecov.io/gh/kyungminlee/QuantumHamiltonian.jl/branch/dev

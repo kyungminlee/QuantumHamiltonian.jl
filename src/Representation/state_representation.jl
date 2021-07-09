@@ -1,3 +1,6 @@
+export represent
+export SparseState
+
 function represent(
     hsrep::HilbertSpaceRepresentation{BR, HS, DT},
     state::SparseState{S, BR2}

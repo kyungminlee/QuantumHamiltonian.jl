@@ -220,8 +220,9 @@ function pure_operator(
     ::Type{BR}=UInt,
 ) where {S<:Number, BR<:Unsigned}
     site = get_site(hilbert_space, isite)
+    siteoffset = bitoffset(hilbert_space, isite)
     bm = get_bitmask(hilbert_space, isite, BR)
-    br = compress(site, istate_row, BR) << bitoffset(hilbert_space, isite)
-    bc = compress(site, istate_col, BR) << bitoffset(hilbert_space, isite)
+    br = compress(site, istate_row, BR) << siteoffset
+    bc = compress(site, istate_col, BR) << siteoffset
     return PureOperator(bm, br, bc, amplitude)
 end

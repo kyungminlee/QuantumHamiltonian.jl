@@ -143,7 +143,7 @@ end
 Gets a list of possible quantum numbers as a sorted vector of QN.
 """
 function quantum_number_sectors(site::Site{QN})::Vector{QN} where {QN}
-    return sort(collect(Set([state.quantum_number for state in site.states])))
+    return unique(sort([state.quantum_number for state in site.states]))
 end
 
 

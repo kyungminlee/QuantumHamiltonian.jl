@@ -14,20 +14,20 @@ bintype(::Type{<:NullOperator}) = UInt8
 
 Base.:(-)(op::NullOperator) = op
 
-Base.:(*)(lhs::NullOperator, rhs::NullOperator) = lhs
+Base.:(*)(::NullOperator, ::NullOperator) = NullOperator()
 
-Base.:(*)(lhs::AbstractOperator, rhs::NullOperator) = rhs
-Base.:(*)(lhs::NullOperator, rhs::AbstractOperator) = lhs
+Base.:(*)(::AbstractOperator, ::NullOperator) = NullOperator()
+Base.:(*)(::NullOperator, ::AbstractOperator) = NullOperator()
 
-Base.:(*)(lhs::Number, rhs::NullOperator)::NullOperator = rhs
-Base.:(*)(lhs::NullOperator, rhs::Number)::NullOperator = lhs
-Base.:(\)(lhs::Number, rhs::NullOperator)::NullOperator = rhs
-Base.:(/)(lhs::NullOperator, rhs::Number)::NullOperator = lhs
-Base.:(//)(lhs::NullOperator, rhs::Number)::NullOperator = lhs
+Base.:(*)(::Number, ::NullOperator)::NullOperator = NullOperator()
+Base.:(*)(::NullOperator, ::Number)::NullOperator = NullOperator()
+Base.:(\)(::Number, ::NullOperator)::NullOperator = NullOperator()
+Base.:(/)(::NullOperator, ::Number)::NullOperator = NullOperator()
+Base.:(//)(::NullOperator, ::Number)::NullOperator = NullOperator()
 
-Base.:(+)(lhs::NullOperator, rhs::NullOperator) = lhs
-Base.:(+)(lhs::AbstractOperator, rhs::NullOperator) = lhs
-Base.:(+)(lhs::NullOperator, rhs::AbstractOperator) = rhs
+Base.:(+)(::NullOperator, ::NullOperator) = NullOperator()
+Base.:(+)(lhs::AbstractOperator, ::NullOperator) = lhs
+Base.:(+)(::NullOperator, rhs::AbstractOperator) = rhs
 
 Base.:(==)(lhs::NullOperator, rhs::NullOperator) = true
 

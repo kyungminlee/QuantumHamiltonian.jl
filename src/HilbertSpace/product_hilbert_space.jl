@@ -19,8 +19,6 @@ struct ProductHilbertSpace{
     end
 end
 
-# qntype(::Type{<:ProductHilbertSpace{QN, N, TS, S, TT}}) where {QN, N, TS, S, TT} = QN
-# tagtype(::Type{<:ProductHilbertSpace{QN, N, TS, S, TT}}) where {QN, N, S, TT} = NTuple{N, QN}
 
 tagtype(::Type{<:ProductHilbertSpace{QN, N, S}}, x::Val) where {QN, N, S}= Tuple{tagtype.(S.parameters, x)...}
 

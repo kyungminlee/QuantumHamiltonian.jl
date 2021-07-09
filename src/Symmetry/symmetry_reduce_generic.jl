@@ -5,71 +5,72 @@ using LatticeTools
 
 
 """
-    symmetry_reduce(hsr, lattice, symmetry_irrep_component, complex_type=ComplexF64, tol=√ϵ)
+    symmetry_reduce(hsr, symops, amplitudes, bvec; tol=√ϵ)
 
-Symmetry-reduce the HilbertSpaceRepresentation using translation group.
+Returns bᵢ => ⟨B|ϕᵢ⟩, i.e., the basis state (represented by bᵢ, and the amount of that basis
+state that overlaps with the input.
+Returns the same amplitude as the `get_basis_index_amplitude` of the reduced Hilbert space representation
 
+Basis states: |ϕᵢ⟩ with a representative bᵢ
+input       : |B⟩
 """
 function symmetry_reduce(
-    hsr::HilbertSpaceRepresentation,
-    ssic::AbstractSymmetryIrrepComponent;
-    tol::Real=Base.rtoldefault(Float64)
-)
-    symred = Threads.nthreads() == 1 ? symmetry_reduce_serial : symmetry_reduce_parallel
-    return symred(hsr, ssic; tol=tol)
+    hs::AbstractHilbertSpace,
+    symops::AbstractArray{O},
+    amplitudes::AbstractArray{SI},
+    bvec::BR,
+    ::Type{S}=float(SI);
+    tol::Real=Base.rtoldefault(float(real(S)))
+) where {BR<:Unsigned, O, SI<:Number, S<:Number}
+    min_bvec = BR(bvec)
+    min_amplitude = one(S)
+    subgroup_size = length(symops)
+    multiplicity = 1
+    for i in 2:subgroup_size
+        symop, ampl = symops[i], amplitudes[i]
+        bvec_prime, ampl_prime = symmetry_apply(hs, symop, bvec, conj(ampl))
+        if bvec_prime < min_bvec
+            min_bvec = BR(bvec_prime)
+            min_amplitude = S(ampl_prime)
+        elseif bvec_prime == bvec
+            if !isapprox(ampl_prime, one(S); atol=tol)
+                return (representative=typemax(BR), amplitude=zero(S))
+            else
+                multiplicity += 1
+            end
+        end
+    end
+    @assert mod(subgroup_size, multiplicity) == 0
+    return (representative=min_bvec, amplitude=conj(min_amplitude) / sqrt(subgroup_size / multiplicity))
 end
 
 
 function symmetry_reduce(
-    hsr::HilbertSpaceRepresentation,
-    symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
-    tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
-    symred = Threads.nthreads() == 1 ? symmetry_reduce_serial : symmetry_reduce_parallel
-    return symred(hsr, symops_and_amplitudes; tol=tol)
-end
-
-
-function symmetry_reduce(
-    hsr::HilbertSpaceRepresentation,
+    hsr::AbstractHilbertSpaceRepresentation,
     symops::AbstractArray{OperationType},
-    amplitudes::AbstractArray{InputScalarType};
+    amplitudes::AbstractArray{InputScalarType},
+    ::Type{BT}=DictIndexedVector;
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+) where {OperationType<:AbstractSymmetryOperation, InputScalarType<:Number, BT<:AbstractIndexedVector}
     symred = Threads.nthreads() == 1 ? symmetry_reduce_serial : symmetry_reduce_parallel
-    return symred(hsr, symops, amplitudes; tol=tol)
-end
-
-
-"""
-    symmetry_reduce_serial(hilbert_space_representation, symops_and_amplitudes; tol=√ϵ)
-
-The irreps have to follow certain order.
-"""
-function symmetry_reduce_serial(
-    hsr::HilbertSpaceRepresentation,
-    symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
-    tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
-    symops = [x for (x, y) in symops_and_amplitudes]
-    amplitudes = [y for (x, y) in symops_and_amplitudes]
-    return symmetry_reduce_serial(hsr, symops, amplitudes; tol=tol)
+    return symred(hsr, symops, amplitudes, BT; tol=tol)
 end
 
 
 function symmetry_reduce_serial(
-    hsr::HilbertSpaceRepresentation{BR, HS, BT},
+    hsr::AbstractHilbertSpaceRepresentation{BR, C},
     symops::AbstractArray{OperationType},
-    amplitudes::AbstractArray{InputScalarType};
+    amplitudes::AbstractArray{InputScalarType},
+    ::Type{BT}=DictIndexedVector;
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {BR, HS, BT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+) where {BR, C, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number, BT<:AbstractIndexedVector}
     if length(symops) != length(amplitudes)
         throw(ArgumentError("number of symmetry operations and number of amplitudes should match ($(length(symops)) != $(length(amplitudes)))"))
     elseif length(symops) < 1
         throw(ArgumentError("length of symops cannot be less than 1"))
     end
     if !all(isapprox(abs(y), one(abs(y)); atol=tol) || isapprox(abs(y), zero(abs(y)); atol=tol) for y in amplitudes)
-        throw(ArgumentError("all amplitudes need to have norm 1 or 0"))
+        throw(ArgumentError("all amplitudes need to have norm 1 or 0 (monomial representation)"))
     elseif !isapprox(amplitudes[1], one(amplitudes[1]); atol=tol)
         throw(ArgumentError("amplitude of first element (identity) needs to be one"))
     end
@@ -86,9 +87,9 @@ function symmetry_reduce_serial(
         new_symops, new_amplitudes
     end
 
-    ScalarType = float(InputScalarType)
+    ScalarType = float(promote_type(InputScalarType, C))
 
-    n_basis = length(hsr.basis)
+    n_basis = dimension(hsr)
 
     basis_mapping_representative = Vector{Int}(undef, n_basis)
     fill!(basis_mapping_representative, -1)
@@ -110,21 +111,20 @@ function symmetry_reduce_serial(
 
     for ivec_p in 1:n_basis
         visited[ivec_p] && continue
-        bvec = hsr.basis[ivec_p]
-
+        bvec = get_basis_state(hsr, ivec_p)
         compatible = true
         for i in 2:subgroup_size
             symop, ampl = symops[i], amplitudes[i]
-            bvec_prime, sgn = symmetry_apply(hsr.hilbert_space, symop, bvec)
+            bvec_prime, ampl_prime = symmetry_apply(hsr, symop, bvec, conj(ampl))
             if bvec_prime < bvec
                 compatible = false
                 break
-            elseif bvec_prime == bvec && !isapprox(conj(ampl) * sgn, one(ScalarType); atol=tol)
+            elseif bvec_prime == bvec && !isapprox(ampl_prime, one(ScalarType); atol=tol)
                 compatible = false
                 break
             end
             basis_states[i] = bvec_prime
-            basis_phases[i] = conj(ampl) * sgn
+            basis_phases[i] = ampl_prime
         end # for i
         (!compatible) && continue
         basis_states[1] = bvec
@@ -138,11 +138,11 @@ function symmetry_reduce_serial(
         end
         inv_norm = inv_norm_cache[length(basis_amplitudes)]
         for (bvec_prime, amplitude) in basis_amplitudes
-            # ivec_p_prime = hsr.basis_lookup[bvec_prime]
-            ivec_p_prime = findindex(hsr.basis, bvec_prime)
+            # TODO: check nested reduction
+            ivec_p_prime, ampl_p_prime = get_basis_index_amplitude(hsr, bvec_prime)
             visited[ivec_p_prime] = true
             basis_mapping_representative[ivec_p_prime] = ivec_p
-            basis_mapping_amplitude[ivec_p_prime] = amplitude * inv_norm
+            basis_mapping_amplitude[ivec_p_prime] = amplitude * inv_norm * ampl_p_prime
         end
     end # for ivec_p
 
@@ -150,7 +150,7 @@ function symmetry_reduce_serial(
     fill!(basis_mapping_index, -1)
 
     for (ivec_r, bvec) in enumerate(reduced_basis_list)
-        ivec_p = findindex(hsr.basis, bvec)
+        ivec_p, _ = get_basis_index_amplitude(hsr, bvec)
         basis_mapping_index[ivec_p] = ivec_r
     end
 
@@ -161,36 +161,18 @@ function symmetry_reduce_serial(
         basis_mapping_index[ivec_p_prime] = ivec_r
     end
 
-    HSR = HilbertSpaceRepresentation{BR, HS, BT}
-    RHSR = ReducedHilbertSpaceRepresentation{HSR, BR, ScalarType, SortedIndexedVector{BR}}
-    reduced_basis = SortedIndexedVector{BR}(reduced_basis_list)
-    return RHSR(hsr, reduced_basis, basis_mapping_index, basis_mapping_amplitude)
-end
-
-
-"""
-    symmetry_reduce_parallel(hsr, symops_and_amplitudes; tol=√ϵ)
-
-Symmetry-reduce the HilbertSpaceRepresentation using translation group (multi-threaded).
-
-"""
-function symmetry_reduce_parallel(
-    hsr::HilbertSpaceRepresentation,
-    symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
-    tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
-    symops = [x for (x, y) in symops_and_amplitudes]
-    amplitudes = [y for (x, y) in symops_and_amplitudes]
-    return symmetry_reduce_parallel(hsr, symops, amplitudes; tol=tol)
+    reduced_basis = BT(reduced_basis_list)
+    return ReducedHilbertSpaceRepresentation(hsr, reduced_basis, basis_mapping_index, basis_mapping_amplitude)
 end
 
 
 function symmetry_reduce_parallel(
-    hsr::HilbertSpaceRepresentation{BR, HS, BT},
+    hsr::AbstractHilbertSpaceRepresentation{BR, C},
     symops::AbstractArray{OperationType},
-    amplitudes::AbstractArray{InputScalarType};
+    amplitudes::AbstractArray{InputScalarType},
+    ::Type{BT}=DictIndexedVector;
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
-) where {BR, HS, BT, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
+) where {BR, C, OperationType<:AbstractSymmetryOperation, InputScalarType<:Number, BT<:AbstractIndexedVector}
     @debug "BEGIN symmetry_reduce_parallel"
     if length(symops) != length(amplitudes)
         throw(ArgumentError("number of symmetry operations and number of amplitudes should match ($(length(symops)) != $(length(amplitudes)))"))
@@ -198,7 +180,7 @@ function symmetry_reduce_parallel(
         throw(ArgumentError("length of symops cannot be less than 1"))
     end
     if !all(isapprox(abs(y), one(abs(y)); atol=tol) || isapprox(abs(y), zero(abs(y)); atol=tol) for y in amplitudes)
-        throw(ArgumentError("all amplitudes need to have norm 1"))
+        throw(ArgumentError("all amplitudes need to have norm 1 or 0 (monomial representation)"))
     elseif !isapprox(amplitudes[1], one(amplitudes[1]); atol=tol)
         throw(ArgumentError("amplitude of first element (identity) needs to be one"))
     end
@@ -215,9 +197,9 @@ function symmetry_reduce_parallel(
         new_symops, new_amplitudes
     end
 
-    ScalarType = float(InputScalarType)
+    ScalarType = float(promote_type(InputScalarType, C))
 
-    n_basis = length(hsr.basis)
+    n_basis = dimension(hsr)
     @debug "Original Hilbert space dimension: $n_basis"
 
     # basis_mapping_index and basis_mapping_amplitude contain information about
@@ -270,7 +252,7 @@ function symmetry_reduce_parallel(
         (visited[ivec_p] != 0x0) && continue
 
         id = Threads.threadid()
-        bvec = hsr.basis[ivec_p]
+        bvec = get_basis_state(hsr, ivec_p)
 
         # A basis binary representation is incompatible with the reduced Hilbert space if
         # (1) it is not the smallest among the its star, or
@@ -278,16 +260,16 @@ function symmetry_reduce_parallel(
         compatible = true
         for i in 2:subgroup_size
             symop, ampl = symops[i], amplitudes[i]
-            bvec_prime, sgn = symmetry_apply(hsr.hilbert_space, symop, bvec)
+            bvec_prime, ampl_prime = symmetry_apply(hsr, symop, bvec, conj(ampl))
             if bvec_prime < bvec
                 compatible = false
                 break
-            elseif bvec_prime == bvec && !isapprox(conj(ampl) * sgn, one(ScalarType); atol=tol)
+            elseif bvec_prime == bvec && !isapprox(ampl_prime, one(ScalarType); atol=tol)
                 compatible = false
                 break
             end
             local_basis_states[id, i] = bvec_prime
-            local_basis_phases[id, i] = conj(ampl) * sgn
+            local_basis_phases[id, i] = ampl_prime
         end # for i
         (!compatible) && continue
         local_basis_states[id, 1] = bvec
@@ -301,11 +283,11 @@ function symmetry_reduce_parallel(
         end
         inv_norm = inv_norm_cache[length(local_basis_amplitudes[id])]        
         for (bvec_prime, amplitude) in local_basis_amplitudes[id]
-            # ivec_p_prime = hsr.basis_lookup[bvec_prime]
-            ivec_p_prime = findindex(hsr.basis, bvec_prime)
+            # TODO: check nested reduction
+            ivec_p_prime, ampl_p_prime = get_basis_index_amplitude(hsr, bvec_prime)
             visited[ivec_p_prime] = 0x1
             basis_mapping_representative[ivec_p_prime] = ivec_p
-            basis_mapping_amplitude[ivec_p_prime] = amplitude * inv_norm
+            basis_mapping_amplitude[ivec_p_prime] = amplitude * inv_norm * ampl_p_prime
         end
     end
     @debug "Finished reduction (parallel)"
@@ -328,8 +310,7 @@ function symmetry_reduce_parallel(
 
     Threads.@threads for ivec_r in eachindex(reduced_basis_list)
         bvec = reduced_basis_list[ivec_r]
-        # ivec_p = hsr.basis_lookup[bvec]
-        ivec_p = findindex(hsr.basis, bvec)
+        ivec_p, _ = get_basis_index_amplitude(hsr, bvec)
         basis_mapping_index[ivec_p] = ivec_r
     end
     @debug "Collected basis lookup (diagonal)"
@@ -344,8 +325,6 @@ function symmetry_reduce_parallel(
     @debug "Collected basis lookup (offdiagonal)"
 
     @debug "END symmetry_reduce_parallel"
-    HSR = HilbertSpaceRepresentation{BR, HS, BT}
-    RHSR = ReducedHilbertSpaceRepresentation{HSR, BR, ScalarType, SortedIndexedVector{BR}}
-    reduced_basis = SortedIndexedVector(reduced_basis_list)
-    return RHSR(hsr, reduced_basis, basis_mapping_index, basis_mapping_amplitude)
+    reduced_basis = BT(reduced_basis_list)
+    return ReducedHilbertSpaceRepresentation(hsr, reduced_basis, basis_mapping_index, basis_mapping_amplitude)
 end

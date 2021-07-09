@@ -1,13 +1,13 @@
-
 export AbstractOperatorRepresentation
-export spacetype, operatortype
-export bintype
-export get_space
+export scalartype, bintype
+export spacetype, operatortype, get_space, get_operator
 export dimension, bitwidth
-export get_row, get_column
+export simplify
 export sparse_serial, sparse_parallel
-
 export apply!, apply_serial!, apply_parallel!
+export get_row, get_column
+
+
 
 
 """
@@ -30,6 +30,42 @@ bintype(lhs::AbstractOperatorRepresentation) = bintype(typeof(lhs))
 
 # a subclass of AbstractOperatorRepresentation should implement
 # spacetype, operatortype, and get_space.
+"""
+    spacetype(x::AbstractOperatorRepresentation)
+    spacetype(x::Type{T}) where {T<:AbstractOperatorRepresentation}
+
+Return the type of the Hilbert space representation on which the operator representation is defined.
+Subclass of AbstractOperatorRepresentation must define this method.
+"""
+function spacetype end
+
+
+"""
+    operatortype(x::AbstractOperatorRepresentation)
+
+Return the type of the operator of the operator representation.
+Subclass of AbstractOperatorRepresentation must define this method.
+"""
+function operatortype end
+
+
+"""
+    get_space(x::AbstractOperatorRepresentation)
+
+Return the Hilbert Space representation on which the operator representation is defined.
+Subclass of AbstractOperatorRepresentation must define this method.
+"""
+function get_space end
+
+"""
+    get_operator(x::AbstractOperatorRepresentation)
+
+Return the operator of the operator representation.
+Subclass of AbstractOperatorRepresentation must define this method.
+"""
+function get_operator end
+
+
 spacetype(lhs::AbstractOperatorRepresentation{T}) where T = spacetype(typeof(lhs))::Type{<:AbstractHilbertSpaceRepresentation}
 operatortype(lhs::AbstractOperatorRepresentation{T}) where T = operatortype(typeof(lhs))::Type{<:AbstractOperator}
 
@@ -38,25 +74,31 @@ dimension(lhs::AbstractOperatorRepresentation{S}) where S = dimension(get_space(
 bitwidth(lhs::AbstractOperatorRepresentation{S}) where S = bitwidth(get_space(lhs))
 
 
-function Base.size(arg::AbstractOperatorRepresentation{T})::Tuple{Int, Int} where T
+function Base.size(arg::AbstractOperatorRepresentation)::Tuple{Int, Int}
     dim = dimension(get_space(arg))
     return (dim, dim)
 end
 
-Base.size(arg::AbstractOperatorRepresentation{T}, i::Integer) where T = Base.size(arg)[i]
-
+function Base.size(arg::AbstractOperatorRepresentation, i::Integer)
+    dim = dimension(get_space(arg))
+    if 1 <= i <= 2
+        return dim
+    else
+        throw(BoundsError((dim, dim), i))
+    end    
+end
 
 function Base.:(==)(
-    lhs::AbstractOperatorRepresentation{T1},
-    rhs::AbstractOperatorRepresentation{T2}
-) where {T1, T2}
-    return ((get_space(lhs) == get_space(rhs)) && (lhs.operator == rhs.operator))
+    lhs::AbstractOperatorRepresentation,
+    rhs::AbstractOperatorRepresentation
+)
+    return ((get_space(lhs) == get_space(rhs)) && (get_operator(lhs) == get_operator(rhs)))
 end
 
 
 for uniop in [:+, :-]
     @eval begin
-        function Base.$uniop(lhs::AbstractOperatorRepresentation{T}) where T
+        function Base.$uniop(lhs::AbstractOperatorRepresentation)
             return represent(get_space(lhs), ($uniop)(lhs.operator))
         end
     end
@@ -65,9 +107,9 @@ end
 for binop in [:+, :-, :*]
     @eval begin
         function Base.$binop(
-            lhs::AbstractOperatorRepresentation{T1},
-            rhs::AbstractOperatorRepresentation{T2}
-        ) where {T1, T2}
+            lhs::AbstractOperatorRepresentation,
+            rhs::AbstractOperatorRepresentation
+        )
             @boundscheck if (get_space(lhs) != get_space(rhs))
                 throw(ArgumentError("The two OperatorRepresentation's do not have the same HilbertSpaceRepresentation"))
             end
