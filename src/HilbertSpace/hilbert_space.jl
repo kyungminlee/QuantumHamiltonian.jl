@@ -262,9 +262,3 @@ Get the bitmask of the site `isite`, optionally in type `type`
 function get_bitmask(hs::HilbertSpace, isite::Integer, ::Type{BR}=UInt)::BR where {BR<:Unsigned}
     return make_bitmask(hs.bitoffsets[isite+1], hs.bitoffsets[isite], BR)
 end
-
-# performance specialization
-function Base.keys(hs::HilbertSpace)
-    return CartesianIndices(((length(site.states) for site in hs.sites)...,))
-end
-
