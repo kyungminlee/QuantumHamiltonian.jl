@@ -11,7 +11,7 @@ Symmetry-reduce the HilbertSpaceRepresentation using translation group.
 
 """
 function symmetry_reduce(
-    hsr::HilbertSpaceRepresentation,
+    hsr::AbstractHilbertSpaceRepresentation,
     ssic::AbstractSymmetryIrrepComponent;
     tol::Real=Base.rtoldefault(Float64)
 )
@@ -21,7 +21,7 @@ end
 
 
 function symmetry_reduce(
-    hsr::HilbertSpaceRepresentation,
+    hsr::AbstractHilbertSpaceRepresentation,
     symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
 ) where {OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
@@ -31,7 +31,7 @@ end
 
 
 function symmetry_reduce(
-    hsr::HilbertSpaceRepresentation,
+    hsr::AbstractHilbertSpaceRepresentation,
     symops::AbstractArray{OperationType},
     amplitudes::AbstractArray{InputScalarType};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
@@ -47,7 +47,7 @@ end
 The irreps have to follow certain order.
 """
 function symmetry_reduce_serial(
-    hsr::HilbertSpaceRepresentation,
+    hsr::AbstractHilbertSpaceRepresentation,
     symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
 ) where {OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
@@ -175,7 +175,7 @@ Symmetry-reduce the HilbertSpaceRepresentation using translation group (multi-th
 
 """
 function symmetry_reduce_parallel(
-    hsr::HilbertSpaceRepresentation,
+    hsr::AbstractHilbertSpaceRepresentation,
     symops_and_amplitudes::AbstractArray{Tuple{OperationType, InputScalarType}};
     tol::Real=Base.rtoldefault(float(real(InputScalarType)))
 ) where {OperationType<:AbstractSymmetryOperation, InputScalarType<:Number}
