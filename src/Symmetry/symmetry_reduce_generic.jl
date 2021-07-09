@@ -87,7 +87,7 @@ function symmetry_reduce_serial(
         new_symops, new_amplitudes
     end
 
-    ScalarType = float(InputScalarType)
+    ScalarType = float(promote_type(InputScalarType, C))
 
     n_basis = dimension(hsr)
 
@@ -197,9 +197,9 @@ function symmetry_reduce_parallel(
         new_symops, new_amplitudes
     end
 
-    ScalarType = float(InputScalarType)
+    ScalarType = float(promote_type(InputScalarType, C))
 
-    n_basis = length(hsr.basis)
+    n_basis = dimension(hsr)
     @debug "Original Hilbert space dimension: $n_basis"
 
     # basis_mapping_index and basis_mapping_amplitude contain information about
@@ -252,7 +252,7 @@ function symmetry_reduce_parallel(
         (visited[ivec_p] != 0x0) && continue
 
         id = Threads.threadid()
-        bvec = hsr.basis[ivec_p]
+        bvec = get_basis_state(hsr, ivec_p)
 
         # A basis binary representation is incompatible with the reduced Hilbert space if
         # (1) it is not the smallest among the its star, or
@@ -260,7 +260,7 @@ function symmetry_reduce_parallel(
         compatible = true
         for i in 2:subgroup_size
             symop, ampl = symops[i], amplitudes[i]
-            bvec_prime, sgn = symmetry_apply(hsr.hilbert_space, symop, bvec)
+            bvec_prime, sgn = symmetry_apply(hsr, symop, bvec)
             if bvec_prime < bvec
                 compatible = false
                 break
@@ -283,11 +283,11 @@ function symmetry_reduce_parallel(
         end
         inv_norm = inv_norm_cache[length(local_basis_amplitudes[id])]        
         for (bvec_prime, amplitude) in local_basis_amplitudes[id]
-            # ivec_p_prime = hsr.basis_lookup[bvec_prime]
-            ivec_p_prime = findindex(hsr.basis, bvec_prime)
+            # TODO: check nested reduction
+            ivec_p_prime, ampl_p_prime = get_basis_index_amplitude(hsr, bvec_prime)
             visited[ivec_p_prime] = 0x1
             basis_mapping_representative[ivec_p_prime] = ivec_p
-            basis_mapping_amplitude[ivec_p_prime] = amplitude * inv_norm
+            basis_mapping_amplitude[ivec_p_prime] = amplitude * inv_norm * ampl_p_prime
         end
     end
     @debug "Finished reduction (parallel)"
@@ -310,8 +310,7 @@ function symmetry_reduce_parallel(
 
     Threads.@threads for ivec_r in eachindex(reduced_basis_list)
         bvec = reduced_basis_list[ivec_r]
-        # ivec_p = hsr.basis_lookup[bvec]
-        ivec_p = findindex(hsr.basis, bvec)
+        ivec_p, _ = get_basis_index_amplitude(hsr, bvec)
         basis_mapping_index[ivec_p] = ivec_r
     end
     @debug "Collected basis lookup (diagonal)"
