@@ -40,23 +40,3 @@ where each `Site` occupies a fixed location and width. e.g.
 |↓↓↓↓⟩ = |1111⟩
 ```
 The number of bits assigned for each site is determined by `Int(ceil(log2(length(site.states)))`, and can be accessed by [`bitwidth`](@ref).
-
-## HilbertSpaceSector
-
-A subspace of the whole Hilbert space, in terms of the Abelian quantum number, can be constructed using [`HilbertSpaceSector`](@ref), by specifying the value of the quantum number as an integer if the Hilbert space has a single integral quantum number,
-```julia
-hilbert_space_sector = HilbertSpaceSector(hilbert_space, 0)
-```
-or as a tuple
-```julia
-hilbert_space_sector = HilbertSpaceSector(hilbert_space, (0,))
-```
-You can also allow more than one quantum number values, if you need to for whatever reason
-```julia
-hilbert_space_sector = HilbertSpaceSector(hilbert_space, [(0,), (2,), (4,)])
-```
-or more shortly,
-```julia
-hilbert_space_sector = HilbertSpaceSector(hilbert_space, [0, 2, 4])
-```
-This example creates a subspace whose quantum numbers can be one of 0, 2, and 4.
