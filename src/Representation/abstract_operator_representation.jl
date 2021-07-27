@@ -114,29 +114,29 @@ for binop in [:+, :-, :*]
             @boundscheck if (get_space(lhs) != get_space(rhs))
                 throw(ArgumentError("The two OperatorRepresentation's do not have the same HilbertSpaceRepresentation"))
             end
-            return represent(get_space(lhs), simplify(($binop)(lhs.operator, rhs.operator)))
+            return represent(get_space(lhs), ($binop)(lhs.operator, rhs.operator))
         end
     end
 end
 
 function Base.:(*)(lhs::AbstractOperatorRepresentation, rhs::Number)
-    return represent(get_space(lhs), simplify(lhs.operator * rhs))
+    return represent(get_space(lhs), lhs.operator * rhs)
 end
 
 function Base.:(*)(lhs::Number, rhs::AbstractOperatorRepresentation)
-    return represent(get_space(rhs), simplify(lhs * rhs.operator))
+    return represent(get_space(rhs), lhs * rhs.operator)
 end
 
 function Base.:(/)(lhs::AbstractOperatorRepresentation, rhs::Number)
-    return represent(get_space(lhs), simplify(lhs.operator / rhs))
+    return represent(get_space(lhs), lhs.operator / rhs)
 end
 
 function Base.:(\)(lhs::Number, rhs::AbstractOperatorRepresentation)
-    return represent(get_space(rhs), simplify(lhs \ rhs.operator))
+    return represent(get_space(rhs), lhs \ rhs.operator)
 end
 
 function Base.:(//)(lhs::AbstractOperatorRepresentation, rhs::Number)
-    return represent(get_space(lhs), simplify(lhs.operator // rhs))
+    return represent(get_space(lhs), lhs.operator // rhs)
 end
 
 
