@@ -46,8 +46,8 @@ Base.in(val, obj::DictIndexedVector) = haskey(obj.lookup, val)
 Base.iterate(obj::DictIndexedVector) = iterate(obj.elements)
 Base.iterate(obj::DictIndexedVector, state) = iterate(obj.elements, state)
 
-Base.IteratorEltype(::Type{<:DictIndexedVector}) = Base.HasEltype()
-Base.IteratorSize(::Type{<:DictIndexedVector}) = Base.HasLength()
+# Base.IteratorEltype(::Type{<:DictIndexedVector}) = Base.HasEltype()
+# Base.IteratorSize(::Type{<:DictIndexedVector}) = Base.HasLength()
 Base.eltype(::Type{DictIndexedVector{E}}) where E = E
 Base.length(obj::DictIndexedVector) = length(obj.elements)
 Base.size(obj::DictIndexedVector, args...) = size(obj.elements, args...)
@@ -100,8 +100,8 @@ Base.in(val, obj::SortedIndexedVector) = (findindex(obj, val) > 0)
 Base.iterate(obj::SortedIndexedVector) = iterate(obj.elements)
 Base.iterate(obj::SortedIndexedVector, state) = iterate(obj.elements, state)
 
-Base.IteratorEltype(::Type{<:SortedIndexedVector}) = Base.HasEltype()
-Base.IteratorSize(::Type{<:SortedIndexedVector}) = Base.HasLength()
+# Base.IteratorEltype(::Type{<:SortedIndexedVector}) = Base.HasEltype()
+# Base.IteratorSize(::Type{<:SortedIndexedVector}) = Base.HasLength()
 Base.eltype(::Type{SortedIndexedVector{E}}) where E = E
 Base.length(obj::SortedIndexedVector) = length(obj.elements)
 Base.size(obj::SortedIndexedVector, args...) = size(obj.elements, args...)
