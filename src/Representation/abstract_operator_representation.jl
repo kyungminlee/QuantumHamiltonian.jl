@@ -339,7 +339,11 @@ function sparse_parallel(
 end
 
 
-function get_row(opr::AbstractOperatorRepresentation{S}, irow::Integer) where S
+function get_row(
+    opr::AbstractOperatorRepresentation{S},
+    irow::Integer;
+    tol::Real=Base.rtoldefault(real(S))
+) where S
     Z = zero(S)
     dim = size(opr, 2)
     items = Dict{Int, S}()
@@ -348,12 +352,16 @@ function get_row(opr::AbstractOperatorRepresentation{S}, irow::Integer) where S
             items[icol] = get(items, icol, Z) + val
         end
     end
-    choptol!(items, Base.rtoldefault(Float64))
+    choptol!(items, tol)
     return sparsevec(items, dim)
 end
 
 
-function get_column(opr::AbstractOperatorRepresentation{S}, icol::Integer) where S
+function get_column(
+    opr::AbstractOperatorRepresentation{S},
+    icol::Integer;
+    tol::Real=Base.rtoldefault(real(S))
+) where S
     Z = zero(S)
     dim = size(opr, 1)
     items = Dict{Int, S}()
@@ -362,7 +370,7 @@ function get_column(opr::AbstractOperatorRepresentation{S}, icol::Integer) where
             items[irow] = get(items, irow, Z) + val
         end
     end
-    choptol!(items, Base.rtoldefault(Float64))
+    choptol!(items, tol)
     return sparsevec(items, dim)
 end
 
