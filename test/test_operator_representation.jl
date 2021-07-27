@@ -147,17 +147,25 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
             σ₊ = [0 1; 0 0]
             σ₀ = [1 0; 0 1]
             H0 = kron(σ₀, σ₀, σ₊, σ₀)
-            opr_s = sparse(opr)
-            opr_s1 = sparse_serial(opr)
-            opr_s2 = sparse_parallel(opr)
-            @test opr_s == opr_s1
-            @test opr_s == opr_s2
-            opr_d = Matrix(opr)
-            @test opr_s == H0
-            @test opr_d == H0
-            @test opr[:,:] == opr_s
-            @test isa(opr_s, SparseMatrixCSC)
-            @test isa(opr_d, Matrix)
+            
+            for s in [sparse, sparse_serial, sparse_parallel]
+                opr_s = s(opr)
+                @test opr_s == H0
+                @test opr[:, :] == opr_s
+                @test isa(opr_s, SparseMatrixCSC)
+            end
+
+            let opr_d = Matrix(opr)
+                @test opr_d == H0
+                @test isa(opr_d, Matrix)
+            end
+
+            for c! in [copy!, copy_serial!, copy_parallel!]
+                opr_d2 = rand(Int, (16, 16))
+                c!(opr_d2, opr)
+                @test opr_d2 == H0
+            end
+            
             for i in 1:dim
                 @test get_row(opr, i) == H0[i, :]
                 @test get_column(opr, i) == H0[:, i]
@@ -206,51 +214,94 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
             end
             
             @testset "apply!" begin
+                σ₊ = [0 1; 0 0]
+                σ₀ = [1 0; 0 1]
+                
+                op_dense = kron(σ₀, σ₀, σ₊, σ₀)
+                state = rand(ComplexF64, dim)
+                opr = represent(hsr_0, σ[2, :+])
+                
                 for APP! in [apply!, apply_serial!, apply_parallel!]
-                    opr = represent(hsr_0, σ[2, :+])
-                    
-                    σ₊ = [0 1; 0 0]
-                    σ₀ = [1 0; 0 1]
-                    
-                    op_dense = kron(σ₀, σ₀, σ₊, σ₀)
-                    state = rand(ComplexF64, dim)
-                    
-                    out1 = zeros(ComplexF64, dim)
-                    
-                    # matrix * columnvector
-                    out0 = op_dense * state
-                    APP!(out1, opr, state)
-                    out2 = opr * state
-                    @test isapprox(out0, out1, atol=1E-6)
-                    @test isapprox(out0, out2, atol=1E-6)
-                    
-                    # add to the previous (do not overwrite)
-                    APP!(out1, opr, state)
-                    @test !isapprox(out0, out1, atol=1E-6)
-                    
-                    # rowvector * matrix
-                    out1[:] .= zero(ComplexF64)
-                    
-                    out0 = transpose( transpose(state) * op_dense )
-                    APP!(out1, state, opr)
-                    out2 = state * opr
-                    @test isapprox(out0, out1, atol=1E-6)
-                    @test isapprox(out0, out2, atol=1E-6)
-                    
-                    # add to the previous (do not overwrite)
-                    APP!(out1, state, opr)
-                    @test !isapprox(out0, out1, atol=1E-6)
-                    
+                    # operator * columnvector
                     let
+                        out0 = op_dense * state
+                        out1 = zeros(ComplexF64, dim)
+                        APP!(out1, opr, state)
+                        out2 = opr * state
+                        @test isapprox(out0, out1; atol=1E-6)
+                        @test isapprox(out0, out2; atol=1E-6)
+                        
+                        # add to the previous (do not overwrite)
+                        APP!(out1, opr, state)
+                        @test !isapprox(out0, out1; atol=1E-6)
+                    end
+
+                    # operator * matrix (columns are vectors)
+                    let
+                        state2 = rand(ComplexF64, dim)
+                        statem = hcat(state, state2)
+                        outm0 = op_dense * statem
+                        outm1 = zeros(ComplexF64, (dim, 2))
+                        outm2 = zeros(ComplexF64, (dim, 2))
+                        outm3 = opr * statem
+
+                        APP!(outm1, opr, statem)
+                        APP!(view(outm2, :, 1), opr, state)
+                        APP!(view(outm2, :, 2), opr, state2)
+                        @test isapprox(outm1, outm0; atol=1E-6)
+                        @test isapprox(outm2, outm0; atol=1E-6)
+                        @test isapprox(outm3, outm0; atol=1E-6)
+                    end
+
+                    # rowvector * operator
+                    let
+                        out0 = transpose( transpose(state) * op_dense )
+                        out1 = zeros(ComplexF64, dim)
+                        APP!(out1, state, opr)
+                        out2 = state * opr
+                        @test isapprox(out0, out1; atol=1E-6)
+                        @test isapprox(out0, out2; atol=1E-6)
+                        
+                        # add to the previous (do not overwrite)
+                        APP!(out1, state, opr)
+                        @test !isapprox(out0, out1; atol=1E-6)
+                    end
+
+                    # matrix (rows are vectors) * operator
+                    let
+                        state2 = rand(ComplexF64, dim)
+                        statem = transpose(hcat(state, state2))
+                        outm0 = statem * op_dense
+                        outm1 = zeros(ComplexF64, (2, dim))
+                        outm2 = zeros(ComplexF64, (2, dim))
+                        outm3 = statem * opr
+
+                        APP!(outm1, statem, opr)
+                        APP!(view(outm2, 1, :), state, opr)
+                        APP!(view(outm2, 2, :), state2, opr)
+                        @test isapprox(outm1, outm0; atol=1E-6)
+                        @test isapprox(outm2, outm0; atol=1E-6)
+                        @test isapprox(outm3, outm0; atol=1E-6)
+                    end
+
+                    # errors
+                    let out1 = zeros(ComplexF64, dim),
                         state_long = rand(ComplexF64, dim+1)
                         @test_throws DimensionMismatch APP!(out1, state_long, opr)
                         @test_throws DimensionMismatch APP!(out1, opr, state_long)
                     end
-                    
-                    let
-                        out_long = rand(ComplexF64, dim+1)
+                    let out_long = rand(ComplexF64, dim+1)
                         @test_throws DimensionMismatch APP!(out_long, state, opr)
                         @test_throws DimensionMismatch APP!(out_long, opr, state)
+                    end
+                    let
+                        @test_throws DimensionMismatch APP!(zeros(ComplexF64, dim+1, 2), opr, zeros(ComplexF64, dim, 2))
+                        @test_throws DimensionMismatch APP!(zeros(ComplexF64, dim, 2), opr, zeros(ComplexF64, dim+1, 2))
+                        @test_throws DimensionMismatch APP!(zeros(ComplexF64, dim, 2), opr, zeros(ComplexF64, dim, 3))
+
+                        @test_throws DimensionMismatch APP!(zeros(ComplexF64, 2, dim+1), zeros(ComplexF64, 2, dim), opr)
+                        @test_throws DimensionMismatch APP!(zeros(ComplexF64, 2, dim), zeros(ComplexF64, 2, dim+1), opr)
+                        @test_throws DimensionMismatch APP!(zeros(ComplexF64, 2, dim), zeros(ComplexF64, 3, dim), opr)
                     end
                 end
             end
@@ -266,7 +317,7 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
                     apply!(vec_out0, opr, vec_in)
                     apply!(vec_out1, opr, vec_in)
                     
-                    @test !isapprox(vec_out0, vec_out1, atol=1E-6)
+                    @test !isapprox(vec_out0, vec_out1; atol=1E-6)
                 end
                 
                 let vec_out0 = zeros(Float64, dim),
@@ -288,6 +339,14 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
                     @test isapprox(vec_out0, opr * vec_in; atol=1E-6)
                     @test isapprox(mat_out0, opr * mat_in; atol=1E-6)
                     @test isapprox(transpose(mat_out0), transpose(mat_in) * opr; atol=1E-6)
+
+                    mat_in2 = transpose(mat_in)
+                    mat_out2 = zeros(Float64, (2, dim))
+                    mat_out3 = ones(Float64, (2, dim))
+                    mul!(mat_out2, mat_in2, opr)
+                    mul!(mat_out3, mat_in2, opr)
+                    @test isapprox(mat_out2, mat_out3; atol=1E-6)
+                    @test isapprox(mat_out2, mat_in2 * Matrix(opr); atol=1E-6)
                 end
             end
             # TODO(kyungminlee): Check for bounds error with range.

@@ -5,6 +5,7 @@ export dimension, bitwidth
 export simplify
 export sparse_serial, sparse_parallel
 export apply!, apply_serial!, apply_parallel!
+export copy_serial!, copy_parallel!
 export get_row, get_column
 
 
@@ -113,29 +114,29 @@ for binop in [:+, :-, :*]
             @boundscheck if (get_space(lhs) != get_space(rhs))
                 throw(ArgumentError("The two OperatorRepresentation's do not have the same HilbertSpaceRepresentation"))
             end
-            return represent(get_space(lhs), simplify(($binop)(lhs.operator, rhs.operator)))
+            return represent(get_space(lhs), ($binop)(lhs.operator, rhs.operator))
         end
     end
 end
 
 function Base.:(*)(lhs::AbstractOperatorRepresentation, rhs::Number)
-    return represent(get_space(lhs), simplify(lhs.operator * rhs))
+    return represent(get_space(lhs), lhs.operator * rhs)
 end
 
 function Base.:(*)(lhs::Number, rhs::AbstractOperatorRepresentation)
-    return represent(get_space(rhs), simplify(lhs * rhs.operator))
+    return represent(get_space(rhs), lhs * rhs.operator)
 end
 
 function Base.:(/)(lhs::AbstractOperatorRepresentation, rhs::Number)
-    return represent(get_space(lhs), simplify(lhs.operator / rhs))
+    return represent(get_space(lhs), lhs.operator / rhs)
 end
 
 function Base.:(\)(lhs::Number, rhs::AbstractOperatorRepresentation)
-    return represent(get_space(rhs), simplify(lhs \ rhs.operator))
+    return represent(get_space(rhs), lhs \ rhs.operator)
 end
 
 function Base.:(//)(lhs::AbstractOperatorRepresentation, rhs::Number)
-    return represent(get_space(lhs), simplify(lhs.operator // rhs))
+    return represent(get_space(lhs), lhs.operator // rhs)
 end
 
 
@@ -150,38 +151,34 @@ end
 
 
 function LinearAlgebra.mul!(
-    out::AbstractVector{S1},
+    out::AbstractVector{S},
     opr::AbstractOperatorRepresentation,
-    state::AbstractVector
-) where {S1<:Number}
-    fill!(out, zero(S1))
+    state::AbstractVector,
+) where {S<:Number}
+    fill!(out, zero(S))
     apply!(out, opr, state)
     return out
 end
 
 
-"""
-    C(i, k) = A(i, j) * B(j, k) 
-    C(:, k) = A(:, :) * B(:, k)
-"""
 function LinearAlgebra.mul!(
-    C::AbstractMatrix{S1},
+    C::AbstractMatrix{S},
     A::AbstractOperatorRepresentation,
-    B::AbstractMatrix
-) where {S1<:Number}
-    fill!(C, zero(S1))
-    Threads.@threads for k in 1:size(B, 2)
-        apply!(view(C, :, k), A, view(B, :, k))
-    end
+    B::AbstractMatrix,
+) where {S<:Number}
+    fill!(C, zero(S))
+    apply!(C, A, B)
     return C
 end
 
 
-function Base.:(*)(A::AbstractOperatorRepresentation{S}, B::AbstractMatrix{T}) where {S, T}
-    size(A, 2) == size(B, 1) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
-    U = promote_type(S, T)
-    C = Matrix{U}(undef, (size(A, 1), size(B, 2)))
-    LinearAlgebra.mul!(C, A, B)
+function LinearAlgebra.mul!(
+    C::AbstractMatrix{S},
+    A::AbstractMatrix,
+    B::AbstractOperatorRepresentation,
+) where {S<:Number}
+    fill!(C, zero(S))
+    apply!(C, A, B)
     return C
 end
 
@@ -189,21 +186,17 @@ end
 function Base.:(*)(A::AbstractOperatorRepresentation{S}, B::AbstractVector{T}) where {S, T}
     size(A, 2) == length(B) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
     U = promote_type(S, T)
-    C = Vector{U}(undef, size(A, 1))
-    LinearAlgebra.mul!(C, A, B)
+    C = zeros(U, size(A, 1))
+    apply!(C, A, B)
     return C
 end
 
-# C(i, k) = A(i, j) * B(j, k) 
-# C(:, k) = A(:, :) * B(:, k)
-# C(i, :) = A(i, :) * B(:, :)
-function Base.:(*)(A::AbstractMatrix{T}, B::AbstractOperatorRepresentation{S}) where {S, T}
+
+function Base.:(*)(A::AbstractOperatorRepresentation{S}, B::AbstractMatrix{T}) where {S, T}
     size(A, 2) == size(B, 1) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
     U = promote_type(S, T)
     C = zeros(U, (size(A, 1), size(B, 2)))
-    Threads.@threads for i in 1:size(A, 1)
-        apply!(view(C, i, :), view(A, i, :), B)
-    end
+    apply!(C, A, B)
     return C
 end
 
@@ -217,24 +210,52 @@ function Base.:(*)(A::AbstractVector{T}, B::AbstractOperatorRepresentation{S}) w
 end
 
 
-# function Base.:(*)(A::AbstractOperatorRepresentation{S}, B::AbstractArray{T}) where {S, T}
-#     size(A, 2) == size(B, 1) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
-#     U = promote_type(S, T)
-#     iter_size = size(B)[2:end]
-#     C = zeros(U, (size(A, 1), iter_size...))
-#     for i3 in CartesianIndices(iter_size)
-#         apply!(view(C, :, i3.I...), A, view(B, :, i3.I...))
-#     end
-#     return C
-# end
+# C(i, k) = A(i, j) * B(j, k) 
+# C(:, k) = A(:, :) * B(:, k)
+# C(i, :) = A(i, :) * B(:, :)
+function Base.:(*)(A::AbstractMatrix{T}, B::AbstractOperatorRepresentation{S}) where {S, T}
+    size(A, 2) == size(B, 1) || throw(DimensionMismatch("A has size $(size(A)) and B has size $(size(B))"))
+    U = promote_type(S, T)
+    C = zeros(U, (size(A, 1), size(B, 2)))
+    apply!(C, A, B)
+    return C
+end
 
 
 function Base.Matrix(opr::AbstractOperatorRepresentation{S}) where S
     m, n = size(opr)
-    out = zeros(S, (m, n))
-    Threads.@threads for icol in 1:n
-        for (irow, ampl) in get_column_iterator(opr, icol)
-            if 1 <= irow <= m
+    out = Matrix{S}(undef, (m, n))
+    copy!(out, opr)
+    return out
+end
+
+
+function Base.copy!(out::AbstractMatrix, opr::AbstractOperatorRepresentation{S}) where S
+    f! = Threads.nthreads() == 1 ? copy_serial! : copy_parallel!
+    return f!(out, opr)
+end
+
+
+function copy_serial!(out::AbstractMatrix{T}, opr::AbstractOperatorRepresentation) where T
+    fill!(out, zero(T))
+    m, n = size(opr)
+    for irow in 1:m
+        for (icol, ampl) in get_row_iterator(opr, irow)
+            if 1 <= icol <= n
+                out[irow, icol] += ampl
+            end
+        end
+    end
+    return out
+end
+
+
+function copy_parallel!(out::AbstractMatrix{T}, opr::AbstractOperatorRepresentation) where T
+    fill!(out, zero(T))
+    m, n = size(opr)
+    Threads.@threads for irow in 1:m
+        for (icol, ampl) in get_row_iterator(opr, irow)
+            if 1 <= icol <= n
                 out[irow, icol] += ampl
             end
         end
@@ -318,7 +339,11 @@ function sparse_parallel(
 end
 
 
-function get_row(opr::AbstractOperatorRepresentation{S}, irow::Integer) where S
+function get_row(
+    opr::AbstractOperatorRepresentation{S},
+    irow::Integer;
+    tol::Real=Base.rtoldefault(real(S))
+) where S
     Z = zero(S)
     dim = size(opr, 2)
     items = Dict{Int, S}()
@@ -327,12 +352,16 @@ function get_row(opr::AbstractOperatorRepresentation{S}, irow::Integer) where S
             items[icol] = get(items, icol, Z) + val
         end
     end
-    choptol!(items, Base.rtoldefault(Float64))
+    choptol!(items, tol)
     return sparsevec(items, dim)
 end
 
 
-function get_column(opr::AbstractOperatorRepresentation{S}, icol::Integer) where S
+function get_column(
+    opr::AbstractOperatorRepresentation{S},
+    icol::Integer;
+    tol::Real=Base.rtoldefault(real(S))
+) where S
     Z = zero(S)
     dim = size(opr, 1)
     items = Dict{Int, S}()
@@ -341,7 +370,7 @@ function get_column(opr::AbstractOperatorRepresentation{S}, icol::Integer) where
             items[irow] = get(items, irow, Z) + val
         end
     end
-    choptol!(items, Base.rtoldefault(Float64))
+    choptol!(items, tol)
     return sparsevec(items, dim)
 end
 
@@ -372,9 +401,9 @@ Return sum of errors and sum of error-squared.
 Call [`apply_serial!`](@ref) if `Threads.nthreads() == 1`, and [`apply_parallel!`](@ref) otherwise.
 """
 function apply!(
-    out::AbstractVector,
+    out::AbstractArray,
     opr::AbstractOperatorRepresentation,
-    state::AbstractVector
+    state::AbstractArray
 )
     a! = Threads.nthreads() == 1 ? apply_serial! : apply_parallel!
     return a!(out, opr, state)
@@ -390,8 +419,8 @@ Return sum of errors and sum of error-squared.
 Call [`apply_serial!`](@ref) if `Threads.nthreads() == 1`, and [`apply_parallel!`](@ref) otherwise.
 """
 function apply!(
-    out::AbstractVector,
-    state::AbstractVector,
+    out::AbstractArray,
+    state::AbstractArray,
     opr::AbstractOperatorRepresentation
 )
     a! = Threads.nthreads() == 1 ? apply_serial! : apply_parallel!
@@ -399,12 +428,13 @@ function apply!(
 end
 
 
+# 1/4. V = O * V
+
 """
     apply_serial!(out, opr, state)
 
 Perform `out += opr * state`. Apply the operator representation `opr` to the
 column vector `state` and *add* it to the column vector `out`.
-Return sum of errors and sum of error-squared.
 Single-threaded version.
 """
 function apply_serial!(
@@ -431,6 +461,112 @@ end
 
 
 """
+    apply_parallel!(out, opr, state)
+
+Perform `out += opr * state`. Apply the operator representation `opr` to the
+column vector `state` and *add* it to the column vector `out`.
+Multi-threaded version.
+"""
+function apply_parallel!(
+    out::AbstractVector,
+    opr::AbstractOperatorRepresentation{S},
+    state::AbstractVector
+) where {S}
+    # w_r += sum_r  A_rc v_c
+    nrows, ncols = size(opr)
+    if length(out) != nrows
+        throw(DimensionMismatch("out has length $(length(out)) != dimension $(nrows)"))
+    elseif length(state) != ncols
+        throw(DimensionMismatch("state has length $(length(state)) != dimension $(ncols)"))
+    end
+    Threads.@threads for irow in 1:nrows
+        for (icol::Int, amplitude::S) in get_row_iterator(opr, irow)
+            if 1 <= icol <= ncols
+                @inbounds out[irow] += amplitude * state[icol]
+            end
+        end
+    end
+    return out
+end
+
+
+# 2/4. M = O * M
+
+"""
+    apply_serial!(out, opr, state)
+
+Perform `out += opr * state`. Apply the operator representation `opr` to 
+the matrix `state`, whose columns are vectors, and *add* it to the columns
+of the matrix `out`.
+Single-threaded version.
+"""
+function apply_serial!(
+    out::AbstractMatrix,
+    opr::AbstractOperatorRepresentation{S},
+    state::AbstractMatrix
+) where {S}
+    # w_r += sum_r  A_rc v_c
+    nrows, ncols = size(opr)
+    if size(out, 1) != nrows
+        throw(DimensionMismatch("out has $(size(out, 1)) rows != dimension $(nrows)"))
+    elseif size(state, 1) != ncols
+        throw(DimensionMismatch("state has $(size(state, 1)) rows != dimension $(ncols)"))
+    elseif size(state, 2) != size(out, 2)
+        throw(DimensionMismatch("state has $(size(state, 2)) columns != out has $(size(out, 2)) columns"))
+    end
+    mcol = size(state, 2)
+    for irow in 1:nrows
+        for (icol::Int, amplitude::S) in get_row_iterator(opr, irow)
+            if 1 <= icol <= ncols
+                @simd for j in 1:mcol
+                    @inbounds out[irow, j] += amplitude * state[icol, j]
+                end
+            end
+        end
+    end
+    return out
+end
+
+
+"""
+    apply_parallel!(out, opr, state)
+
+Perform `out += opr * state`. Apply the operator representation `opr` to 
+the matrix `state`, whose columns are vectors, and *add* it to the columns
+of the matrix `out`.
+Multi-threaded version.
+"""
+function apply_parallel!(
+    out::AbstractMatrix,
+    opr::AbstractOperatorRepresentation{S},
+    state::AbstractMatrix
+) where {S}
+    # w_r += sum_r  A_rc v_c
+    nrows, ncols = size(opr)
+    if size(out, 1) != nrows
+        throw(DimensionMismatch("out has size $(size(out)). First dimension does not match the row dimension of the operator $(nrows)"))
+    elseif size(state, 1) != ncols
+        throw(DimensionMismatch("state has size $(size(state)). First dimension does not match the row dimension of the operator $(ncols)"))
+    elseif size(state, 2) != size(out, 2)
+        throw(DimensionMismatch("state has $(size(state, 2)) columns != out has $(size(out, 2)) columns"))
+    end
+    mcol = size(state, 2)
+    Threads.@threads for irow in 1:nrows
+        for (icol::Int, amplitude::S) in get_row_iterator(opr, irow)
+            if 1 <= icol <= ncols
+                @simd for j in 1:mcol
+                    @inbounds out[irow, j] += amplitude * state[icol, j]
+                end
+            end
+        end
+    end
+    return out
+end
+
+
+# 3/4. V = V * O
+
+"""
     apply_serial!(out, state, opr)
 
 Perform `out += state * opr`. Apply the operator representation `opr` to the
@@ -454,37 +590,6 @@ function apply_serial!(
         for (irow::Int, amplitude::S) in get_column_iterator(opr, icol)
             if 1 <= irow <= nrows
                 @inbounds out[icol] += state[irow] * amplitude
-            end
-        end
-    end
-    return out
-end
-
-
-"""
-    apply_parallel!(out, opr, state)
-
-Perform `out += opr * state`. Apply the operator representation `opr` to the
-column vector `state` and *add* it to the column vector `out`.
-Return sum of errors and sum of error-squared.
-Multi-threaded version.
-"""
-function apply_parallel!(
-    out::AbstractVector,
-    opr::AbstractOperatorRepresentation{S},
-    state::AbstractVector
-) where {S}
-    # w_r += sum_r  A_rc v_c
-    nrows, ncols = size(opr)
-    if length(out) != nrows
-        throw(DimensionMismatch("out has length $(length(out)) != dimension $(nrows)"))
-    elseif length(state) != ncols
-        throw(DimensionMismatch("state has length $(length(state)) != dimension $(ncols)"))
-    end
-    Threads.@threads for irow in 1:nrows
-        for (icol::Int, amplitude::S) in get_row_iterator(opr, irow)
-            if 1 <= icol <= ncols
-                @inbounds out[irow] += amplitude * state[icol]
             end
         end
     end
@@ -521,3 +626,102 @@ function apply_parallel!(
     end
     return out
 end
+
+
+# 4/4. M = M * O
+
+"""
+    apply_serial!(out, state, opr)
+
+Perform `out += state * opr`. Apply the operator representation `opr` to
+the matrix `state`, whose rows are vectors, and *add* it to the rows
+of the matrix `out`.
+Single-threaded version.
+"""
+function apply_serial!(
+    out::AbstractMatrix,
+    state::AbstractMatrix,
+    opr::AbstractOperatorRepresentation{S}
+) where {S}
+    # w_c += sum_r v_r A_rc
+    nrows, ncols = size(opr)
+    @boundscheck if size(out, 2) != ncols
+        throw(DimensionMismatch("out has length $(size(out, 2)) != dimension $(ncols)"))
+    elseif size(state, 2) != nrows
+        throw(DimensionMismatch("state has length $(size(state, 2)) != dimension $(nrows)"))
+    elseif size(state, 1) != size(out, 1)
+        throw(DimensionMismatch("state has $(size(state, 1)) rows != out has $(size(out, 1)) rows"))
+    end
+    mrows = size(state, 1)
+    for icol in 1:ncols
+        for (irow::Int, amplitude::S) in get_column_iterator(opr, icol)
+            if 1 <= irow <= nrows
+                @simd for j in 1:mrows
+                    @inbounds out[j, icol] += state[j, irow] * amplitude
+                end
+            end
+        end
+    end
+    return out
+end
+
+
+"""
+    apply_parallel!(out, state, opr)
+
+Perform `out += state * opr`. Apply the operator representation `opr` to
+the matrix `state`, whose rows are vectors, and *add* it to the rows
+of the matrix `out`.
+Multi-threaded version.
+"""
+function apply_parallel!(
+    out::AbstractMatrix,
+    state::AbstractMatrix,
+    opr::AbstractOperatorRepresentation{S}
+) where {S}
+    # w(c) += sum_(r) v(r) A(r,c)
+    nrows, ncols = size(opr)
+    if size(out, 2) != ncols
+        throw(DimensionMismatch("out has length $(length(out)) != dimension $(ncols)"))
+    elseif size(state, 2) != nrows
+        throw(DimensionMismatch("state has length $(length(state)) != dimension $(nrows)"))
+    elseif size(state, 1) != size(out, 1)
+        throw(DimensionMismatch("state has $(size(state, 1)) rows != out has $(size(out, 1)) rows"))
+    end
+    mrows = size(state, 1)
+    Threads.@threads for icol in 1:ncols
+        for (irow::Int, amplitude::S) in get_column_iterator(opr, icol)
+            if 1 <= irow <= nrows
+                @simd for j in 1:mrows
+                    @inbounds out[j, icol] += state[j, irow] * amplitude
+                end
+            end
+        end
+    end    
+    return out
+end
+
+
+# function apply_serial!(
+#     out::AbstractArray{T, D},
+#     opr::AbstractOperatorRepresentation{S},
+#     state::AbstractArray{U, D}
+# ) where {T, S, U, D}
+#     # w_r += sum_r  A_rc v_c
+#     nrows, ncols = size(opr)
+#     if size(out, 1) != nrows
+#         throw(DimensionMismatch("out has size $(size(out)). First dimension does not match the row dimension of the operator $(nrows)"))
+#     elseif size(state, 1) != ncols
+#         throw(DimensionMismatch("state has size $(size(state)). First dimension does not match the row dimension of the operator $(ncols)"))
+#     end
+#     out_m = reshape(out, nrows, :)
+#     state_m = reshape(state, ncols, :)
+#     for irow in 1:nrows
+#         for (icol::Int, amplitude::S) in get_row_iterator(opr, irow)
+#             if 1 <= icol <= ncols
+#                 @inbounds out_m[irow, :] += amplitude * state_m[icol, :]
+#             end
+#         end
+#     end
+#     return out
+# end

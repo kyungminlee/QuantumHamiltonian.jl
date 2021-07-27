@@ -75,9 +75,7 @@ function symmetry_reduce_serial(
         throw(ArgumentError("amplitude of first element (identity) needs to be one"))
     end
 
-    symops, amplitudes = let 
-        new_symops = OperationType[]
-        new_amplitudes = InputScalarType[]
+    symops, amplitudes = let new_symops = OperationType[], new_amplitudes = InputScalarType[]
         for (x, y) in zip(symops, amplitudes)
             if !isapprox(abs(y), zero(abs(y)); atol=tol)
                 push!(new_symops, x)
@@ -185,9 +183,7 @@ function symmetry_reduce_parallel(
         throw(ArgumentError("amplitude of first element (identity) needs to be one"))
     end
 
-    symops, amplitudes = let 
-        new_symops = OperationType[]
-        new_amplitudes = InputScalarType[]
+    symops, amplitudes = let new_symops = OperationType[], new_amplitudes = InputScalarType[]
         for (x, y) in zip(symops, amplitudes)
             if !isapprox(abs(y), zero(abs(y)); atol=tol)
                 push!(new_symops, x)

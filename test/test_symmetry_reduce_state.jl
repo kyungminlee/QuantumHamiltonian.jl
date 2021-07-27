@@ -42,7 +42,8 @@ using Test
             (i3p, x) = get_basis_index_amplitude(rdhsr, b1p)
             @test imag(x) ≈ 0
 
-            @test i1 == i2 == i3 == i1p == i2p == i3p
+            @test i1 == i2 == i1p == i2p
+            @test i3 == i3p
             @test a1 ≈ a2 ≈ a3 ≈ a1p ≈ a2p
 
             if i1 > 0
