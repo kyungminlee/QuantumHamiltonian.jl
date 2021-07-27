@@ -15,7 +15,7 @@ jobs:
           julia -e "using Pkg; Pkg.update()"
       - name: Build packages
         run: julia --project -e 'import Pkg; Pkg.build(); Pkg.precompile()'
-      - name: Run test with coverage
+      - name: Run tests with coverage
         run: julia --project --check-bounds=yes -e 'import Pkg; Pkg.test(; coverage=true, julia_args=`--inline=no`)'
         env:
           JULIA_NUM_THREADS: "2"
@@ -29,3 +29,21 @@ jobs:
           julia --project=docs/ docs/make.jl
         env:
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
+  build-nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: "nightly"
+      - name: Update registries
+        run: |
+          julia -e "using Pkg; Pkg.update()"
+          julia -e "using Pkg; Pkg.Registry.add(RegistrySpec(url=\"https://github.com/kyungminlee/KyungminLeeRegistry.jl.git\"))"
+          julia -e "using Pkg; Pkg.update()"
+      - name: Build packages
+        run: julia --project -e 'import Pkg; Pkg.build(); Pkg.precompile()'
+      - name: Run tests
+        run: julia --project --check-bounds=yes -e 'import Pkg; Pkg.test(; coverage=false)'
+        env:
+          JULIA_NUM_THREADS: "2"
