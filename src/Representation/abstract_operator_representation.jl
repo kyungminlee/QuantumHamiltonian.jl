@@ -5,6 +5,7 @@ export dimension, bitwidth
 export simplify
 export sparse_serial, sparse_parallel
 export apply!, apply_serial!, apply_parallel!
+export copy_serial!, copy_parallel!
 export get_row, get_column
 
 
@@ -231,10 +232,38 @@ end
 
 function Base.Matrix(opr::AbstractOperatorRepresentation{S}) where S
     m, n = size(opr)
-    out = zeros(S, (m, n))
-    Threads.@threads for icol in 1:n
-        for (irow, ampl) in get_column_iterator(opr, icol)
-            if 1 <= irow <= m
+    out = Matrix{S}(undef, (m, n))
+    copy!(out, opr)
+    return out
+end
+
+
+function Base.copy!(out::AbstractMatrix, opr::AbstractOperatorRepresentation{S}) where S
+    f! = Threads.nthreads() == 1 ? copy_serial! : copy_parallel!
+    return f!(out, opr)
+end
+
+
+function copy_serial!(out::AbstractMatrix{T}, opr::AbstractOperatorRepresentation) where T
+    fill!(out, zero(T))
+    m, n = size(opr)
+    for irow in 1:m
+        for (icol, ampl) in get_row_iterator(opr, irow)
+            if 1 <= icol <= n
+                out[irow, icol] += ampl
+            end
+        end
+    end
+    return out
+end
+
+
+function copy_parallel!(out::AbstractMatrix{T}, opr::AbstractOperatorRepresentation) where T
+    fill!(out, zero(T))
+    m, n = size(opr)
+    Threads.@threads for irow in 1:m
+        for (icol, ampl) in get_row_iterator(opr, irow)
+            if 1 <= icol <= n
                 out[irow, icol] += ampl
             end
         end
