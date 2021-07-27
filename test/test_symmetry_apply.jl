@@ -16,12 +16,12 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
     spin_site = Site([up, dn])
 
     hs = HilbertSpace(repeat([spin_site], 4))
-    hss = HilbertSpaceSector(hs, 0)
+    hsr = represent(hs)
+
     transop = SitePermutation([2,3,4,1])
     invop = SitePermutation([1,4,3,2])
 
     @test symmetry_apply(hs, transop, 0b0001) == (0b0010, true)
-    @test symmetry_apply(hss, transop, 0b0101) == (0b1010, true)
 
     nop = NullOperator()
     pop1 = PureOperator{Float64, UInt}(0b1101, 0b0101, 0b1100, 2.0)
@@ -43,54 +43,34 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
     σ = Dict( (isite, j) => pauli_matrix(hs, isite, j) for isite in 1:4, j in [:x, :y, :z, :+, :-])
     j1 = simplify(sum(σ[i, j] * σ[mod(i, 4) + 1 , j] for i in 1:4, j in [:x, :y, :z]))
 
-    @test isinvariant(hs, transop, nop)
-    @test isinvariant(HilbertSpaceSector(hs, 0), transop, nop)
-    @test !isinvariant(hs, transop, pop1)
-    @test !isinvariant(HilbertSpaceSector(hs, 0), transop, pop1)
-    @test !isinvariant(hs, transop, sop)
-    @test !isinvariant(HilbertSpaceSector(hs, 0), transop, sop)
-    @test isinvariant(hs, transop, j1)
-    @test isinvariant(HilbertSpaceSector(hs, 0), transop, j1)
-
-    @test isinvariant(hs, invop, nop)
-    @test isinvariant(HilbertSpaceSector(hs, 0), invop, nop)
-    @test !isinvariant(hs, invop, pop1)
-    @test !isinvariant(HilbertSpaceSector(hs, 0), invop, pop1)
-    @test !isinvariant(hs, invop, sop)
-    @test !isinvariant(HilbertSpaceSector(hs, 0), invop, sop)
-    @test isinvariant(hs, invop, j1)
-    @test isinvariant(HilbertSpaceSector(hs, 0), invop, j1)
-
     tsymbed = translation_symmetry_embedding(lattice)
-
-    @test isinvariant(hs, tsymbed, nop)
-    @test isinvariant(HilbertSpaceSector(hs, 0), tsymbed, nop)
-    @test !isinvariant(hs, tsymbed, pop1)
-    @test !isinvariant(HilbertSpaceSector(hs, 0), tsymbed, pop1)
-    @test !isinvariant(hs, tsymbed, sop)
-    @test !isinvariant(HilbertSpaceSector(hs, 0), tsymbed, sop)
-    @test isinvariant(hs, tsymbed, j1)
-    @test isinvariant(HilbertSpaceSector(hs, 0), tsymbed, j1)
-
     psymbed = embed(lattice, project(PointSymmetryDatabase.get(2), [1 0 0;]))
-
-    @test isinvariant(hs, psymbed, nop)
-    @test isinvariant(HilbertSpaceSector(hs, 0), psymbed, nop)
-    @test !isinvariant(hs, psymbed, pop1)
-    @test !isinvariant(HilbertSpaceSector(hs, 0), psymbed, pop1)
-    @test !isinvariant(hs, psymbed, sop)
-    @test !isinvariant(HilbertSpaceSector(hs, 0), psymbed, sop)
-    @test isinvariant(hs, psymbed, j1)
-    @test isinvariant(HilbertSpaceSector(hs, 0), psymbed, j1)
-
     ssymbed = SymmorphicSymmetryEmbedding(tsymbed, psymbed)
-    @test isinvariant(hs, ssymbed, nop)
-    @test isinvariant(HilbertSpaceSector(hs, 0), ssymbed, nop)
-    @test !isinvariant(hs, ssymbed, pop1)
-    @test !isinvariant(HilbertSpaceSector(hs, 0), ssymbed, pop1)
-    @test !isinvariant(hs, ssymbed, sop)
-    @test !isinvariant(HilbertSpaceSector(hs, 0), ssymbed, sop)
-    @test isinvariant(hs, ssymbed, j1)
-    @test isinvariant(HilbertSpaceSector(hs, 0), ssymbed, j1)
 
+    for hsobj in [hs, hsr]
+        @test isinvariant(hsobj, transop, nop)
+        @test !isinvariant(hsobj, transop, pop1)
+        @test !isinvariant(hsobj, transop, sop)
+        @test isinvariant(hsobj, transop, j1)
+
+        @test isinvariant(hsobj, invop, nop)
+        @test !isinvariant(hsobj, invop, pop1)
+        @test !isinvariant(hsobj, invop, sop)
+        @test isinvariant(hsobj, invop, j1)
+
+        @test isinvariant(hsobj, tsymbed, nop)
+        @test !isinvariant(hsobj, tsymbed, pop1)
+        @test !isinvariant(hsobj, tsymbed, sop)
+        @test isinvariant(hsobj, tsymbed, j1)
+
+        @test isinvariant(hsobj, psymbed, nop)
+        @test !isinvariant(hsobj, psymbed, pop1)
+        @test !isinvariant(hsobj, psymbed, sop)
+        @test isinvariant(hsobj, psymbed, j1)
+
+        @test isinvariant(hsobj, ssymbed, nop)
+        @test !isinvariant(hsobj, ssymbed, pop1)
+        @test !isinvariant(hsobj, ssymbed, sop)
+        @test isinvariant(hsobj, ssymbed, j1)
+    end
 end
