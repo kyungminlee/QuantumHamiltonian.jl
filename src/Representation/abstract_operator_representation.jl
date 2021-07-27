@@ -685,6 +685,8 @@ function apply_parallel!(
         throw(DimensionMismatch("out has length $(length(out)) != dimension $(ncols)"))
     elseif size(state, 2) != nrows
         throw(DimensionMismatch("state has length $(length(state)) != dimension $(nrows)"))
+    elseif size(state, 1) != size(out, 1)
+        throw(DimensionMismatch("state has $(size(state, 1)) rows != out has $(size(out, 1)) rows"))
     end
     mrows = size(state, 1)
     Threads.@threads for icol in 1:ncols
