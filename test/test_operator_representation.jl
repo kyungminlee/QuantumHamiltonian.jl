@@ -285,15 +285,23 @@ using QuantumHamiltonian.Toolkit: pauli_matrix
                     end
 
                     # errors
-                    let
-                        out1 = zeros(ComplexF64, dim)
+                    let out1 = zeros(ComplexF64, dim),
                         state_long = rand(ComplexF64, dim+1)
                         @test_throws DimensionMismatch APP!(out1, state_long, opr)
                         @test_throws DimensionMismatch APP!(out1, opr, state_long)
-
-                        out_long = rand(ComplexF64, dim+1)
+                    end
+                    let out_long = rand(ComplexF64, dim+1)
                         @test_throws DimensionMismatch APP!(out_long, state, opr)
                         @test_throws DimensionMismatch APP!(out_long, opr, state)
+                    end
+                    let
+                        @test_throws DimensionMismatch APP!(zeros(ComplexF64, dim+1, 2), opr, zeros(ComplexF64, dim, 2))
+                        @test_throws DimensionMismatch APP!(zeros(ComplexF64, dim, 2), opr, zeros(ComplexF64, dim+1, 2))
+                        @test_throws DimensionMismatch APP!(zeros(ComplexF64, dim, 2), opr, zeros(ComplexF64, dim, 3))
+
+                        @test_throws DimensionMismatch APP!(zeros(ComplexF64, 2, dim+1), zeros(ComplexF64, 2, dim), opr)
+                        @test_throws DimensionMismatch APP!(zeros(ComplexF64, 2, dim), zeros(ComplexF64, 2, dim+1), opr)
+                        @test_throws DimensionMismatch APP!(zeros(ComplexF64, 2, dim), zeros(ComplexF64, 3, dim), opr)
                     end
                 end
             end
