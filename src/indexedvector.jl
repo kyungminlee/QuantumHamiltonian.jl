@@ -39,7 +39,7 @@ struct DictIndexedVector{E} <: AbstractIndexedVector{E}
     end
 end
 
-findindex(obj::DictIndexedVector, val) where E = get(obj.lookup, val, -1)
+@inline findindex(obj::DictIndexedVector, val) = get(obj.lookup, val, -1)
 Base.getindex(obj::DictIndexedVector, idx::Integer) = obj.elements[idx]
 Base.in(val, obj::DictIndexedVector) = haskey(obj.lookup, val)
 
