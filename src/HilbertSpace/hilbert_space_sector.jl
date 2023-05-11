@@ -11,7 +11,7 @@ export bitwidth
 Hilbert space sector.
 """
 struct HilbertSpaceSector{
-    QN<:Tuple{Vararg{<:AbstractQuantumNumber}},
+    QN<:Tuple{Vararg{AbstractQuantumNumber}},
     HS<:AbstractHilbertSpace{QN}
 }<:AbstractHilbertSpace{QN}
 

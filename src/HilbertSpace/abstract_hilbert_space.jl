@@ -8,7 +8,7 @@ export update, get_state_index, get_state
 ## TODO: Think about this
 AbstractQuantumNumber = Integer
 
-abstract type AbstractHilbertSpace{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}} end
+abstract type AbstractHilbertSpace{QN<:Tuple{Vararg{AbstractQuantumNumber}}} end
 
 qntype(::T) where {T<:AbstractHilbertSpace} = qntype(T)
 tagtype(::T, strategy::Val) where {T<:AbstractHilbertSpace} = tagtype(T, strategy)

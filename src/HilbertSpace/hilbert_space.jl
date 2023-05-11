@@ -24,7 +24,7 @@ julia> spin_site = Site([State("Up", +1), State("Dn", -1)]);
 julia> hs = HilbertSpace([spin_site, spin_site]);
 ```
 """
-struct HilbertSpace{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}}<:AbstractHilbertSpace{QN}
+struct HilbertSpace{QN<:Tuple{Vararg{AbstractQuantumNumber}}}<:AbstractHilbertSpace{QN}
     sites::Vector{Site{QN}}
     bitwidths::Vector{Int}
     bitoffsets::Vector{Int}

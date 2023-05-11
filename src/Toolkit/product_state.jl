@@ -11,7 +11,7 @@ end
 
 function product_state(
     hs::HilbertSpace,
-    local_states::Tuple{Vararg{<:AbstractVector{<:Number}}},
+    local_states::Tuple{Vararg{AbstractVector{<:Number}}},
     ::Type{BR}=UInt
 ) where BR
     n_sites = length(hs.sites)
@@ -50,7 +50,7 @@ end
 
 function product_state(
     hsr::HilbertSpaceRepresentation{BR, HS, DT},
-    local_states::Tuple{Vararg{<:AbstractVector{<:Number}}}
+    local_states::Tuple{Vararg{AbstractVector{<:Number}}}
 ) where {BR, HS, DT}
     hs = basespace(hsr)
     n_sites = length(hs.sites)

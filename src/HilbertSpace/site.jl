@@ -26,7 +26,7 @@ julia> State("Dn", (-1, 1))
 State{Tuple{Int64, Int64}}("Dn", (-1, 1))
 ```
 """
-struct State{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}}
+struct State{QN<:Tuple{Vararg{AbstractQuantumNumber}}}
     name::String
     quantum_number::QN
     State(name::AbstractString) = new{Tuple{}}(name, ())
@@ -35,7 +35,7 @@ struct State{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}}
         return new{Tuple{Int}}(name, (quantum_number,))
     end
 
-    function State(name::AbstractString, quantum_number::QN) where {QN<:Tuple{Vararg{<:AbstractQuantumNumber}}}
+    function State(name::AbstractString, quantum_number::QN) where {QN<:Tuple{Vararg{AbstractQuantumNumber}}}
         return new{QN}(name, quantum_number)
     end
 end
@@ -66,7 +66,7 @@ julia> using QuantumHamiltonian
 julia> site = Site([State("Up", 1), State("Dn", -1)]);
 ```
 """
-struct Site{QN<:Tuple{Vararg{<:AbstractQuantumNumber}}}<:AbstractHilbertSpace{QN}
+struct Site{QN<:Tuple{Vararg{AbstractQuantumNumber}}}<:AbstractHilbertSpace{QN}
     states::Vector{State{QN}}
     Site(states::AbstractVector{State{QN}}) where QN = new{QN}(states)
 end
